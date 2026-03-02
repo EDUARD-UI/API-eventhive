@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Organizador - EventosCTG</title>
+    <link rel="stylesheet" href="/css/CrudOrganizador.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <!-- DataTables CSS con HTTPS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Organizador</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#seccion-panel" class="sidebar-link active"><i class="fa-solid fa-house"></i> Inicio</a>
+                </li>
+                <li><a href="#seccion-eventos" class="sidebar-link"><i class="fa-solid fa-calendar-days"></i>
+                        Eventos</a></li>
+                <li><a href="#seccion-localidades" class="sidebar-link"><i class="fa-solid fa-location-dot"></i>
+                        Localidades</a></li>
+                <li><a href="#seccion-promociones" class="sidebar-link"><i class="fa-solid fa-tags"></i> Promociones</a>
+                </li>
+                <li><a href="#seccion-reportes" class="sidebar-link"><i class="fa-solid fa-chart-pie"></i> Reportes</a>
+                </li>
+                <li><a href="#seccion-perfil" class="sidebar-link"><i class="fa-solid fa-user"></i> Perfil</a></li>
+                <li><a href="/autentificacion/logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+            </ul>
+        </aside>
+
+        <!-- Tablas -->
+        <main class="main-content">
+            <div th:replace="~{crud_organizador/fragments/panel :: panel-section}"></div>
+            <div th:replace="~{crud_organizador/fragments/eventos :: eventos-section}"></div>
+            <div th:replace="~{crud_organizador/fragments/localidades :: localidades-section}"></div>
+            <div th:replace="~{crud_organizador/fragments/promociones :: promociones-section}"></div>
+            <div th:replace="~{crud_organizador/fragments/reportes :: reportes-section}"></div>
+            <div th:replace="~{crud_organizador/fragments/editarPerfil :: perfil-section}"></div>
+        </main>
+    </div>
+
+    <!-- Modales -->
+    <div th:replace="~{crud_organizador/fragments/modales :: modales}"></div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Scripts -->
+    <script th:src="@{/js/cruds/dataTables.js}"></script>
+    <script th:src="@{/js/cruds/EditarEliminarCuenta.js}"></script>
+    <script src="/js/dashboard_organizador.js"></script>
+    <script th:src="@{/js/cruds/CrudPromocion.js}"></script>
+    <script th:src="@{/js/cruds/CrudEvento.js}"></script>
+    <script th:src="@{/js/cruds/CrudLocalidad.js}"></script>
+    <script th:src="@{/js/cruds/ReportesGraficos.js}"></script>
+</body>
+
+</html>

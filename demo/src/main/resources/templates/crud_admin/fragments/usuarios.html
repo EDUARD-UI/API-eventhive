@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Fragmento de la sección Usuarios -->
+    <section th:fragment="usuarios-section" id="seccion-usuarios" class="content-section">
+        <div class="content-header">
+            <h1>Gestión de Usuarios</h1>
+            <button class="btn-primary modal-trigger" data-modal="modal-usuario">
+                <i class="fas fa-plus"></i> Crear Usuario
+            </button>
+        </div>
+        <div class="table-container">
+            <table id="tabla-usuarios-dt" class="display">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Correo</th>
+                        <th>Teléfono</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="usuario : ${usuarios}">
+                        <td data-label="Id" th:text="${usuario.id}"></td>
+                        <td data-label="Nombre" th:text="${usuario.nombre}"></td>
+                        <td data-label="Apellido" th:text="${usuario.apellido}"></td>
+                        <td data-label="Correo" th:text="${usuario.correo}"></td>
+                        <td data-label="Teléfono" th:text="${usuario.telefono}"></td>
+                        <td data-label="Rol" th:text="${usuario.rol.nombre}"></td>
+                        <td data-label="Estado">
+                            <span class="status-active" th:text="${usuario.estado.nombre}"></span>
+                        </td>
+                        <td data-label="Acciones">
+                            <button class="btn-secondary modal-trigger" data-modal="modal-usuario" data-action="edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-danger btn-delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</body>
+</html>

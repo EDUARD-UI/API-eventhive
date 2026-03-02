@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - EventHive</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+    <header class="login-header">
+        <div class="container header-inner">
+            <a href="/" class="navbar-brand">EventHive</a>
+        </div>
+    </header>
+
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="auth-card-top">
+                <p class="auth-subtitle">Por favor ingresa tus datos</p>
+                <h1 class="auth-card-title">Bienvenido de nuevo</h1>
+            </div>
+
+            <form id="loginForm" class="auth-form">
+                <div class="input-group">
+                    <label for="email">Correo electrónico</label>
+                    <input type="email" id="email" placeholder="Email address" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" placeholder="Password" required>
+                </div>
+
+                <div class="remember-forgot">
+                    <label class="remember"><input type="checkbox" id="remember"> Recordarme 30 días</label>
+                    <a class="forgot-link" href="#">¿Olvidaste tu contraseña?</a>
+                </div>
+
+                <button type="submit" class="btn-auth">Entrar</button>
+
+                <p class="auth-switch">¿No tienes una cuenta? <a href="/signin">Regístrate</a></p>
+            </form>
+        </div>
+    </div>
+
+    <br><br><br><br><br><br>
+    <footer class="main-footer">
+        <div th:replace="~{fragments/footer :: footer}"></div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/RespuestaLogin.js"></script>
+    
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nosotros | EventHive</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <header class="main-header">
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+    </header>
+
+    <main class="container" style="padding:3rem 0;">
+        <section class="about-section">
+            <h1 class="section-title">Sobre EventHive</h1>
+            <div class="about-grid">
+                <div class="about-card">
+                    <h3>Nuestra Misión</h3>
+                    <p>Nuestro objetivo principal es mejorar la visibilidad y la participación ciudadana y turística en
+                        la
+                        rica agenda cultural de la ciudad. Conectar a las personas con experiencias culturales,
+                        musicales
+                        y
+                        gastronómicas. Queremos hacer fácil descubrir, compartir y asistir a eventos que enriquecen la
+                        vida
+                        local.</p>
+                </div>
+
+                <div class="about-card">
+                    <h3>Nuestro Equipo</h3>
+                    <p>Somos un equipo pequeño apasionado por la cultura y la tecnología. Trabajamos con organizadores
+                        locales
+                        para promover eventos auténticos y seguros.</p>
+                </div>
+
+                <div class="about-card">
+                    <h3>Valores</h3>
+                    <ul>
+                        <li>Transparencia</li>
+                        <li>Accesibilidad</li>
+                        <li>Apoyo a la comunidad</li>
+                    </ul>
+                </div>
+                <br>
+                <div class="about-card">
+                    <h3>Nuestro Impacto en Cartagena</h3>
+                    <ul>
+                        <li>Fortalece la identidad cultural de Cartagena y aumenta la asistencia en eventos locales.
+                        </li>
+                        <li>Apoya la economía del sector creativo y turístico, dinamizando el consumo en torno a los
+                            eventos</li>
+                        <li>Aporta a la digitalización de Cartagena, alineándola con las tendencias de innovación</li>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div th:replace="~{fragments/footer :: footer}"></div>
+    </footer>
+
+</body>
+
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${categoria.nombre} + ' · Categoría'"></title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/categorias.css}">
+    <link rel="stylesheet" th:href="@{/css/category-detail.css}">
+    <link rel="stylesheet" th:href="@{/css/pagination.css}">
+    <link rel="stylesheet" th:href="@{PlaceholderCards.css}">
+</head>
+
+<body>
+    <header class="category-header">
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+        <div class="category-banner">
+            <!-- Fondo con imagen o placeholder -->
+            <div th:if="${categoria.foto != null and !#strings.isEmpty(categoria.foto)}"
+                th:style="'background-image: url(/uploads/categorias/' + ${categoria.foto} + '); background-size: cover; background-position: center; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;'">
+            </div>
+            <div th:unless="${categoria.foto != null and !#strings.isEmpty(categoria.foto)}"
+                class="category-banner-placeholder">
+            </div>
+
+            <div class="category-banner-overlay">
+                <h1 class="category-title" th:text="${categoria.nombre}"></h1>
+            </div>
+        </div>
+    </header>
+
+    <div class="category-events container" th:if="${!#lists.isEmpty(eventosCategoria)}">
+        <div class="cards-panel">
+            <div class="cards-panel-header">
+                <h2 class="section-subtitle" th:text="${categoria.nombre} + ' >'"></h2>
+            </div>
+            <div class="panel-separator"></div>
+
+            <div class="cards-grid">
+                <article class="event-card" th:each="evento : ${eventosCategoria}">
+                    <a th:href="@{/eventos/{id}(id=${evento.id})}" class="card-link">
+                        <div class="card-media">
+                            <!-- Imagen o placeholder -->
+                            <img th:if="${evento.foto != null and !#strings.isEmpty(evento.foto)}"
+                                th:src="@{/uploads/eventos/{foto}(foto=${evento.foto})}" th:alt="${evento.titulo}" />
+                            <div th:unless="${evento.foto != null and !#strings.isEmpty(evento.foto)}"
+                                class="card-placeholder">
+                                <span th:text="${#strings.substring(evento.titulo, 0, 1)}">E</span>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title" th:text="${evento.titulo}"></h3>
+                            <p class="card-meta">
+                                <span th:text="${#temporals.format(evento.fecha, 'dd MMM, yyyy')}"></span>
+                                <span th:if="${evento.lugar != null}"> • <span th:text="${evento.lugar}"></span></span>
+                            </p>
+                            <p class="card-desc" th:text="${evento.descripcion}"></p>
+                        </div>
+
+                        <div class="card-footer">
+                            <button class="btn-buy">Ver detalles</button>
+                        </div>
+                    </a>
+                </article>
+            </div>
+            
+            <!-- La paginación se insertará aquí automáticamente por JavaScript -->
+        </div>
+    </div>
+    <br><br><br><br>
+    <footer class="main-footer">
+        <div th:replace="~{fragments/footer :: footer}"></div>
+    </footer>
+
+    <script th:src="@{/js/localidad.js}"></script>
+    <script th:src="@{/js/pagination.js}"></script>
+
+</body>
+</html>

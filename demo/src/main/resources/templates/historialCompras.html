@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Compras | EventHive</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <link rel="stylesheet" th:href="@{/css/historialCompras.css}">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <header class="main-header">
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+    </header>
+
+    <main class="container" style="padding:3rem 0;">
+        <section class="history-section">
+            <h1 class="section-title">Historial de Compras</h1>
+
+            <div class="history-card" th:if="${compras != null and !compras.isEmpty()}">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>🧾 Nº de orden</th>
+                            <th>📅 Fecha de compra</th>
+                            <th>💵 Monto total</th>
+                            <th>🎟️ Evento</th>
+                            <th>🪑 Localidad</th>
+                            <th>🎫 Cantidad</th>
+                            <th>💳 Método de pago</th>
+                            <th>🎟️ Ver Boletos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="compra : ${compras}">
+                            <td th:text="'#' + ${compra.id}"></td>
+                            <td th:text="${#temporals.format(compra.fechaCompra, 'dd MMM, yyyy HH:mm')}"></td>
+                            <td th:text="'$' + ${#numbers.formatDecimal(compra.total, 0, 'POINT', 0, 'COMMA')} + ' COP'"></td>
+                            <td th:text="${compra.eventoTitulo != null ? compra.eventoTitulo : 'N/A'}"></td>
+                            <td th:text="${compra.localidadNombre != null ? compra.localidadNombre : 'N/A'}"></td>
+                            <td th:text="${compra.cantidad != null ? compra.cantidad : 0}"></td>
+                            <td th:text="${compra.metodoPago}"></td>
+                            <td>
+                                <a th:href="@{/mis-boletos/{id}(id=${compra.id})}" class="btn-view-tickets">
+                                    <i class="fas fa-ticket-alt"></i> Ver Boletos
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="empty-state" th:if="${compras == null or compras.isEmpty()}">
+                <i class="fas fa-shopping-cart" style="font-size: 4rem; color: #ccc; margin-bottom: 1rem;"></i>
+                <h3>No hay compras registradas</h3>
+                <p>Aún no has realizado ninguna compra. ¡Explora nuestros eventos y adquiere tus boletos!</p>
+                <a href="/categorias/eventos" class="btn-see-all">Ver Eventos <i class="fas fa-arrow-right"></i></a>
+            </div>
+
+            <div class="text-center mt-4" th:if="${compras != null and !compras.isEmpty()}">
+                <a href="/perfil" class="btn-see-all">Regresar a mi perfil <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div th:replace="~{fragments/footer :: footer}"></div>
+    </footer>
+
+</body>
+
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <aside th:fragment="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2>Admin</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#seccion-eventos" class="sidebar-link active">
+                    <i class="fas fa-calendar-alt"></i> Eventos
+                </a></li>
+            <li><a href="#seccion-usuarios" class="sidebar-link">
+                    <i class="fas fa-users"></i> Usuarios
+                </a></li>
+            <li><a href="#seccion-localidades" class="sidebar-link"><i class="fas fa-map-marker-alt"></i>Localidades</a>
+            </li>
+            <li><a href="#seccion-promociones" class="sidebar-link">
+                    <i class="fas fa-tags"></i> Promociones
+                </a></li>
+            <li><a href="#seccion-roles" class="sidebar-link">
+                    <i class="fas fa-user-tag"></i> Roles
+                </a></li>
+            <li><a href="#seccion-categorias" class="sidebar-link">
+                    <i class="fas fa-bookmark"></i> Categorías
+                </a></li>
+            <li><a href="#seccion-estados" class="sidebar-link">
+                    <i class="fas fa-toggle-on"></i> Estados
+                </a></li>
+            <li><a th:href="@{/autentificacion/logout}">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                </a></li>
+        </ul>
+    </aside>
+</body>
+
+</html>

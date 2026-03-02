@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - EventHive</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+
+    <header class="main-header">
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+    </header>
+
+    <main class="profile-page-container">
+        <div class="container">
+            <h1 class="profile-welcome" th:text="'¡Hola, ' + ${usuarioActual.nombre} + '!'"></h1>
+
+            <div class="profile-layout">
+
+                <aside class="profile-details-card">
+                    <div class="avatar-placeholder">
+                        <i class="fas fa-user-circle fa-5x"></i>
+                    </div>
+                    <h3 th:text="${usuarioActual.nombre}"></h3>
+                    <ul class="user-info-list">
+                        <li><i class="fas fa-envelope"></i> <span th:text="${usuarioActual.correo}"></span></li>
+                        <li><i class="fas fa-phone"></i> <span th:text="${usuarioActual.telefono}"></span></li>
+                    </ul>
+                    <a href="/editarPerfil" class="btn-secondary" id="btn-editar-perfil">Editar Información</a>
+                    <a href="/autentificacion/logout" class="btn-logout">Cerrar Sesión <i
+                            class="fas fa-sign-out-alt"></i></a>
+                </aside>
+
+                <section class="profile-tiquetes-list">
+                    <h2 class="section-title-profile">Mis Tiquetes</h2>
+
+                    <!-- Si tiene compras, mostrarlas -->
+                    <div th:if="${todasLasCompras != null and !todasLasCompras.isEmpty()}">
+                        <div class="ticket-card-enhanced" th:each="compra : ${todasLasCompras}">
+                            <div class="ticket-date-stub">
+                                <span class="month" th:text="${compra.eventoFecha != null ? #temporals.format(compra.eventoFecha, 'MMM').toUpperCase() : 'N/A'}">OCT</span>
+                                <span class="day" th:text="${compra.eventoFecha != null ? #temporals.format(compra.eventoFecha, 'dd') : '--'}">25</span>
+                                <span class="year" th:text="${compra.eventoFecha != null ? #temporals.format(compra.eventoFecha, 'yyyy') : '----'}">2025</span>
+                            </div>
+                            <div class="ticket-info">
+                                <span class="ticket-status valid">Válido</span>
+                                <h3 th:text="${compra.eventoTitulo != null ? compra.eventoTitulo : 'Evento sin título'}">Festival de Música del Caribe</h3>
+                                <p class="ticket-meta">
+                                    <i class="fas fa-clock"></i> 
+                                    <span th:text="${compra.eventoHora != null ? #temporals.format(compra.eventoHora, 'HH:mm') : 'N/A'}">8:00</span> | 
+                                    <i class="fas fa-map-marker-alt"></i> 
+                                    <span th:text="${compra.eventoLugar != null ? compra.eventoLugar : 'Lugar no especificado'}">Plaza de la Aduana</span>
+                                </p>
+                                <p class="ticket-meta">
+                                    <strong>Localidad:</strong> 
+                                    <span th:text="${compra.localidadNombre != null ? compra.localidadNombre : 'N/A'}">VIP</span> | 
+                                    <strong>Cantidad:</strong> 
+                                    <span th:text="${compra.cantidad != null ? compra.cantidad : 0}">2</span>
+                                </p>
+                                <p class="ticket-price" th:text="'Comprado por: $' + ${#numbers.formatDecimal(compra.total, 0, 'POINT', 0, 'COMMA')} + ' COP'">Comprado por: $150.000 COP</p>
+                                <div class="ticket-actions">
+                                    <a th:href="@{/mis-boletos/{id}(id=${compra.id})}" class="btn-view-ticket">
+                                        <i class="fas fa-qrcode"></i> Ver Boletos
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Si no tiene compras -->
+                    <div th:if="${todasLasCompras == null or todasLasCompras.isEmpty()}" class="empty-state-small">
+                        <i class="fas fa-ticket-alt" style="font-size: 3rem; color: #ccc;"></i>
+                        <p>No has comprado boletos aún</p>
+                        <a href="/categorias/eventos" class="btn-primary-small">Explorar Eventos</a>
+                    </div>
+
+                    <!-- Ver historial completo -->
+                    <div th:if="${todasLasCompras != null and !todasLasCompras.isEmpty()}" class="text-center" style="margin-top: 2rem;">
+                        <a href="/compras/historialCompras" class="btn-see-all">
+                            Ver Historial Completo <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </section>
+
+            </div>
+            <br><br>
+
+            <!-- Eventos Deseados -->
+            <div class="wanted-box container" aria-labelledby="wanted-title">
+                <h2 id="wanted-title" class="section-title-profile">Eventos Deseados</h2>
+                
+                <div th:if="${eventosDeseados != null and !eventosDeseados.isEmpty()}" class="wanted-row" role="list">
+                    <article class="event-card-horizontal" role="listitem" th:each="eventoDeseado : ${eventosDeseados}">
+                        <div class="date-stub">
+                            <div class="month" th:text="${#temporals.format(eventoDeseado.evento.fecha, 'MMM').toUpperCase()}">DIC</div>
+                            <div class="day" th:text="${#temporals.format(eventoDeseado.evento.fecha, 'dd')}">15</div>
+                            <div class="year" th:text="${#temporals.format(eventoDeseado.evento.fecha, 'yyyy')}">2025</div>
+                        </div>
+                        <div class="event-info-vertical">
+                            <h3 class="event-title" th:text="${eventoDeseado.evento.titulo}">Noche de Jazz en el Castillo</h3>
+                            <p class="event-meta-compact">
+                                <i class="fas fa-clock"></i> <span th:text="${#temporals.format(eventoDeseado.evento.hora, 'HH:mm')}">7:00 PM</span>
+                            </p>
+                            <p class="event-meta-compact">
+                                <i class="fas fa-map-marker-alt"></i> <span th:text="${eventoDeseado.evento.lugar}">Castillo de San Felipe</span>
+                            </p>
+                            <div class="event-actions">
+                                <a th:href="@{/eventos/{id}(id=${eventoDeseado.evento.id})}" class="btn-info">
+                                    Más Información <i class="fas fa-info-circle"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <div th:if="${eventosDeseados == null or eventosDeseados.isEmpty()}" class="empty-state-small">
+                    <i class="fas fa-heart" style="font-size: 3rem; color: #ccc;"></i>
+                    <p>No tienes eventos deseados aún</p>
+                </div>
+            </div>
+
+            <!-- Sección: Últimas Compras (Top 3) -->
+            <div class="wanted-box container" aria-labelledby="compras-title">
+                <h2 id="compras-title" class="section-title-profile">Últimas Compras</h2>
+                <p class="muted">Aquí verás tus últimas 3 compras realizadas.</p>
+
+                <div th:if="${top3Compras != null and !top3Compras.isEmpty()}" class="purchase-list" role="list">
+                    <article class="purchase-card" role="listitem" th:each="compra : ${top3Compras}">
+                        <div class="purchase-date">
+                            <div class="month" th:text="${compra.eventoFecha != null ? #temporals.format(compra.eventoFecha, 'MMM').toUpperCase() : 'N/A'}">OCT</div>
+                            <div class="day" th:text="${compra.eventoFecha != null ? #temporals.format(compra.eventoFecha, 'dd') : '--'}">25</div>
+                            <div class="year" th:text="${compra.eventoFecha != null ? #temporals.format(compra.eventoFecha, 'yyyy') : '----'}">2025</div>
+                        </div>
+                        <div class="purchase-body">
+                            <h3 th:text="${compra.eventoTitulo != null ? compra.eventoTitulo : 'Evento sin título'}">Festival de Música del Caribe</h3>
+                            <p class="purchase-meta">
+                                <strong>Código compra:</strong> 
+                                <span class="mono" th:text="'#' + ${compra.id}">COMPRA-12345</span>
+                            </p>
+                            <p class="purchase-meta">
+                                <strong>Fecha compra:</strong> 
+                                <span th:text="${compra.fechaCompra != null ? #temporals.format(compra.fechaCompra, 'dd MMM, yyyy HH:mm') : 'N/A'}">25 Oct, 2025 14:30</span>
+                            </p>
+                            <p class="purchase-meta">
+                                <strong>Localidad:</strong> 
+                                <span th:text="${compra.localidadNombre != null ? compra.localidadNombre : 'N/A'}">VIP</span>
+                            </p>
+                            <p class="purchase-meta">
+                                <strong>Cantidad:</strong> 
+                                <span th:text="${compra.cantidad != null ? compra.cantidad + ' boletos' : '0 boletos'}">2 boletos</span>
+                            </p>
+                            <p class="purchase-meta">
+                                <strong>Monto:</strong> 
+                                <span class="price-highlight" th:text="'$' + ${#numbers.formatDecimal(compra.total, 0, 'POINT', 0, 'COMMA')} + ' COP'">$150.000 COP</span>
+                            </p>
+                            <div class="purchase-actions">
+                                <a th:href="@{/mis-boletos/{id}(id=${compra.id})}" class="btn-primary-small">
+                                    <i class="fas fa-qrcode"></i> Ver Boletos
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <div th:if="${top3Compras == null or top3Compras.isEmpty()}" class="empty-state-small">
+                    <i class="fas fa-shopping-bag" style="font-size: 3rem; color: #ccc;"></i>
+                    <p>No has realizado compras aún</p>
+                    <p style="font-size: 0.9rem; margin-top: 0.5rem;">Explora nuestros eventos y adquiere tus boletos</p>
+                    <a href="/categorias/eventos" class="btn-primary-small" style="margin-top: 1rem;">Ver Eventos</a>
+                </div>
+
+                <!-- Botón para ver todas las compras -->
+                <div th:if="${top3Compras != null and !top3Compras.isEmpty()}" class="text-center" style="margin-top: 2rem;">
+                    <a href="/compras/historialCompras" class="btn-see-all">
+                        Ver Todas las Compras <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Sección: Comentarios -->
+            <div class="wanted-box container">
+                <h2 class="section-title-profile">Mis Comentarios</h2>
+                <p class="muted">Valoraciones que has publicado en los eventos.</p>
+                
+                <div class="comments-scroll">
+                    <div th:if="${comentariosUsuario != null and !comentariosUsuario.isEmpty()}">
+                        <article class="comment-card" th:each="comentario : ${comentariosUsuario}">
+                            <div class="comment-header">
+                                <div class="comment-event-info">
+                                    <h3 class="comment-event-title" th:text="${comentario.evento.titulo}">
+                                        Festival de Música del Caribe
+                                    </h3>
+                                </div>
+                                <div class="comment-rating">
+                                    <i class="fas fa-star" style="color: #FFD700;"></i>
+                                    <span th:text="${comentario.calificacion}">5</span>/5
+                                </div>
+                            </div>
+                            <div class="comment-body">
+                                <p class="comment-text" th:text="${comentario.comentario}">
+                                    Simplemente impresionante. El evento fue increíble, la organización excelente y el ambiente único.
+                                </p>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div th:if="${comentariosUsuario == null or comentariosUsuario.isEmpty()}" class="empty-state-small">
+                        <i class="fas fa-comment-alt" style="font-size: 3rem; color: #ccc;"></i>
+                        <p>No has dejado valoraciones aún</p>
+                        <p style="font-size: 0.9rem; margin-top: 0.5rem;">Compra boletos y comenta sobre los eventos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <br><br><br><br><br><br>
+    <footer class="main-footer">
+        <div th:replace="fragments/footer :: footer"></div>
+    </footer>
+</body>
+
+</html>

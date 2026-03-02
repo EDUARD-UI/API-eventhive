@@ -1,0 +1,190 @@
+.boletos-container {
+    max-width: 1000px;
+    margin: 50px auto;
+    padding: 20px;
+}
+
+.boletos-container h1 {
+    text-align: center;
+    font-size: 36px;
+    color: #2d3436;
+    margin-bottom: 10px;
+}
+
+.compra-info-header {
+    text-align: center;
+    color: #636e72;
+    margin-bottom: 40px;
+    font-size: 16px;
+}
+
+.boleto {
+    background: white;
+    border: 3px dashed #6c5ce7;
+    border-radius: 15px;
+    padding: 40px;
+    margin: 30px 0;
+    text-align: center;
+    page-break-after: always;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.boleto-header h2 {
+    color: #2d3436;
+    margin-bottom: 10px;
+    font-size: 28px;
+}
+
+.boleto-numero {
+    color: #6c5ce7;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.boleto-info {
+    margin: 30px 0;
+    text-align: left;
+    display: inline-block;
+    width: 100%;
+    max-width: 500px;
+}
+
+.boleto-info p {
+    margin: 15px 0;
+    font-size: 16px;
+    color: #636e72;
+    display: flex;
+    align-items: center;
+}
+
+.boleto-info strong {
+    color: #2d3436;
+    margin-right: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 140px;
+}
+
+.boleto-info i {
+    width: 20px;
+}
+
+.qr-container {
+    margin: 30px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    display: inline-block;
+}
+
+.qr-container > div {
+    display: inline-block;
+}
+
+.codigo-texto {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #636e72;
+    margin-top: 15px;
+    word-break: break-all;
+    max-width: 250px;
+}
+
+.boleto-footer {
+    font-size: 14px;
+    color: #b2bec3;
+    margin-top: 20px;
+}
+
+.boleto-footer i {
+    margin-right: 5px;
+}
+
+.btn-actions {
+    text-align: center;
+    margin: 40px 0;
+}
+
+.btn-imprimir, 
+.btn-volver {
+    padding: 15px 35px;
+    margin: 0 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-imprimir {
+    background: #6c5ce7;
+    color: white;
+}
+
+.btn-imprimir:hover {
+    background: #5f4fd1;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+}
+
+.btn-volver {
+    background: #dfe6e9;
+    color: #2d3436;
+}
+
+.btn-volver:hover {
+    background: #b2bec3;
+}
+
+.btn-imprimir i,
+.btn-volver i {
+    margin-right: 8px;
+}
+
+@media print {
+    .btn-actions, 
+    header, 
+    footer,
+    .boletos-container h1,
+    .compra-info-header {
+        display: none;
+    }
+    
+    .boleto {
+        box-shadow: none;
+        border: 2px solid #000;
+        margin: 0;
+        padding: 30px;
+    }
+    
+    body {
+        background: white;
+    }
+}
+
+@media (max-width: 768px) {
+    .boleto {
+        padding: 20px;
+    }
+    
+    .boleto-header h2 {
+        font-size: 22px;
+    }
+    
+    .btn-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-imprimir,
+    .btn-volver {
+        width: 100%;
+        margin: 0;
+    }
+}

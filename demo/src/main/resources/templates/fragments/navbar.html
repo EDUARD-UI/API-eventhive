@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BARRADENAVEGACION</title>
+</head>
+
+<body>
+    <nav th:fragment="navbar" class="navbar">
+        <a href="/" class="navbar-brand">EventHive</a>
+        <ul class="navbar-menu">
+            <li><a href="/" class="active">Inicio</a></li>
+            <li><a href="/categorias/eventos">Eventos</a></li>
+            <!-- Si NO está logueado, mostrar Login y Registro -->
+            <li th:if="${usuarioActual == null}">
+                <a href="/login">Iniciar Sesión</a>
+            </li>
+            <li th:if="${usuarioActual == null}">
+                <a href="/signin">Registrarse</a>
+            </li>
+            <!-- Si está logueado, mostrar perfil con nombre -->
+            <li th:if="${usuarioActual != null}">
+                <a href="/perfil" class="btn-profile">
+                    <i class="fas fa-user-circle"></i>
+                    <span th:text="${usuarioActual.nombre}"></span>
+                </a>
+            </li>
+            <!-- Logout solo si está logueado -->
+            <li th:if="${usuarioActual != null}">
+                <a href="/autentificacion/logout">Cerrar Sesión</a>
+            </li>
+        </ul>
+        <button class="menu-toggle" aria-label="Toggle navigation">
+            <i class="fas fa-bars"></i>
+        </button>
+    </nav>
+</body>
+
+</html>

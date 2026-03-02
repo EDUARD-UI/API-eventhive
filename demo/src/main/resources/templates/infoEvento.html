@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${evento != null ? evento.titulo + ' - EventHive' : 'Evento - EventHive'}">Evento - EventHive
+    </title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/infoEvento.css}">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <header class="main-header">
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+    </header>
+
+    <!-- Mostrar mensaje si no hay evento en el model -->
+    <div th:if="${evento == null}" class="container">
+        <h2>Evento no encontrado</h2>
+        <p>El evento solicitado no existe o no está disponible.</p>
+        <a href="/" class="btn-see-all">Volver al Inicio</a>
+    </div>
+
+    <main class="evento-container" th:if="${evento != null}">
+        <div class="container">
+            <!-- Información Principal del Evento -->
+            <div class="evento-header">
+                <div class="evento-image">
+                    <img th:if="${evento.foto != null}" th:src="@{/uploads/eventos/{foto}(foto=${evento.foto})}"
+                        alt="Evento">
+                    <div th:unless="${evento.foto}" class="image-placeholder">
+                        <i class="fas fa-image fa-5x"></i>
+                        <p>Imagen no disponible</p>
+                    </div>
+                </div>
+
+                <div class="evento-info">
+                    <h1 th:text="${evento.titulo}">Título del evento</h1>
+                    <div class="evento-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span
+                                th:text="${evento.fecha != null ? #temporals.format(evento.fecha, 'dd MMMM yyyy') : 'Fecha por definir'}"></span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-clock"></i>
+                            <span th:text="${evento.hora != null ? evento.hora : 'TBA'}"></span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span th:text="${evento.lugar != null ? evento.lugar : 'Ubicación por definir'}"></span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-tag"></i>
+                            <span th:text="${evento.categoria != null ? evento.categoria.nombre : ''}"></span>
+                        </div>
+                    </div>
+
+                    <div class="evento-status">
+                        <span class="status-badge"
+                            th:classappend="${evento.estado != null and evento.estado.nombre == 'Activo'} ? ' active' : ' inactive'"
+                            th:text="${evento.estado != null ? evento.estado.nombre : 'Desconocido'}"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Descripción -->
+            <div class="evento-description">
+                <h2>Descripción del Evento</h2>
+                <p
+                    th:text="${evento.descripcion != null ? evento.descripcion : 'No hay descripción disponible para este evento.'}">
+                </p>
+            </div>
+
+            <!-- Selección de Localidades -->
+            <div class="localidades-section">
+                <h2>Selecciona tu Localidad</h2>
+
+                <div th:if="${!#lists.isEmpty(localidades)}">
+                    <div class="localidad-card" th:each="localidad : ${localidades}">
+                        <div class="localidad-info">
+                            <h3 th:text="${localidad.nombre}">Nombre localidad</h3>
+                            <p class="localidad-capacidad">
+                                <span
+                                    th:text="${localidad.disponibles} + ' de ' + ${localidad.capacidad} + ' disponibles'">0
+                                    de 0 disponibles</span>
+                            </p>
+                            <p class="localidad-precio"
+                                th:text="'$' + ${#numbers.formatDecimal(localidad.precio, 0, 'COMMA', 0, 'POINT')} + ' COP'">
+                                $0 COP</p>
+                        </div>
+                        <div class="localidad-actions">
+                            <div class="cantidad-selector">
+                                <button class="btn-cantidad" onclick="decrementarCantidad(this)"
+                                    type="button">-</button>
+                                <input type="number" class="cantidad-input" name="cantidad" th:attr="id='cantidad-' + ${localidad.id}, 
+                max=${localidad.disponibles < 5 ? localidad.disponibles : 5}" value="1" min="1" readonly>
+                                <button class="btn-cantidad" onclick="incrementarCantidad(this)"
+                                    type="button">+</button>
+                            </div>
+                            <button class="btn-comprar" th:attr="data-localidad-id=${localidad.id}, 
+                                             data-localidad-nombre=${localidad.nombre}, 
+                                             data-precio=${localidad.precio}"
+                                th:disabled="${localidad.disponibles == 0}">
+                                <span
+                                    th:text="${localidad.disponibles == 0} ? 'AGOTADO' : 'SELECCIONAR'">SELECCIONAR</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${#lists.isEmpty(localidades)}" class="no-localidades">
+                    <p>No hay localidades disponibles para este evento.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div th:replace="~{fragments/footer :: footer}"></div>
+    </footer>
+
+    <script th:src="@{/js/localidad.js}"></script>
+</body>
+
+</html>

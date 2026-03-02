@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Boletos - EventHive</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/misBoletos.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header class="main-header">
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+    </header>
+
+    <main class="boletos-container">
+        <h1>Tus Boletos</h1>
+        <p class="compra-info-header">
+            Compra #<span th:text="${compra.id}"></span> - 
+            <span th:text="${#temporals.format(compra.fechaCompra, 'dd/MM/yyyy HH:mm')}"></span>
+        </p>
+        
+        <div class="boleto" th:each="tc, iterStat : ${compra.tiqueteCompras}">
+            <div class="boleto-header">
+                <h2 th:text="${tc.tiquete.localidad.evento.titulo}">Evento</h2>
+                <p class="boleto-numero">Boleto #<span th:text="${iterStat.count}"></span></p>
+            </div>
+            
+            <div class="boleto-info">
+                <p><strong><i class="fas fa-map-marker-alt"></i> Localidad:</strong> <span th:text="${tc.tiquete.localidad.nombre}"></span></p>
+                <p><strong><i class="fas fa-calendar-alt"></i> Fecha:</strong> <span th:text="${#temporals.format(tc.tiquete.localidad.evento.fecha, 'dd/MM/yyyy')}"></span></p>
+                <p><strong><i class="fas fa-clock"></i> Hora:</strong> <span th:text="${tc.tiquete.localidad.evento.hora}"></span></p>
+                <p><strong><i class="fas fa-building"></i> Lugar:</strong> <span th:text="${tc.tiquete.localidad.evento.lugar}"></span></p>
+            </div>
+            
+            <div class="qr-container">
+                <div th:id="'qr-code-' + ${tc.tiquete.id}"></div>
+                <p class="codigo-texto" th:text="${tc.tiquete.codigoQR}"></p>
+            </div>
+            
+            <p class="boleto-footer">
+                <i class="fas fa-info-circle"></i> Presenta este código QR en la entrada del evento
+            </p>
+        </div>
+
+        <div class="btn-actions">
+            <button class="btn-imprimir" onclick="window.print()">
+                <i class="fas fa-print"></i> Imprimir Boletos
+            </button>
+            <a href="/compras/historialCompras" class="btn-volver">
+                <i class="fas fa-arrow-left"></i> Volver al Historial
+            </a>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div th:replace="~{fragments/footer :: footer}"></div>
+    </footer>
+
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            /*[# th:each="tc : ${compra.tiqueteCompras}"]*/
+            var codigoQR = /*[[${tc.tiquete.codigoQR}]]*/ '';
+            var tiqueteId = /*[[${tc.tiquete.id}]]*/ 0;
+            var eventoTitulo = /*[[${tc.tiquete.localidad.evento.titulo}]]*/ '';
+            var localidadNombre = /*[[${tc.tiquete.localidad.nombre}]]*/ '';
+            
+            var textoCompleto = 'TICKET-ID:' + tiqueteId + 
+                               '|EVENTO:' + eventoTitulo + 
+                               '|LOCALIDAD:' + localidadNombre + 
+                               '|CODIGO:' + codigoQR;
+            
+            new QRCode(document.getElementById('qr-code-' + tiqueteId), {
+                text: textoCompleto,
+                width: 200,
+                height: 200,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+            /*[/]*/
+        });
+    </script>
+</body>
+</html>

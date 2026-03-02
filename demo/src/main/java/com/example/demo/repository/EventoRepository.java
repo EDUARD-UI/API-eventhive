@@ -1,0 +1,18 @@
+package com.example.demo.repository;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.example.demo.model.Evento;
+
+@Repository
+public interface EventoRepository extends JpaRepository<Evento, Long>{
+    List<Evento> findTop3ByOrderByFechaAsc();
+    List<Evento> findByCategoriaId(Long categoriaId);
+    List<Evento> findByTituloContainingIgnoreCase(String titulo);
+    List<Evento> findByUsuarioId(Long organizadorId);
+    Long countByCategoriaId(Long id);
+    Long countByEstadoId(Long id);
+}

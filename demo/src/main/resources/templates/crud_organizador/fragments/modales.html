@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <!-- Fragmento con todos los modales del Organizador -->
+    <div th:fragment="modales">
+
+        <!-- Modal Evento -->
+        <div id="modal-evento" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2 id="modal-evento-titulo">Crear Evento</h2>
+                <form class="modal-form" enctype="multipart/form-data">
+                    <input type="hidden" id="evento-id" name="id">
+                    <div class="input-group">
+                        <label for="evento-titulo">Título</label>
+                        <input type="text" id="evento-titulo" name="titulo" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="evento-descripcion">Descripción</label>
+                        <textarea id="evento-descripcion" name="descripcion" rows="3" required></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label for="evento-fecha">Fecha</label>
+                            <input type="date" id="evento-fecha" name="fecha" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="evento-hora">Hora</label>
+                            <input type="time" id="evento-hora" name="hora" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="evento-lugar">Lugar</label>
+                        <input type="text" id="evento-lugar" name="lugar" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="evento-categoria">Categoría</label>
+                        <select id="evento-categoria" name="categoriaId" required>
+                            <option value="">Seleccione una categoría</option>
+                            <option th:each="categoria : ${categorias}" th:value="${categoria.id}"
+                                th:text="${categoria.nombre}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="evento-estado">Estado</label>
+                        <select id="evento-estado" name="estadoId" required>
+                            <option value="">Seleccione un estado</option>
+                            <option th:each="estado : ${estados}" th:value="${estado.id}" th:text="${estado.nombre}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="evento-foto">Foto del Evento</label>
+                        <input type="file" id="evento-foto" name="foto" accept="image/*">
+                        <small style="color: #666; font-size: 0.9em; display: block; margin-top: 5px;">
+                            Formatos permitidos: JPG, PNG, GIF. Máximo 5MB
+                        </small>
+                    </div>
+                    <button type="submit" class="btn-primary">Guardar Evento</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal Localidad -->
+        <div id="modal-localidad" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2 id="modal-localidad-titulo">Crear Localidad</h2>
+                <form class="modal-form">
+                    <input type="hidden" id="localidad-id" name="id">
+                    <div class="input-group">
+                        <label for="localidad-nombre">Nombre</label>
+                        <input type="text" id="localidad-nombre" name="nombre" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="localidad-precio">Precio</label>
+                        <input type="number" id="localidad-precio" name="precio" step="0.01" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="localidad-capacidad">Capacidad</label>
+                        <input type="number" id="localidad-capacidad" name="capacidad" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="localidad-disponibles">Disponibles</label>
+                        <input type="number" id="localidad-disponibles" name="disponibles" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="localidad-evento">Evento</label>
+                        <select id="localidad-evento" name="eventoId" required>
+                            <option value="">Seleccione un evento</option>
+                            <option th:each="evento : ${eventos}" th:value="${evento.id}" th:text="${evento.titulo}">
+                            </option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">Guardar Localidad</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal Promoción -->
+        <div id="modal-promocion" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2 id="modal-promocion-titulo">Crear Promoción</h2>
+                <form class="modal-form">
+                    <input type="hidden" id="promocion-id" name="id">
+                    <div class="input-group">
+                        <label for="promocion-evento">Evento</label>
+                        <select id="promocion-evento" name="eventoId" required>
+                            <option value="">Seleccione un evento</option>
+                            <option th:each="evento : ${eventos}" th:value="${evento.id}" th:text="${evento.titulo}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="promocion-descripcion">Descripción</label>
+                        <textarea id="promocion-descripcion" name="descripcion" rows="2" required></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label for="promocion-descuento">Descuento (%)</label>
+                        <input type="number" id="promocion-descuento" name="descuento" min="1" max="100" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label for="promocion-inicio">Fecha de Inicio</label>
+                            <input type="date" id="promocion-inicio" name="fechaInicio" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="promocion-fin">Fecha de Fin</label>
+                            <input type="date" id="promocion-fin" name="fechaFin" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">Guardar Promoción</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>

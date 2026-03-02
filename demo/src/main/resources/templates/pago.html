@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pasarela de Pago - EventHive</title>
+    <link rel="stylesheet" th:href="@{/css/pago.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">EventHive</h1>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="payment-container">
+            <aside class="order-summary">
+                <h3>Resumen del Pedido</h3>
+                <div class="summary-list">
+                    <div class="summary-item">
+                        <span>Evento</span>
+                        <span id="nombreEvento">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Localidad</span>
+                        <span id="nombreLocalidad">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Precio unitario</span>
+                        <span id="precioUnitario">$0 COP</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Cantidad</span>
+                        <span id="cantidadTickets">0</span>
+                    </div>
+                    <div class="summary-divider"></div>
+                    <div class="summary-item total">
+                        <strong>Total</strong>
+                        <strong id="total">$0 COP</strong>
+                    </div>
+                </div>
+                <div class="payment-logos" aria-hidden="true">
+                    <i class="fab fa-cc-visa fa-2x"></i>
+                    <i class="fab fa-cc-mastercard fa-2x"></i>
+                    <i class="fab fa-cc-amex fa-2x"></i>
+                    <i class="fab fa-cc-discover fa-2x"></i>
+                </div>
+            </aside>
+
+            <section class="payment-form-section">
+                <h2>Pago</h2>
+                <p class="payment-subtitle">Completa los datos para procesar tu compra</p>
+
+                <form id="paymentForm" class="payment-form">
+                    <input type="hidden" id="localidadId">
+                    <input type="hidden" id="cantidad">
+                    
+                    <div class="input-group">
+                        <label for="card-name">Nombre en la Tarjeta</label>
+                        <input type="text" id="card-name" placeholder="Nombre como en la tarjeta" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="card-number">Número de Tarjeta</label>
+                        <input type="text" id="card-number" placeholder="**** **** **** ****" maxlength="19" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label for="expiry-date">Fecha de Vencimiento</label>
+                            <input type="text" id="expiry-date" placeholder="MM/AA" maxlength="5" required>
+                        </div>
+                        <div class="input-group small">
+                            <label for="cvv">CVV</label>
+                            <input type="text" id="cvv" placeholder="123" maxlength="4" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-pagar">Pagar Ahora</button>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <script th:src="@{/js/pago.js}"></script>
+</body>
+</html>

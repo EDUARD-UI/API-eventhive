@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Fragmento de la sección Estados -->
+    <section th:fragment="estados-section" id="seccion-estados" class="content-section">
+        <div class="content-header">
+            <h1>Gestión de Estados</h1>
+            <button class="btn-primary modal-trigger" data-modal="modal-estado">
+                <i class="fas fa-plus"></i> Crear Estado
+            </button>
+        </div>
+        <div class="table-container">
+            <table id="tabla-estados-dt" class="display">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre del Estado</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="estado : ${estados}">
+                        <td data-label="ID" th:text="${estado.id}">1</td>
+                        <td data-label="Estado" th:text="${estado.nombre}">Activo</td>
+                        <td data-label="Descripción" th:text="${estado.descripcion}">Visible y disponible para compra
+                        </td>
+                        <td data-label="Acciones">
+                            <button class="btn-secondary modal-trigger" data-modal="modal-estado" data-action="edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-danger btn-delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</body>
+</html>

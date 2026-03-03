@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/eventos-deseados")
-public class EventoDeseadoController {
+public class EventoDeseadoApiController {
 
     private final ServiceEventoDeseado serviceEventoDeseado;
 

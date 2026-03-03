@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/api/pagos")
-public class PagoController {
+public class PagosApiController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<Usuario>> mostrarPago(HttpSession session) {

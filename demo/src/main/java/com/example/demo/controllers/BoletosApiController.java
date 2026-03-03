@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/boletos")
-public class BoletosController {
+public class BoletosApiController {
 
     private final ServiceCompra serviceCompra;
 

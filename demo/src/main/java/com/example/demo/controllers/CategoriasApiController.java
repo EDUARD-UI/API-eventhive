@@ -45,6 +45,13 @@ public class CategoriasApiController {
         return ResponseEntity.ok(ApiResponse.ok("Categorías obtenidas exitosamente", categorias));
     }
 
+    @GetMapping("/destacadas")
+    public ResponseEntity<ApiResponse<List<Categoria>>> obtenerCategoriasDestacadas() {
+        List<Categoria> categorias = serviceCategoria.obtenerTop3Categorias();
+        return ResponseEntity.ok(ApiResponse.ok("Categorías destacadas obtenidas exitosamente", categorias));
+    }
+    
+
     @GetMapping("/con-eventos")
     public ResponseEntity<ApiResponse<List<CategoriaEventosDTO>>> listarCategoriasConEventos() {
         List<CategoriaEventosDTO> categorias = serviceCategoria.obtenerCategoriasConEventos();

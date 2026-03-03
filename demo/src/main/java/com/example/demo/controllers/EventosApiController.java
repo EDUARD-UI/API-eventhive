@@ -71,6 +71,13 @@ public class EventosApiController {
         return ResponseEntity.ok(ApiResponse.ok("Resultados de búsqueda", resultados));
     }
 
+    @GetMapping("/destacados")
+    public ResponseEntity<ApiResponse<List<Evento>>> obtenerEventosDestacados() {
+        List<Evento> eventos = serviceEventos.obtenerTop3Eventos();
+        return ResponseEntity.ok(ApiResponse.ok("Eventos destacados obtenidos", eventos));
+    }
+    
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Void>> crearEvento(
             @RequestParam String titulo,

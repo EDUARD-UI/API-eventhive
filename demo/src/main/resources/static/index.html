@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descubre Eventos Increíbles en Cartagena - EventHive</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/Estilos.css">
+    <link rel="stylesheet" href="/css/BusquedaDinamica.css">
+    <link rel="stylesheet" href="/css/selectCategorias.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <header class="main-header">
+        <nav class="navbar" id="navbarContainer">
+            <!-- Navbar se cargará aquí -->
+        </nav>
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1>Vive la Magia de Cartagena: Tus Eventos Favoritos te Esperan</h1>
+                <p>Explora, descubre y asegura tu lugar en los mejores conciertos, festivales y experiencias culturales
+                    de la ciudad heroica.</p>
+                <div class="search-container">
+                    <div class="search-bar-hero">
+                        <input type="text" id="searchInput" name="titulo" placeholder="Busca tu evento ideal"
+                            aria-label="Buscar eventos">
+                        <div id="resultados" class="resultados-busqueda"></div>
+                    </div>
+                    <div class="category-selector">
+                        <select id="categorySelect" aria-label="Seleccionar categoría">
+                            <option value="">Todas las categorías</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-bg-overlay"></div>
+        </div>
+    </header>
+
+    <main>
+        <section id="eventos-destacados" class="section-events">
+            <h2 class="section-title">Eventos Destacados</h2>
+            <div id="eventGrid" class="event-grid">
+                <!-- Los eventos se cargarán aquí con JavaScript -->
+            </div>
+            <div class="text-center mt-4">
+                <a href="/eventos" class="btn-see-all">Ver Todos Los Eventos <i
+                        class="fas fa-arrow-right"></i></a>
+            </div>
+        </section>
+
+        <section id="categorias" class="section-categories">
+            <h2 class="section-title">Explora por Categoría</h2>
+            <div id="categoryGrid" class="category-grid">
+                <!-- Las categorías se cargarán aquí con JavaScript -->
+            </div>
+            <div class="text-center mt-4">
+                <a href="/eventos" class="btn-see-all">Ver Todas Las Categorías <i
+                        class="fas fa-arrow-right"></i></a>
+            </div>
+        </section>
+
+        <section id="call-to-action" class="section-cta">
+            <div class="cta-content">
+                <h2>¿Eres organizador de eventos?</h2>
+                <p>Publica tus eventos con nosotros y llega a miles de personas en Cartagena.</p>
+                <a href="/registroOrganizador" class="btn-cta">¡Regístrate como Organizador!</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div id="footerContainer">
+            <!-- Footer se cargará aquí -->
+        </div>
+    </footer>
+
+    <script src="/js/index.js"></script>
+    <script src="/js/busquedaDinamica.js"></script>
+</body>
+
+</html>

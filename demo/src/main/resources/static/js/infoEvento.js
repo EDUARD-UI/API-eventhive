@@ -1,0 +1,170 @@
+document.addEventListener('DOMContentLoaded', () => {
+  checkSession();
+  const id = new URLSearchParams(window.location.search).get('id');
+  if (id) cargarEvento(id);
+  else mostrarNotFound();
+});
+
+// ── SESIÓN ────────────────────────────────────────────────
+async function checkSession() {
+  try {
+    const res = await fetch('/api/pagos', { credentials: 'include' });
+    if (!res.ok) { renderNavGuest(); return; }
+    const json = await res.json();
+    json.data ? renderNavAuth(json.data.nombre, json.data.rol?.nombre || '') : renderNavGuest();
+  } catch { renderNavGuest(); }
+}
+function renderNavAuth(nombre, rol) {
+  const el = document.getElementById('navAuth'); if (!el) return;
+  el.innerHTML = `
+    <span class="text-dark/50 hidden sm:block text-sm font-medium">${esc(nombre)}</span>
+    ${rol === 'organizador'
+      ? `<a href="/organizador/dashboard" class="bg-brand text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition">Dashboard</a>`
+      : `<a href="/perfil.html" class="text-dark/60 hover:text-brand transition text-xs font-medium">Mi Perfil</a>`}
+    <button id="btnLogout" class="text-dark/40 hover:text-brand text-xs transition font-medium">Salir</button>`;
+  document.getElementById('btnLogout').addEventListener('click', async () => {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    location.reload();
+  });
+}
+function renderNavGuest() {
+  const el = document.getElementById('navAuth'); if (!el) return;
+  el.innerHTML = `
+    <a href="/login.html" class="text-dark/60 hover:text-brand transition text-sm font-medium">Iniciar sesión</a>
+    <a href="/signin.html" class="bg-brand text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition shadow-sm">Registrarse</a>`;
+}
+
+// ── CARGAR EVENTO ─────────────────────────────────────────
+// GET /api/eventos/{id} → ApiResponse<Evento>
+// Evento: { id, titulo, descripcion, lugar, fecha, hora, foto,
+//           categoria:{id,nombre}, estado:{id,nombre}, localidades:[...] }
+async function cargarEvento(id) {
+  try {
+    const res = await fetch(`/api/eventos/${id}`, { credentials: 'include' });
+    if (!res.ok) { mostrarNotFound(); return; }
+    const json = await res.json();
+    const e = json.data;
+    if (!e) { mostrarNotFound(); return; }
+    renderEvento(e);
+  } catch { mostrarNotFound(); }
+}
+
+function renderEvento(e) {
+  document.title = `${e.titulo} — EventHive`;
+
+  // hero
+  if (e.foto) {
+    document.getElementById('heroBanner').style.backgroundImage =
+      `linear-gradient(to bottom,rgba(0,0,0,.5) 0%,rgba(0,0,0,.78) 100%), url('/uploads/eventos/${e.foto}')`;
+  }
+  document.getElementById('breadNombre').textContent = e.titulo;
+  document.getElementById('heroTitulo').textContent = e.titulo;
+
+  if (e.categoria) {
+    const catEl = document.getElementById('heroCat');
+    catEl.classList.remove('hidden');
+    catEl.querySelector('span').textContent = e.categoria.nombre;
+  }
+
+  const meta = [];
+  if (e.fecha) meta.push(`<span><i class="far fa-calendar text-accent mr-2"></i>${formatFecha(e.fecha)}</span>`);
+  if (e.hora)  meta.push(`<span><i class="far fa-clock text-accent mr-2"></i>${formatHora(e.hora)}</span>`);
+  if (e.lugar) meta.push(`<span><i class="fas fa-map-marker-alt text-accent mr-2"></i>${esc(e.lugar)}</span>`);
+  if (e.estado) meta.push(`<span class="bg-white/15 px-3 py-1 rounded-full text-white/80 text-xs font-bold">${esc(e.estado.nombre)}</span>`);
+  document.getElementById('heroMeta').innerHTML = meta.join('');
+
+  // imagen
+  if (e.foto) {
+    const imgEl = document.getElementById('imgEl');
+    imgEl.src = `/uploads/eventos/${e.foto}`;
+    imgEl.alt = e.titulo;
+    document.getElementById('eventoImg').classList.remove('hidden');
+  }
+
+  // descripción
+  document.getElementById('eventoDesc').textContent = e.descripcion || 'Sin descripción disponible.';
+
+  // localidades
+  renderLocalidades(e.localidades || [], e.titulo);
+
+  // mostrar contenido
+  document.getElementById('skeleton').classList.add('hidden');
+  document.getElementById('contenido').classList.remove('hidden');
+  document.getElementById('contenido').classList.add('grid');
+}
+
+function renderLocalidades(localidades, eventoNombre) {
+  const container = document.getElementById('localidadesContainer');
+  const noLocal   = document.getElementById('noLocalidades');
+
+  if (!localidades.length) { noLocal.classList.remove('hidden'); return; }
+
+  container.innerHTML = localidades.map(l => {
+    const agotado = l.disponibles === 0;
+    const precio  = Number(l.precio || 0).toLocaleString('es-CO');
+    return `
+      <div class="localidad-card bg-white rounded-3xl border ${agotado ? 'border-gray-100 opacity-60' : 'border-gray-200'} p-6">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <h3 class="font-extrabold text-dark text-base">${esc(l.nombre)}</h3>
+            <p class="text-xs text-dark/40 mt-0.5">${l.disponibles} de ${l.capacidad} disponibles</p>
+          </div>
+          <span class="text-brand font-extrabold text-lg">$${precio}</span>
+        </div>
+        <!-- barra disponibilidad -->
+        <div class="w-full bg-gray-100 rounded-full h-1.5 mb-4">
+          <div class="bg-brand h-1.5 rounded-full" style="width:${Math.max(0,Math.min(100,(l.disponibles/l.capacidad)*100))}%"></div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center border border-gray-200 rounded-xl overflow-hidden">
+            <button onclick="cambiarCantidad(this,-1)" class="px-3 py-2 text-dark/50 hover:bg-gray-50 transition text-sm font-bold">−</button>
+            <input type="number" value="1" min="1" max="${Math.min(l.disponibles,5)}"
+              id="cant-${l.id}" class="w-10 text-center text-sm font-bold text-dark outline-none bg-white" readonly/>
+            <button onclick="cambiarCantidad(this,1)" class="px-3 py-2 text-dark/50 hover:bg-gray-50 transition text-sm font-bold">+</button>
+          </div>
+          <button onclick="irAPago(${l.id},'${esc(l.nombre)}',${l.precio},'${esc(eventoNombre)}')"
+            ${agotado ? 'disabled' : ''}
+            class="flex-1 ${agotado
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-brand hover:bg-blue-700 text-white shadow-sm shadow-brand/20'} font-bold py-2.5 rounded-xl transition text-sm">
+            ${agotado ? 'Agotado' : 'Seleccionar'}
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function cambiarCantidad(btn, delta) {
+  const input = btn.parentElement.querySelector('input');
+  const val = parseInt(input.value) + delta;
+  const max = parseInt(input.max);
+  if (val >= 1 && val <= max) input.value = val;
+}
+
+function irAPago(localidadId, localidadNombre, precio, eventoNombre) {
+  const cantidad = document.getElementById(`cant-${localidadId}`).value;
+  const params = new URLSearchParams({ evento: eventoNombre, localidad: localidadNombre, localidadId, precio, cantidad });
+  window.location.href = `/pago.html?${params}`;
+}
+
+function mostrarNotFound() {
+  document.getElementById('skeleton').classList.add('hidden');
+  document.getElementById('notFound').classList.remove('hidden');
+}
+
+// ── HELPERS ───────────────────────────────────────────────
+function formatFecha(v) {
+  if (!v) return 'Fecha por confirmar';
+  if (Array.isArray(v)) { const [y,m,d]=v; return new Date(y,m-1,d).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}); }
+  const d = new Date(v);
+  return isNaN(d) ? String(v) : d.toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'});
+}
+function formatHora(v) {
+  if (!v) return '';
+  if (Array.isArray(v)) { const [h,m]=v; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; }
+  return String(v).slice(0,5);
+}
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}

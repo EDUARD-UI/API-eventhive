@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.EventoBusquedaDTO;
+import com.example.demo.dto.EventoDestacadoDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Categoria;
@@ -72,8 +73,8 @@ public class EventosApiController {
     }
 
     @GetMapping("/destacados")
-    public ResponseEntity<ApiResponse<List<Evento>>> obtenerEventosDestacados() {
-        List<Evento> eventos = serviceEventos.obtenerTop3Eventos();
+    public ResponseEntity<ApiResponse<List<EventoDestacadoDTO>>> obtenerEventosDestacados() {
+        List<EventoDestacadoDTO> eventos = serviceEventos.obtenerTop3EventosDTO();
         return ResponseEntity.ok(ApiResponse.ok("Eventos destacados obtenidos", eventos));
     }
     

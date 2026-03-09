@@ -2,6 +2,8 @@ package com.example.demo.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -29,6 +31,7 @@ public class Categoria {
     @Column(name = "Nombre", nullable = false, length = 45)
     private String nombre;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "categoria")
     private List<Evento> eventos;
 }

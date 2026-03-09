@@ -1,34 +1,39 @@
-document.getElementById('loginForm').addEventListener('submit', async function (event) {
-    event.preventDefault();
-    
-    const email = document.getElementById('email').value;
+const BASE = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+  // toggle contraseña
+  document.getElementById('togglePwd').addEventListener('click', () => {
+    const p = document.getElementById('password');
+    const i = document.querySelector('#togglePwd i');
+    p.type = p.type === 'password' ? 'text' : 'password';
+    i.className = p.type === 'password' ? 'far fa-eye text-sm' : 'far fa-eye-slash text-sm';
+  });
+
+  document.getElementById('btnLogin').addEventListener('click', async () => {
+    const email    = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
 
-    const response = await fetch('/autentificacion/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `correo=${encodeURIComponent(email)}&clave=${encodeURIComponent(password)}`
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-        Swal.fire({
-            icon: 'success',
-            title: data.mensaje,
-            text: data.mensaje,
-            timer: 2000,
-            showConfirmButton: false
-        }).then(() => {
-            window.location.replace(data.redirectUrl);
-        });
-    } else {
-        Swal.fire({
-            icon: 'error',
-            title: data.mensaje,
-            text: data.mensaje
-        });
+    if (!email || !password) {
+      Swal.fire({ icon: 'warning', title: 'Campos requeridos', text: 'Ingresa tu correo y contraseña.', confirmButtonColor: '#007bff' });
+      return;
     }
+
+    try {
+      const res  = await fetch(`${BASE}/api/auth/login`, {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const json = await res.json();
+
+      if (res.ok && json.data) {
+        await Swal.fire({ icon: 'success', title: '¡Bienvenido!', text: json.message || 'Sesión iniciada.', confirmButtonColor: '#007bff', timer: 1500, showConfirmButton: false });
+        window.location.href = json.data.rol?.nombre === 'organizador' ? '/organizador/dashboard' : '/index.html';
+      } else {
+        Swal.fire({ icon: 'error', title: 'Error', text: json.message || 'Credenciales incorrectas.', confirmButtonColor: '#007bff' });
+      }
+    } catch {
+      Swal.fire({ icon: 'error', title: 'Error de conexión', text: 'No se pudo conectar al servidor.', confirmButtonColor: '#007bff' });
+    }
+  });
 });

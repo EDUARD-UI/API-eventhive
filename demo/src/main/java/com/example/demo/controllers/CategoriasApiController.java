@@ -47,7 +47,7 @@ public class CategoriasApiController {
 
     @GetMapping("/destacadas")
     public ResponseEntity<ApiResponse<List<Categoria>>> obtenerCategoriasDestacadas() {
-        List<Categoria> categorias = serviceCategoria.obtenerTop3Categorias();
+        List<Categoria> categorias = serviceCategoria.obtenerTop4Categorias();
         return ResponseEntity.ok(ApiResponse.ok("Categorías destacadas obtenidas exitosamente", categorias));
     }
     

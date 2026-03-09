@@ -1,120 +1,84 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todas las Categorías y Eventos | EventHive</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" th:href="@{/css/CategoriaEventos.css}">
-    <link rel="stylesheet" th:href="@{/css/barraLateral.css}">
-    <link rel="stylesheet" th:href="@{/css/eventos.css}">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Eventos — EventHive</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script>tailwind.config={theme:{extend:{fontFamily:{display:['Syne','sans-serif'],body:['DM Sans','sans-serif']},colors:{brand:'#007bff',accent:'#ffc107',dark:'#212529'}}}}</script>
+  <style>
+    body{font-family:'DM Sans',sans-serif;background:#fff;color:#212529}
+    h1,h2,h3{font-family:'Syne',sans-serif}
+    .event-card{transition:transform .25s ease,box-shadow .25s ease}
+    .event-card:hover{transform:translateY(-5px);box-shadow:0 16px 40px rgba(0,123,255,.13)}
+    ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#ddd;border-radius:4px}
+  </style>
 </head>
+<body class="min-h-screen flex flex-col">
 
-<body>
-    <header class="main-header">
-        <div th:replace="~{fragments/navbar :: navbar}"></div>
-    </header>
+<nav class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="/index.html" class="font-display font-extrabold text-2xl tracking-tight text-dark">Event<span class="text-brand">Hive</span></a>
+    <div class="hidden md:flex items-center gap-8 text-sm font-medium text-dark/60">
+      <a href="/index.html" class="hover:text-brand transition">Inicio</a>
+      <a href="/eventos.html" class="text-brand font-bold">Eventos</a>
+      <a href="/nosotros.html" class="hover:text-brand transition">Nosotros</a>
+      <a href="/contactanos.html" class="hover:text-brand transition">Contacto</a>
+    </div>
+    <div id="navAuth" class="flex items-center gap-3 text-sm"></div>
+  </div>
+</nav>
 
-    <main class="container mt-4">
-        <h2 class="section-title" style="text-align: center;">Todas las Categorías y Eventos</h2>
-        <div class="categories-layout">
-            <aside class="filter-sidebar">
-                <div class="filter-header">
-                    <h3 class="filter-title">Categorías</h3>
-                </div>
+<!-- HEADER -->
+<header class="pt-32 pb-10 px-6" style="background:radial-gradient(ellipse at 50% 0%,rgba(0,123,255,.07) 0%,transparent 70%)">
+  <div class="max-w-7xl mx-auto">
+    <p class="text-brand text-[11px] font-bold tracking-[0.3em] uppercase mb-3">Cartelera completa</p>
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <h1 class="text-4xl md:text-5xl font-extrabold text-dark">Todas las <span class="text-dark/25">categorías</span></h1>
+      <!-- filtro por categoría -->
+      <select id="filtroCategoria" class="border border-gray-200 rounded-2xl px-4 py-2.5 text-sm text-dark bg-white outline-none cursor-pointer focus:border-brand">
+        <option value="">Todas las categorías</option>
+      </select>
+    </div>
+  </div>
+</header>
 
-                <ul class="category-list">
-                    <li class="category-item" th:each="categoria : ${categorias}">
-                        <a th:href="@{/categorias/{id}(id=${categoria.id})}" class="category-link">
-                            <i class="fas fa-folder"></i>
-                            <span th:text="${categoria.nombre}">Nombre Categoría</span>
-                        </a>
-                    </li>
-                </ul>
-            </aside>
+<div class="h-1 bg-gradient-to-r from-brand via-accent to-transparent"></div>
 
-            <div class="main-content">
-                <div th:each="categoria : ${categoriasConEventos}" class="category-section">
-                    <div class="category-header">
-                        <a th:href="@{/categorias/{id}(id=${categoria.id})}" class="category-title-link">
-                            <h3 th:text="${categoria.nombre}" class="category-title"></h3>
-                        </a>
-                        <span class="event-count" th:if="${categoria.totalEventos > 0}">
-                            (<span th:text="${categoria.totalEventos}"></span> eventos)
-                        </span>
-                    </div>
+<main class="flex-1 max-w-7xl mx-auto px-6 py-12 w-full">
+  <div id="contenido">
+    <!-- skeletons -->
+    <div class="mb-14">
+      <div class="h-6 w-40 bg-gray-100 rounded-xl animate-pulse mb-6"></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div class="h-72 rounded-2xl bg-gray-100 animate-pulse"></div>
+        <div class="h-72 rounded-2xl bg-gray-100 animate-pulse"></div>
+        <div class="h-72 rounded-2xl bg-gray-100 animate-pulse"></div>
+        <div class="h-72 rounded-2xl bg-gray-100 animate-pulse"></div>
+      </div>
+    </div>
+  </div>
+  <div id="emptyState" class="hidden text-center py-24">
+    <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-5">
+      <i class="fas fa-calendar-times text-2xl text-gray-300"></i>
+    </div>
+    <h3 class="font-extrabold text-2xl text-dark/30 mb-2">Sin eventos disponibles</h3>
+    <p class="text-dark/30">No hay eventos publicados en esta categoría.</p>
+  </div>
+</main>
 
-                    <div th:if="${categoria.eventos.empty}" class="no-events">
-                        <p>No hay eventos en esta categoría</p>
-                    </div>
+<footer class="bg-dark border-t border-white/5 py-8 mt-10">
+  <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-white/40 text-sm">
+    <span class="font-display font-bold text-white/70">Event<span class="text-brand">Hive</span></span>
+    <span>© 2025 EventHive · Todos los derechos reservados</span>
+    <div class="flex gap-5">
+      <a href="#" class="hover:text-white transition"><i class="fab fa-instagram"></i></a>
+      <a href="#" class="hover:text-white transition"><i class="fab fa-facebook"></i></a>
+      <a href="#" class="hover:text-white transition"><i class="fab fa-tiktok"></i></a>
+    </div>
+  </div>
+</footer>
 
-                    <div th:unless="${categoria.eventos.empty}" class="events-container">
-                        <div class="event-grid">
-                            <div th:each="evento : ${categoria.eventos}" class="event-card">
-                                <div class="event-image">
-                                    <div th:if="${evento.foto != null and !#strings.isEmpty(evento.foto)}" 
-                                         class="event-image-container">
-                                        <img th:src="@{/uploads/eventos/{foto}(foto=${evento.foto})}" 
-                                             th:alt="${evento.titulo}" 
-                                             class="event-img">
-                                    </div>
-                                    <div th:unless="${evento.foto != null and !#strings.isEmpty(evento.foto)}" 
-                                         class="event-img-placeholder">
-                                        <i class="fas fa-image fa-2x"></i>
-                                    </div>
-                                </div>
-
-                                <div class="event-info">
-                                    <h4 th:text="${evento.titulo}" class="event-title"></h4>
-                                    <p th:text="${evento.descripcion}" class="event-description"></p>
-                                    <p class="event-meta">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                        <span th:text="${evento.lugar}"></span>
-                                    </p>
-                                    <p class="event-meta">
-                                        <i class="fas fa-calendar"></i>
-                                        <span th:text="${#temporals.format(evento.fecha, 'dd/MM/yyyy')}"></span>
-                                    </p>
-                                    <a th:href="@{/eventos/{id}(id=${evento.id})}" class="btn-info">Ver detalles</a>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Botón Ver Más -->
-                        <div th:if="${categoria.totalEventos > 10}" class="view-more-container">
-                            <a th:href="@{/categorias/{id}(id=${categoria.id})}" class="btn-view-more">
-                                Ver todos los <span th:text="${categoria.totalEventos}"></span> eventos
-                                <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <footer class="main-footer">
-        <div th:replace="~{fragments/footer :: footer}"></div>
-    </footer>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const currentPath = window.location.pathname;
-            const categoryLinks = document.querySelectorAll('.category-link');
-
-            categoryLinks.forEach(link => {
-                const href = link.getAttribute('href');
-                if (href && currentPath.includes(href)) {
-                    link.style.color = 'var(--primary-color)';
-                    link.style.fontWeight = '600';
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+<script src="/js/eventos.js"></script>
+</body></html>

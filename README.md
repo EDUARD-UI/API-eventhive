@@ -7,3 +7,8 @@ tareas restante:
 2. correos implementados
 3. seguridad implementada
 4. dashboard de power bi para el organizador
+
+
+en desararrollo
+navegacion entre paginas, organizador y admin
+pasarela de pago

@@ -48,8 +48,8 @@ public class ServiceCategoria {
                 .collect(Collectors.toList());
     }
 
-    public List<Categoria> obtenerTop3Categorias() {
-        return categoriasRepository.findTop3ByOrderByNombreAsc();
+    public List<Categoria> obtenerTop4Categorias() {
+        return categoriasRepository.findTop4ByOrderByNombreAsc();
     }
 
     public List<CategoriaDTO> obtenerCategoriaDTO() {

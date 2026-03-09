@@ -1,131 +1,112 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="es">
-
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${evento != null ? evento.titulo + ' - EventHive' : 'Evento - EventHive'}">Evento - EventHive
-    </title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" th:href="@{/css/infoEvento.css}">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Evento — EventHive</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{display:['Syne','sans-serif'],body:['DM Sans','sans-serif']},colors:{brand:'#007bff',accent:'#ffc107',dark:'#212529'}}}}</script>
+  <style>
+    body{font-family:'DM Sans',sans-serif;background:#fff;color:#212529}
+    h1,h2,h3{font-family:'Syne',sans-serif}
+    #heroBanner{background:linear-gradient(to bottom,rgba(0,0,0,.5) 0%,rgba(0,0,0,.78) 100%),#1d2c3d center/cover no-repeat}
+    .localidad-card{transition:border-color .2s,box-shadow .2s}
+    .localidad-card:hover{border-color:#007bff;box-shadow:0 8px 30px rgba(0,123,255,.1)}
+  </style>
 </head>
+<body class="min-h-screen flex flex-col">
 
-<body>
-    <header class="main-header">
-        <div th:replace="~{fragments/navbar :: navbar}"></div>
-    </header>
+<nav class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="/index.html" class="font-display font-extrabold text-2xl tracking-tight text-dark">Event<span class="text-brand">Hive</span></a>
+    <div class="hidden md:flex items-center gap-8 text-sm font-medium text-dark/60">
+      <a href="/index.html" class="hover:text-brand transition">Inicio</a>
+      <a href="/eventos.html" class="hover:text-brand transition">Eventos</a>
+      <a href="/nosotros.html" class="hover:text-brand transition">Nosotros</a>
+      <a href="/contactanos.html" class="hover:text-brand transition">Contacto</a>
+    </div>
+    <div id="navAuth" class="flex items-center gap-3 text-sm"></div>
+  </div>
+</nav>
 
-    <!-- Mostrar mensaje si no hay evento en el model -->
-    <div th:if="${evento == null}" class="container">
-        <h2>Evento no encontrado</h2>
-        <p>El evento solicitado no existe o no está disponible.</p>
-        <a href="/" class="btn-see-all">Volver al Inicio</a>
+<!-- HERO BANNER -->
+<div id="heroBanner" class="pt-28 pb-16 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex items-center gap-2 text-white/50 text-xs mb-6">
+      <a href="/index.html" class="hover:text-white transition">Inicio</a>
+      <i class="fas fa-chevron-right text-[10px]"></i>
+      <a href="/eventos.html" class="hover:text-white transition">Eventos</a>
+      <i class="fas fa-chevron-right text-[10px]"></i>
+      <span id="breadNombre" class="text-white/80">Evento</span>
+    </div>
+    <div id="heroCat" class="hidden mb-4">
+      <span class="bg-accent text-dark text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-full"></span>
+    </div>
+    <h1 id="heroTitulo" class="text-4xl md:text-6xl font-extrabold text-white leading-tight mb-4">—</h1>
+    <div id="heroMeta" class="flex flex-wrap gap-5 text-white/60 text-sm"></div>
+  </div>
+</div>
+<div class="h-1 bg-gradient-to-r from-brand via-accent to-transparent"></div>
+
+<!-- MAIN -->
+<main class="flex-1 max-w-7xl mx-auto px-6 py-12 w-full">
+  <div id="skeleton" class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+    <div class="lg:col-span-2 space-y-4">
+      <div class="h-64 rounded-3xl bg-gray-100 animate-pulse"></div>
+      <div class="h-4 w-3/4 bg-gray-100 rounded animate-pulse"></div>
+      <div class="h-4 w-1/2 bg-gray-100 rounded animate-pulse"></div>
+    </div>
+    <div class="space-y-4">
+      <div class="h-48 rounded-3xl bg-gray-100 animate-pulse"></div>
+      <div class="h-48 rounded-3xl bg-gray-100 animate-pulse"></div>
+    </div>
+  </div>
+
+  <div id="contenido" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-10">
+    <!-- Descripción -->
+    <div class="lg:col-span-2">
+      <div id="eventoImg" class="hidden mb-8 rounded-3xl overflow-hidden h-80 bg-gray-100">
+        <img id="imgEl" src="" alt="" class="w-full h-full object-cover"/>
+      </div>
+      <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
+        <p class="text-brand text-[11px] font-bold tracking-[0.3em] uppercase mb-3">Descripción</p>
+        <h2 class="text-2xl font-extrabold text-dark mb-4">Sobre este evento</h2>
+        <p id="eventoDesc" class="text-dark/60 leading-relaxed text-sm"></p>
+      </div>
     </div>
 
-    <main class="evento-container" th:if="${evento != null}">
-        <div class="container">
-            <!-- Información Principal del Evento -->
-            <div class="evento-header">
-                <div class="evento-image">
-                    <img th:if="${evento.foto != null}" th:src="@{/uploads/eventos/{foto}(foto=${evento.foto})}"
-                        alt="Evento">
-                    <div th:unless="${evento.foto}" class="image-placeholder">
-                        <i class="fas fa-image fa-5x"></i>
-                        <p>Imagen no disponible</p>
-                    </div>
-                </div>
+    <!-- Localidades -->
+    <div>
+      <p class="text-brand text-[11px] font-bold tracking-[0.3em] uppercase mb-4">Localidades</p>
+      <div id="localidadesContainer" class="space-y-4"></div>
+      <div id="noLocalidades" class="hidden bg-gray-50 rounded-3xl border border-gray-100 p-8 text-center">
+        <i class="fas fa-ticket-alt text-3xl text-gray-200 mb-3 block"></i>
+        <p class="text-dark/35 text-sm">No hay localidades disponibles.</p>
+      </div>
+    </div>
+  </div>
 
-                <div class="evento-info">
-                    <h1 th:text="${evento.titulo}">Título del evento</h1>
-                    <div class="evento-meta">
-                        <div class="meta-item">
-                            <i class="fas fa-calendar-alt"></i>
-                            <span
-                                th:text="${evento.fecha != null ? #temporals.format(evento.fecha, 'dd MMMM yyyy') : 'Fecha por definir'}"></span>
-                        </div>
-                        <div class="meta-item">
-                            <i class="fas fa-clock"></i>
-                            <span th:text="${evento.hora != null ? evento.hora : 'TBA'}"></span>
-                        </div>
-                        <div class="meta-item">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span th:text="${evento.lugar != null ? evento.lugar : 'Ubicación por definir'}"></span>
-                        </div>
-                        <div class="meta-item">
-                            <i class="fas fa-tag"></i>
-                            <span th:text="${evento.categoria != null ? evento.categoria.nombre : ''}"></span>
-                        </div>
-                    </div>
+  <!-- No encontrado -->
+  <div id="notFound" class="hidden text-center py-24">
+    <i class="fas fa-calendar-times text-5xl text-gray-200 mb-4 block"></i>
+    <h3 class="font-extrabold text-2xl text-dark/30 mb-2">Evento no encontrado</h3>
+    <a href="/eventos.html" class="text-brand hover:underline text-sm">← Volver a eventos</a>
+  </div>
+</main>
 
-                    <div class="evento-status">
-                        <span class="status-badge"
-                            th:classappend="${evento.estado != null and evento.estado.nombre == 'Activo'} ? ' active' : ' inactive'"
-                            th:text="${evento.estado != null ? evento.estado.nombre : 'Desconocido'}"></span>
-                    </div>
-                </div>
-            </div>
+<footer class="bg-dark border-t border-white/5 py-8 mt-10">
+  <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-white/40 text-sm">
+    <span class="font-display font-bold text-white/70">Event<span class="text-brand">Hive</span></span>
+    <span>© 2025 EventHive · Todos los derechos reservados</span>
+    <div class="flex gap-5">
+      <a href="#" class="hover:text-white transition"><i class="fab fa-instagram"></i></a>
+      <a href="#" class="hover:text-white transition"><i class="fab fa-facebook"></i></a>
+      <a href="#" class="hover:text-white transition"><i class="fab fa-tiktok"></i></a>
+    </div>
+  </div>
+</footer>
 
-            <!-- Descripción -->
-            <div class="evento-description">
-                <h2>Descripción del Evento</h2>
-                <p
-                    th:text="${evento.descripcion != null ? evento.descripcion : 'No hay descripción disponible para este evento.'}">
-                </p>
-            </div>
-
-            <!-- Selección de Localidades -->
-            <div class="localidades-section">
-                <h2>Selecciona tu Localidad</h2>
-
-                <div th:if="${!#lists.isEmpty(localidades)}">
-                    <div class="localidad-card" th:each="localidad : ${localidades}">
-                        <div class="localidad-info">
-                            <h3 th:text="${localidad.nombre}">Nombre localidad</h3>
-                            <p class="localidad-capacidad">
-                                <span
-                                    th:text="${localidad.disponibles} + ' de ' + ${localidad.capacidad} + ' disponibles'">0
-                                    de 0 disponibles</span>
-                            </p>
-                            <p class="localidad-precio"
-                                th:text="'$' + ${#numbers.formatDecimal(localidad.precio, 0, 'COMMA', 0, 'POINT')} + ' COP'">
-                                $0 COP</p>
-                        </div>
-                        <div class="localidad-actions">
-                            <div class="cantidad-selector">
-                                <button class="btn-cantidad" onclick="decrementarCantidad(this)"
-                                    type="button">-</button>
-                                <input type="number" class="cantidad-input" name="cantidad" th:attr="id='cantidad-' + ${localidad.id}, 
-                max=${localidad.disponibles < 5 ? localidad.disponibles : 5}" value="1" min="1" readonly>
-                                <button class="btn-cantidad" onclick="incrementarCantidad(this)"
-                                    type="button">+</button>
-                            </div>
-                            <button class="btn-comprar" th:attr="data-localidad-id=${localidad.id}, 
-                                             data-localidad-nombre=${localidad.nombre}, 
-                                             data-precio=${localidad.precio}"
-                                th:disabled="${localidad.disponibles == 0}">
-                                <span
-                                    th:text="${localidad.disponibles == 0} ? 'AGOTADO' : 'SELECCIONAR'">SELECCIONAR</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div th:if="${#lists.isEmpty(localidades)}" class="no-localidades">
-                    <p>No hay localidades disponibles para este evento.</p>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <footer class="main-footer">
-        <div th:replace="~{fragments/footer :: footer}"></div>
-    </footer>
-
-    <script th:src="@{/js/localidad.js}"></script>
-</body>
-
-</html>
+<script src="/js/infoEvento.js"></script>
+</body></html>

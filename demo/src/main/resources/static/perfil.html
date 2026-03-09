@@ -1,231 +1,138 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Perfil - EventHive</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" th:href="@{/css/estilos.css}">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mi Perfil — EventHive</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{display:['Syne','sans-serif'],body:['DM Sans','sans-serif']},colors:{brand:'#007bff',accent:'#ffc107',dark:'#212529'}}}}</script>
+  <style>
+    body{font-family:'DM Sans',sans-serif;background:#fff;color:#212529}
+    h1,h2,h3{font-family:'Syne',sans-serif}
+    input:focus{outline:none;border-color:#007bff;box-shadow:0 0 0 3px rgba(0,123,255,.12)}
+    .tab-btn.active{background:#007bff;color:#fff;border-color:#007bff}
+  </style>
 </head>
+<body class="min-h-screen flex flex-col">
 
-<body>
+<nav class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="/index.html" class="font-display font-extrabold text-2xl tracking-tight text-dark">Event<span class="text-brand">Hive</span></a>
+    <div class="hidden md:flex items-center gap-8 text-sm font-medium text-dark/60">
+      <a href="/index.html" class="hover:text-brand transition">Inicio</a>
+      <a href="/eventos.html" class="hover:text-brand transition">Eventos</a>
+    </div>
+    <button id="btnLogout" class="text-sm text-dark/50 hover:text-brand transition flex items-center gap-2 font-medium">
+      <i class="fas fa-sign-out-alt text-xs"></i> Cerrar sesión
+    </button>
+  </div>
+</nav>
 
-    <header class="main-header">
-        <div th:replace="~{fragments/navbar :: navbar}"></div>
-    </header>
+<main class="flex-1 pt-24 pb-16 px-6">
+  <div class="max-w-5xl mx-auto">
 
-    <main class="profile-page-container">
-        <div class="container">
-            <h1 class="profile-welcome" th:text="'¡Hola, ' + ${usuarioActual.nombre} + '!'"></h1>
+    <!-- Header perfil -->
+    <div class="flex flex-col md:flex-row items-start md:items-center gap-6 mb-10">
+      <div class="w-20 h-20 rounded-3xl bg-brand/10 flex items-center justify-center shrink-0">
+        <i class="fas fa-user text-brand text-3xl"></i>
+      </div>
+      <div class="flex-1">
+        <p class="text-brand text-[11px] font-bold tracking-[0.3em] uppercase mb-1">Mi cuenta</p>
+        <h1 id="perfilNombre" class="text-3xl font-extrabold text-dark">—</h1>
+        <p id="perfilEmail" class="text-dark/45 text-sm mt-1"></p>
+      </div>
+      <button id="btnEditar" class="border border-gray-200 text-dark hover:border-brand hover:text-brand font-bold px-5 py-2.5 rounded-2xl transition text-sm flex items-center gap-2">
+        <i class="fas fa-pencil-alt text-xs"></i> Editar perfil
+      </button>
+    </div>
 
-            <div class="profile-layout">
+    <!-- Tabs -->
+    <div class="flex gap-2 mb-8 border-b border-gray-100 pb-1">
+      <button class="tab-btn active border border-brand/0 text-sm font-bold px-5 py-2.5 rounded-xl transition" data-tab="tiquetes">Mis tiquetes</button>
+      <button class="tab-btn border border-gray-200 text-dark/50 text-sm font-bold px-5 py-2.5 rounded-xl transition hover:border-brand hover:text-brand" data-tab="deseados">Eventos deseados</button>
+      <button class="tab-btn border border-gray-200 text-dark/50 text-sm font-bold px-5 py-2.5 rounded-xl transition hover:border-brand hover:text-brand" data-tab="comentarios">Comentarios</button>
+    </div>
 
-                <aside class="profile-details-card">
-                    <div class="avatar-placeholder">
-                        <i class="fas fa-user-circle fa-5x"></i>
-                    </div>
-                    <h3 th:text="${usuarioActual.nombre}"></h3>
-                    <ul class="user-info-list">
-                        <li><i class="fas fa-envelope"></i> <span th:text="${usuarioActual.correo}"></span></li>
-                        <li><i class="fas fa-phone"></i> <span th:text="${usuarioActual.telefono}"></span></li>
-                    </ul>
-                    <a href="/editarPerfil" class="btn-secondary" id="btn-editar-perfil">Editar Información</a>
-                    <a href="/autentificacion/logout" class="btn-logout">Cerrar Sesión <i
-                            class="fas fa-sign-out-alt"></i></a>
-                </aside>
+    <!-- Tab: tiquetes -->
+    <div id="tab-tiquetes">
+      <div id="tiquetesLista" class="space-y-4"></div>
+      <div id="tiquetesVacio" class="hidden text-center py-16">
+        <i class="fas fa-ticket-alt text-4xl text-gray-200 mb-4 block"></i>
+        <p class="text-dark/30 text-sm">No has comprado boletos aún.</p>
+        <a href="/eventos.html" class="inline-block mt-4 text-brand text-sm hover:underline">Explorar eventos</a>
+      </div>
+      <div class="mt-6 text-center">
+        <a href="/historialCompras.html" id="linkHistorial" class="hidden text-sm text-brand hover:underline font-medium">
+          Ver historial completo <i class="fas fa-arrow-right text-xs ml-1"></i>
+        </a>
+      </div>
+    </div>
 
-                <section class="profile-tiquetes-list">
-                    <h2 class="section-title-profile">Mis Tiquetes</h2>
+    <!-- Tab: deseados -->
+    <div id="tab-deseados" class="hidden">
+      <div id="deseadosLista" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+      <div id="deseadosVacio" class="hidden text-center py-16">
+        <i class="fas fa-heart text-4xl text-gray-200 mb-4 block"></i>
+        <p class="text-dark/30 text-sm">No tienes eventos deseados aún.</p>
+      </div>
+    </div>
 
-                    <!-- Si tiene compras, mostrarlas -->
-                    <div th:if="${todasLasCompras != null and !todasLasCompras.isEmpty()}">
-                        <div class="ticket-card-enhanced" th:each="compra : ${todasLasCompras}">
-                            <div class="ticket-date-stub">
-                                <span class="month" th:text="${compra.eventoFecha != null ? #temporals.format(compra.eventoFecha, 'MMM').toUpperCase() : 'N/A'}">OCT</span>
-                                <span class="day" th:text="${compra.eventoFecha != null ? #temporals.format(compra.eventoFecha, 'dd') : '--'}">25</span>
-                                <span class="year" th:text="${compra.eventoFecha != null ? #temporals.format(compra.eventoFecha, 'yyyy') : '----'}">2025</span>
-                            </div>
-                            <div class="ticket-info">
-                                <span class="ticket-status valid">Válido</span>
-                                <h3 th:text="${compra.eventoTitulo != null ? compra.eventoTitulo : 'Evento sin título'}">Festival de Música del Caribe</h3>
-                                <p class="ticket-meta">
-                                    <i class="fas fa-clock"></i> 
-                                    <span th:text="${compra.eventoHora != null ? #temporals.format(compra.eventoHora, 'HH:mm') : 'N/A'}">8:00</span> | 
-                                    <i class="fas fa-map-marker-alt"></i> 
-                                    <span th:text="${compra.eventoLugar != null ? compra.eventoLugar : 'Lugar no especificado'}">Plaza de la Aduana</span>
-                                </p>
-                                <p class="ticket-meta">
-                                    <strong>Localidad:</strong> 
-                                    <span th:text="${compra.localidadNombre != null ? compra.localidadNombre : 'N/A'}">VIP</span> | 
-                                    <strong>Cantidad:</strong> 
-                                    <span th:text="${compra.cantidad != null ? compra.cantidad : 0}">2</span>
-                                </p>
-                                <p class="ticket-price" th:text="'Comprado por: $' + ${#numbers.formatDecimal(compra.total, 0, 'POINT', 0, 'COMMA')} + ' COP'">Comprado por: $150.000 COP</p>
-                                <div class="ticket-actions">
-                                    <a th:href="@{/mis-boletos/{id}(id=${compra.id})}" class="btn-view-ticket">
-                                        <i class="fas fa-qrcode"></i> Ver Boletos
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <!-- Tab: comentarios -->
+    <div id="tab-comentarios" class="hidden">
+      <div id="comentariosLista" class="space-y-4"></div>
+      <div id="comentariosVacio" class="hidden text-center py-16">
+        <i class="fas fa-comment-alt text-4xl text-gray-200 mb-4 block"></i>
+        <p class="text-dark/30 text-sm">No has dejado valoraciones aún.</p>
+      </div>
+    </div>
 
-                    <!-- Si no tiene compras -->
-                    <div th:if="${todasLasCompras == null or todasLasCompras.isEmpty()}" class="empty-state-small">
-                        <i class="fas fa-ticket-alt" style="font-size: 3rem; color: #ccc;"></i>
-                        <p>No has comprado boletos aún</p>
-                        <a href="/categorias/eventos" class="btn-primary-small">Explorar Eventos</a>
-                    </div>
+  </div>
+</main>
 
-                    <!-- Ver historial completo -->
-                    <div th:if="${todasLasCompras != null and !todasLasCompras.isEmpty()}" class="text-center" style="margin-top: 2rem;">
-                        <a href="/compras/historialCompras" class="btn-see-all">
-                            Ver Historial Completo <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </section>
+<!-- Modal editar perfil -->
+<div id="modalEditar" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-extrabold text-dark">Editar perfil</h2>
+      <button id="cerrarModal" class="text-dark/30 hover:text-dark transition"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="text-xs font-bold text-dark/60 uppercase tracking-wider block mb-2">Nombre</label>
+        <input id="editNombre" type="text" class="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm transition"/>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-dark/60 uppercase tracking-wider block mb-2">Correo</label>
+        <input id="editEmail" type="email" class="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm transition"/>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-dark/60 uppercase tracking-wider block mb-2">Teléfono</label>
+        <input id="editTelefono" type="text" class="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm transition"/>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-dark/60 uppercase tracking-wider block mb-2">Nueva contraseña <span class="text-dark/30 normal-case">(opcional)</span></label>
+        <input id="editPassword" type="password" placeholder="••••••••" class="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm transition"/>
+      </div>
+      <button id="btnGuardar" class="w-full bg-brand hover:bg-blue-700 text-white font-bold py-3.5 rounded-2xl transition text-sm shadow-lg shadow-brand/20">
+        Guardar cambios
+      </button>
+    </div>
+  </div>
+</div>
 
-            </div>
-            <br><br>
+<footer class="bg-dark border-t border-white/5 py-8">
+  <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-white/40 text-sm">
+    <span class="font-display font-bold text-white/70">Event<span class="text-brand">Hive</span></span>
+    <span>© 2025 EventHive · Todos los derechos reservados</span>
+    <div class="flex gap-5">
+      <a href="#" class="hover:text-white transition"><i class="fab fa-instagram"></i></a>
+      <a href="#" class="hover:text-white transition"><i class="fab fa-facebook"></i></a>
+      <a href="#" class="hover:text-white transition"><i class="fab fa-tiktok"></i></a>
+    </div>
+  </div>
+</footer>
 
-            <!-- Eventos Deseados -->
-            <div class="wanted-box container" aria-labelledby="wanted-title">
-                <h2 id="wanted-title" class="section-title-profile">Eventos Deseados</h2>
-                
-                <div th:if="${eventosDeseados != null and !eventosDeseados.isEmpty()}" class="wanted-row" role="list">
-                    <article class="event-card-horizontal" role="listitem" th:each="eventoDeseado : ${eventosDeseados}">
-                        <div class="date-stub">
-                            <div class="month" th:text="${#temporals.format(eventoDeseado.evento.fecha, 'MMM').toUpperCase()}">DIC</div>
-                            <div class="day" th:text="${#temporals.format(eventoDeseado.evento.fecha, 'dd')}">15</div>
-                            <div class="year" th:text="${#temporals.format(eventoDeseado.evento.fecha, 'yyyy')}">2025</div>
-                        </div>
-                        <div class="event-info-vertical">
-                            <h3 class="event-title" th:text="${eventoDeseado.evento.titulo}">Noche de Jazz en el Castillo</h3>
-                            <p class="event-meta-compact">
-                                <i class="fas fa-clock"></i> <span th:text="${#temporals.format(eventoDeseado.evento.hora, 'HH:mm')}">7:00 PM</span>
-                            </p>
-                            <p class="event-meta-compact">
-                                <i class="fas fa-map-marker-alt"></i> <span th:text="${eventoDeseado.evento.lugar}">Castillo de San Felipe</span>
-                            </p>
-                            <div class="event-actions">
-                                <a th:href="@{/eventos/{id}(id=${eventoDeseado.evento.id})}" class="btn-info">
-                                    Más Información <i class="fas fa-info-circle"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </article>
-                </div>
-
-                <div th:if="${eventosDeseados == null or eventosDeseados.isEmpty()}" class="empty-state-small">
-                    <i class="fas fa-heart" style="font-size: 3rem; color: #ccc;"></i>
-                    <p>No tienes eventos deseados aún</p>
-                </div>
-            </div>
-
-            <!-- Sección: Últimas Compras (Top 3) -->
-            <div class="wanted-box container" aria-labelledby="compras-title">
-                <h2 id="compras-title" class="section-title-profile">Últimas Compras</h2>
-                <p class="muted">Aquí verás tus últimas 3 compras realizadas.</p>
-
-                <div th:if="${top3Compras != null and !top3Compras.isEmpty()}" class="purchase-list" role="list">
-                    <article class="purchase-card" role="listitem" th:each="compra : ${top3Compras}">
-                        <div class="purchase-date">
-                            <div class="month" th:text="${compra.eventoFecha != null ? #temporals.format(compra.eventoFecha, 'MMM').toUpperCase() : 'N/A'}">OCT</div>
-                            <div class="day" th:text="${compra.eventoFecha != null ? #temporals.format(compra.eventoFecha, 'dd') : '--'}">25</div>
-                            <div class="year" th:text="${compra.eventoFecha != null ? #temporals.format(compra.eventoFecha, 'yyyy') : '----'}">2025</div>
-                        </div>
-                        <div class="purchase-body">
-                            <h3 th:text="${compra.eventoTitulo != null ? compra.eventoTitulo : 'Evento sin título'}">Festival de Música del Caribe</h3>
-                            <p class="purchase-meta">
-                                <strong>Código compra:</strong> 
-                                <span class="mono" th:text="'#' + ${compra.id}">COMPRA-12345</span>
-                            </p>
-                            <p class="purchase-meta">
-                                <strong>Fecha compra:</strong> 
-                                <span th:text="${compra.fechaCompra != null ? #temporals.format(compra.fechaCompra, 'dd MMM, yyyy HH:mm') : 'N/A'}">25 Oct, 2025 14:30</span>
-                            </p>
-                            <p class="purchase-meta">
-                                <strong>Localidad:</strong> 
-                                <span th:text="${compra.localidadNombre != null ? compra.localidadNombre : 'N/A'}">VIP</span>
-                            </p>
-                            <p class="purchase-meta">
-                                <strong>Cantidad:</strong> 
-                                <span th:text="${compra.cantidad != null ? compra.cantidad + ' boletos' : '0 boletos'}">2 boletos</span>
-                            </p>
-                            <p class="purchase-meta">
-                                <strong>Monto:</strong> 
-                                <span class="price-highlight" th:text="'$' + ${#numbers.formatDecimal(compra.total, 0, 'POINT', 0, 'COMMA')} + ' COP'">$150.000 COP</span>
-                            </p>
-                            <div class="purchase-actions">
-                                <a th:href="@{/mis-boletos/{id}(id=${compra.id})}" class="btn-primary-small">
-                                    <i class="fas fa-qrcode"></i> Ver Boletos
-                                </a>
-                            </div>
-                        </div>
-                    </article>
-                </div>
-
-                <div th:if="${top3Compras == null or top3Compras.isEmpty()}" class="empty-state-small">
-                    <i class="fas fa-shopping-bag" style="font-size: 3rem; color: #ccc;"></i>
-                    <p>No has realizado compras aún</p>
-                    <p style="font-size: 0.9rem; margin-top: 0.5rem;">Explora nuestros eventos y adquiere tus boletos</p>
-                    <a href="/categorias/eventos" class="btn-primary-small" style="margin-top: 1rem;">Ver Eventos</a>
-                </div>
-
-                <!-- Botón para ver todas las compras -->
-                <div th:if="${top3Compras != null and !top3Compras.isEmpty()}" class="text-center" style="margin-top: 2rem;">
-                    <a href="/compras/historialCompras" class="btn-see-all">
-                        Ver Todas las Compras <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Sección: Comentarios -->
-            <div class="wanted-box container">
-                <h2 class="section-title-profile">Mis Comentarios</h2>
-                <p class="muted">Valoraciones que has publicado en los eventos.</p>
-                
-                <div class="comments-scroll">
-                    <div th:if="${comentariosUsuario != null and !comentariosUsuario.isEmpty()}">
-                        <article class="comment-card" th:each="comentario : ${comentariosUsuario}">
-                            <div class="comment-header">
-                                <div class="comment-event-info">
-                                    <h3 class="comment-event-title" th:text="${comentario.evento.titulo}">
-                                        Festival de Música del Caribe
-                                    </h3>
-                                </div>
-                                <div class="comment-rating">
-                                    <i class="fas fa-star" style="color: #FFD700;"></i>
-                                    <span th:text="${comentario.calificacion}">5</span>/5
-                                </div>
-                            </div>
-                            <div class="comment-body">
-                                <p class="comment-text" th:text="${comentario.comentario}">
-                                    Simplemente impresionante. El evento fue increíble, la organización excelente y el ambiente único.
-                                </p>
-                            </div>
-                        </article>
-                    </div>
-
-                    <div th:if="${comentariosUsuario == null or comentariosUsuario.isEmpty()}" class="empty-state-small">
-                        <i class="fas fa-comment-alt" style="font-size: 3rem; color: #ccc;"></i>
-                        <p>No has dejado valoraciones aún</p>
-                        <p style="font-size: 0.9rem; margin-top: 0.5rem;">Compra boletos y comenta sobre los eventos</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <br><br><br><br><br><br>
-    <footer class="main-footer">
-        <div th:replace="fragments/footer :: footer"></div>
-    </footer>
-</body>
-
-</html>
+<script src="/js/Perfil.js"></script>
+</body></html>

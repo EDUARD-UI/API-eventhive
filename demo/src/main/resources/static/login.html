@@ -1,56 +1,80 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión - EventHive</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Iniciar Sesión — EventHive</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{display:['Syne','sans-serif'],body:['DM Sans','sans-serif']},colors:{brand:'#007bff',accent:'#ffc107',dark:'#212529'}}}}</script>
+  <style>
+    body{font-family:'DM Sans',sans-serif;background:#fff;color:#212529}
+    h1,h2,h3{font-family:'Syne',sans-serif}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .fade-up{animation:fadeUp .5s ease both}
+    .d1{animation-delay:.1s}.d2{animation-delay:.2s}
+    input:focus{outline:none;border-color:#007bff;box-shadow:0 0 0 3px rgba(0,123,255,.12)}
+  </style>
 </head>
+<body class="min-h-screen flex flex-col">
 
-<body>
-    <header class="login-header">
-        <div class="container header-inner">
-            <a href="/" class="navbar-brand">EventHive</a>
-        </div>
-    </header>
+<nav class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="/index.html" class="font-display font-extrabold text-2xl tracking-tight text-dark">Event<span class="text-brand">Hive</span></a>
+    <a href="/index.html" class="text-sm text-dark/50 hover:text-brand transition flex items-center gap-2">
+      <i class="fas fa-arrow-left text-xs"></i> Inicio
+    </a>
+  </div>
+</nav>
 
-    <div class="auth-container">
-        <div class="auth-box">
-            <div class="auth-card-top">
-                <p class="auth-subtitle">Por favor ingresa tus datos</p>
-                <h1 class="auth-card-title">Bienvenido de nuevo</h1>
-            </div>
-
-            <form id="loginForm" class="auth-form">
-                <div class="input-group">
-                    <label for="email">Correo electrónico</label>
-                    <input type="email" id="email" placeholder="Email address" required>
-                </div>
-
-                <div class="input-group">
-                    <label for="password">Contraseña</label>
-                    <input type="password" id="password" placeholder="Password" required>
-                </div>
-
-                <div class="remember-forgot">
-                    <label class="remember"><input type="checkbox" id="remember"> Recordarme 30 días</label>
-                    <a class="forgot-link" href="#">¿Olvidaste tu contraseña?</a>
-                </div>
-
-                <button type="submit" class="btn-auth">Entrar</button>
-
-                <p class="auth-switch">¿No tienes una cuenta? <a href="/signin">Regístrate</a></p>
-            </form>
-        </div>
+<main class="flex-1 flex items-center justify-center px-4 pt-24 pb-12">
+  <div class="w-full max-w-md">
+    <div class="fade-up text-center mb-8">
+      <p class="text-brand text-[11px] font-bold tracking-[0.3em] uppercase mb-3">Bienvenido de nuevo</p>
+      <h1 class="text-4xl font-extrabold text-dark">Inicia sesión</h1>
+      <p class="text-dark/45 text-sm mt-2">Ingresa tus datos para continuar</p>
     </div>
+    <div class="fade-up d1 bg-white rounded-3xl border border-gray-100 shadow-xl shadow-gray-100/80 p-8">
+      <div class="space-y-5">
+        <div>
+          <label class="text-xs font-bold text-dark/60 uppercase tracking-wider block mb-2">Correo electrónico</label>
+          <input id="email" type="email" placeholder="tucorreo@ejemplo.com" class="w-full border border-gray-200 rounded-2xl px-4 py-3.5 text-sm transition"/>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-dark/60 uppercase tracking-wider block mb-2">Contraseña</label>
+          <div class="relative">
+            <input id="password" type="password" placeholder="••••••••" class="w-full border border-gray-200 rounded-2xl px-4 py-3.5 text-sm transition pr-12"/>
+            <button id="togglePwd" type="button" class="absolute right-4 top-1/2 -translate-y-1/2 text-dark/35 hover:text-brand transition">
+              <i class="far fa-eye text-sm"></i>
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-xs">
+          <label class="flex items-center gap-2 text-dark/50 cursor-pointer"><input type="checkbox" class="accent-brand"/> Recordarme</label>
+          <a href="#" class="text-brand hover:underline">¿Olvidaste tu contraseña?</a>
+        </div>
+        <button id="btnLogin" class="w-full bg-brand hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition text-sm shadow-lg shadow-brand/20 flex items-center justify-center gap-2">
+          Entrar <i class="fas fa-arrow-right text-xs"></i>
+        </button>
+      </div>
+      <p class="text-center text-sm text-dark/45 mt-6">¿No tienes cuenta? <a href="/signin.html" class="text-brand font-medium hover:underline">Regístrate</a></p>
+    </div>
+  </div>
+</main>
 
-    <br><br><br><br><br><br>
-    <footer class="main-footer">
-        <div th:replace="~{fragments/footer :: footer}"></div>
-    </footer>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="js/RespuestaLogin.js"></script>
-    
-</body>
-</html>
+<footer class="bg-dark border-t border-white/5 py-8">
+  <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-white/40 text-sm">
+    <span class="font-display font-bold text-white/70">Event<span class="text-brand">Hive</span></span>
+    <span>© 2025 EventHive · Todos los derechos reservados</span>
+    <div class="flex gap-5">
+      <a href="#" class="hover:text-white transition"><i class="fab fa-instagram"></i></a>
+      <a href="#" class="hover:text-white transition"><i class="fab fa-facebook"></i></a>
+      <a href="#" class="hover:text-white transition"><i class="fab fa-tiktok"></i></a>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/RespuestaLogin.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body></html>

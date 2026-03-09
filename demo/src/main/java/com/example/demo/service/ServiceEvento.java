@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.EventoBusquedaDTO;
 import com.example.demo.dto.EventoDTO;
+import com.example.demo.dto.EventoDestacadoDTO;
 import com.example.demo.model.Evento;
 import com.example.demo.repository.EventoRepository;
 
@@ -17,19 +18,6 @@ import lombok.RequiredArgsConstructor;
 public class ServiceEvento {
 
     private final EventoRepository eventoRepository;
-
-    public List<Evento> todosLosEventos() {
-        return eventoRepository.findAll();
-    }
-
-    public Evento crearEvento(Evento evento) {
-        return eventoRepository.save(evento);
-    }
-
-    public Evento obtenerEventoPorId(Long id) {
-        return eventoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
-    }
 
     public List<EventoBusquedaDTO> buscarPorTituloParcialDTO(String titulo) {
         List<Evento> eventos = eventoRepository.findByTituloContainingIgnoreCase(titulo);
@@ -43,7 +31,7 @@ public class ServiceEvento {
                 .collect(Collectors.toList());
     }
 
-    public List<EventoDTO> buscarPorCategoriaDTO(Long categoriaId){
+    public List<EventoDTO> buscarPorCategoriaDTO(Long categoriaId) {
         List<Evento> eventos = eventoRepository.findByCategoriaId(categoriaId);
 
         return eventos.stream()
@@ -60,12 +48,35 @@ public class ServiceEvento {
                 .collect(Collectors.toList());
     }
 
-    public List<Evento> eventosPorCategoria(Long id){
-        return eventoRepository.findByCategoriaId(id);
+    public List<EventoDestacadoDTO> obtenerTop3EventosDTO() {
+        return eventoRepository.findTop3ByOrderByFechaAsc().stream()
+                .map(e -> {
+                    EventoDestacadoDTO dto = new EventoDestacadoDTO();
+                    dto.setId(e.getId());
+                    dto.setTitulo(e.getTitulo());
+                    dto.setDescripcion(e.getDescripcion());
+                    dto.setLugar(e.getLugar());
+                    dto.setFoto(e.getFoto());
+                    dto.setFecha(e.getFecha());
+                    if (e.getCategoria() != null) {
+                        dto.setCategoriaNombre(e.getCategoria().getNombre());
+                    }
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
-    public List<Evento> obtenerTop3Eventos() {
-        return eventoRepository.findTop3ByOrderByFechaAsc();
+    public List<Evento> todosLosEventos() {
+        return eventoRepository.findAll();
+    }
+
+    public Evento crearEvento(Evento evento) {
+        return eventoRepository.save(evento);
+    }
+
+    public Evento obtenerEventoPorId(Long id) {
+        return eventoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
     }
 
     public void actualizarEvento(Evento eventoExistente) {
@@ -78,6 +89,10 @@ public class ServiceEvento {
 
     public List<Evento> obtenerPorOrganizador(Long id) {
         return eventoRepository.findByUsuarioId(id);
+    }
+
+    public List<Evento> eventosPorCategoria(Long id) {
+        return eventoRepository.findByCategoriaId(id);
     }
 
     public long contarEventosPorCategoria(Long categoriaId) {

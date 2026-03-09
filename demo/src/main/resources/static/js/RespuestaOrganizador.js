@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const res  = await fetch(`${BASE}/api/auth/registrar-cliente`, {
+      const res  = await fetch(`${BASE}/api/auth/registrar-organizador`, {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre, apellido, email, telefono, password })
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const json = await res.json();
 
       if (res.ok) {
-        await Swal.fire({ icon: 'success', title: '¡Registro exitoso!', text: json.message || 'Tu cuenta fue creada.', confirmButtonColor: '#007bff' });
+        await Swal.fire({ icon: 'success', title: '¡Cuenta creada!', text: json.message || 'Tu cuenta de organizador fue creada.', confirmButtonColor: '#007bff' });
         window.location.href = '/login.html';
       } else {
         Swal.fire({ icon: 'error', title: 'Error', text: json.message || 'No se pudo registrar.', confirmButtonColor: '#007bff' });

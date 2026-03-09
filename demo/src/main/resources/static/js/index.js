@@ -1,150 +1,180 @@
-// Carga eventos destacados y categorías al iniciar la página
+// ── CONFIG ────────────────────────────────────────────────
+const BASE = '';
+
 document.addEventListener('DOMContentLoaded', () => {
-    cargarEventosDestacados();
-    cargarCategorias();
+  checkSession();
+  loadEventosDestacados();
+  loadCategoriasDestacadas();
+  loadTodasLasCategorias();
 });
 
-
-function cargarEventosDestacados() {
-    const apiUrl = '/api/eventos/destacados';
-
-    fetch(apiUrl)
-        .then(response => {
-            if (!response.ok) throw new Error('Error al cargar eventos');
-            return response.json();
-        })
-        .then(data => {
-            const eventos = data.data || data; // Maneja ambos formatos
-            renderizarEventos(eventos);
-        })
-        .catch(error => {
-            console.error('Error cargando eventos:', error);
-            document.getElementById('eventGrid').innerHTML = 
-                '<p style="grid-column: 1/-1; text-align: center;">Error al cargar los eventos.</p>';
-        });
+async function checkSession() {
+  try {
+    const res = await fetch(`${BASE}/api/pagos`, { credentials: 'include' });
+    if (!res.ok) { renderNavGuest(); return; }
+    const json = await res.json();
+    json.data ? renderNavAuth(json.data.nombre, json.data.rol?.nombre || '') : renderNavGuest();
+  } catch { renderNavGuest(); }
 }
 
-function renderizarEventos(eventos) {
-    const eventGrid = document.getElementById('eventGrid');
-    eventGrid.innerHTML = '';
-
-    if (!eventos || eventos.length === 0) {
-        eventGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No hay eventos disponibles.</p>';
-        return;
+function renderNavAuth(nombre, rol) {
+  const el = document.getElementById('navAuth');
+  if (!el) return;
+  el.innerHTML = `
+    <span class="text-dark/50 hidden sm:block text-sm font-medium">${esc(nombre)}</span>
+    ${rol === 'organizador'
+      ? `<a href="/organizador/dashboard" class="bg-brand text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition">Dashboard</a>`
+      : `<a href="/perfil" class="text-dark/60 hover:text-brand transition text-xs font-medium">Mi Perfil</a>`
     }
-
-    eventos.forEach(evento => {
-        const eventCard = document.createElement('div');
-        eventCard.className = 'event-card';
-
-        const imagenUrl = evento.foto 
-            ? `/uploads/eventos/${evento.foto}` 
-            : '/images/placeholder.jpg';
-
-        const fechaFormato = formatearFecha(evento.fecha);
-
-        eventCard.innerHTML = `
-            <img src="${imagenUrl}" alt="${evento.titulo}" onerror="this.src='/images/placeholder.jpg'">
-            <div class="card-content">
-                <h3>${evento.titulo}</h3>
-                <p class="event-meta">
-                    <i class="far fa-calendar-alt"></i>
-                    <span>${fechaFormato}</span>
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span>${evento.lugar || 'Por determinar'}</span>
-                </p>
-                <p class="event-description">${evento.descripcion || ''}</p>
-                <div class="card-footer">
-                    <a href="/eventos/${evento.id}" class="btn-buy">
-                        Comprar Tiquete <i class="fas fa-ticket-alt"></i>
-                    </a>
-                </div>
-                <div class="event-tags">
-                    <span>${evento.categoria ? evento.categoria.nombre : 'Sin categoría'}</span>
-                </div>
-            </div>
-        `;
-
-        eventGrid.appendChild(eventCard);
-    });
+    <button id="btnLogout" class="text-dark/40 hover:text-brand text-xs transition font-medium">Salir</button>
+  `;
+  document.getElementById('btnLogout').addEventListener('click', async () => {
+    await fetch(`${BASE}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+    location.reload();
+  });
 }
 
-function cargarCategorias() {
-    const apiUrl = '/api/categorias/destacadas'; // Ajusta según tu API
-
-    fetch(apiUrl)
-        .then(response => {
-            if (!response.ok) throw new Error('Error al cargar categorías');
-            return response.json();
-        })
-        .then(data => {
-            const categorias = data.data || data || [];
-            renderizarCategorias(categorias);
-            llenarSelectorCategorias(categorias);
-        })
-        .catch(error => {
-            console.error('Error cargando categorías:', error);
-        });
+function renderNavGuest() {
+  const el = document.getElementById('navAuth');
+  if (!el) return;
+  el.innerHTML = `
+    <a href="/login" class="text-dark/60 hover:text-brand transition text-sm font-medium">Iniciar sesión</a>
+    <a href="/signin" class="bg-brand text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition shadow-sm">Registrarse</a>
+  `;
 }
 
-function renderizarCategorias(categorias) {
-    const categoryGrid = document.getElementById('categoryGrid');
-    categoryGrid.innerHTML = '';
-
-    if (!categorias || categorias.length === 0) {
-        categoryGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No hay categorías disponibles.</p>';
-        return;
+async function loadEventosDestacados() {
+  const grid = document.getElementById('eventGrid');
+  try {
+    const res = await fetch(`${BASE}/api/eventos/destacados`, { credentials: 'include' });
+    if (res.ok) {
+      const json = await res.json();
+      const eventos = extraerArray(json);
+      if (eventos.length > 0) {
+        grid.innerHTML = eventos.map(cardEvento).join('');
+        return; // ✓ éxito
+      }
     }
+    console.warn('[Eventos] /destacados falló (HTTP', res.status, ') — usando fallback /api/eventos');
+  } catch (e) {
+    console.warn('[Eventos] /destacados excepción:', e.message, '— usando fallback');
+  }
 
-    categorias.forEach(categoria => {
-        const imagenUrl = categoria.foto 
-            ? `/uploads/categorias/${categoria.foto}` 
-            : '/images/placeholder.jpg';
-
-        const categoryCard = document.createElement('a');
-        categoryCard.href = `/categorias/${categoria.id}`;
-        categoryCard.className = 'category-card';
-        categoryCard.style.backgroundImage = `url('${imagenUrl}')`;
-        categoryCard.onerror = () => {
-            categoryCard.style.backgroundImage = "url('/images/placeholder.jpg')";
-        };
-
-        categoryCard.innerHTML = `
-            <div class="category-overlay">
-                <h3>${categoria.nombre}</h3>
-            </div>
-        `;
-
-        categoryGrid.appendChild(categoryCard);
-    });
+  try {
+    const res = await fetch(`${BASE}/api/eventos`, { credentials: 'include' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json   = await res.json();
+    const todos  = extraerArray(json);
+    const eventos = todos.slice(0, 3);
+    if (eventos.length > 0) {
+      grid.innerHTML = eventos.map(cardEvento).join('');
+    } else {
+      grid.innerHTML = '<p class="col-span-3 text-center text-dark/30 py-10">No hay eventos disponibles.</p>';
+    }
+  } catch (e) {
+    console.error('[Eventos] fallback también falló:', e.message);
+    grid.innerHTML = '<p class="col-span-3 text-center text-dark/30 py-10">No se pudieron cargar los eventos.</p>';
+  }
 }
 
-function llenarSelectorCategorias(categorias) {
-    const categorySelect = document.getElementById('categorySelect');
-
-    if (!categorias || categorias.length === 0) return;
-
-    categorias.forEach(categoria => {
-        const option = document.createElement('option');
-        option.value = categoria.id;
-        option.textContent = categoria.nombre;
-        categorySelect.appendChild(option);
-    });
-
-    // Manejar cambio de categoría
-    categorySelect.addEventListener('change', (e) => {
-        if (e.target.value) {
-            window.location.href = `/categorias/${e.target.value}`;
+function cardEvento(e) {
+  const img   = e.foto ? `/uploads/eventos/${e.foto}` : null;
+  const cat   = e.categoriaNombre || '';
+  const fecha = formatFecha(e.fecha);
+  return `
+    <a href="/infoEvento.html?id=${e.id}"
+      class="event-card block bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+      <div class="relative h-52 overflow-hidden bg-gray-100">
+        ${img
+          ? `<img src="${img}" alt="${esc(e.titulo)}"
+               onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center bg-gray-100\\'><i class=\\'fas fa-calendar-alt text-4xl text-gray-200\\'></i></div>'"
+               class="w-full h-full object-cover transition duration-500 hover:scale-105"/>`
+          : `<div class="w-full h-full flex items-center justify-center bg-gray-50">
+               <i class="fas fa-calendar-alt text-4xl text-gray-200"></i>
+             </div>`
         }
-    });
+        ${cat ? `<span class="absolute top-3 left-3 bg-accent text-dark text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">${esc(cat)}</span>` : ''}
+      </div>
+      <div class="p-5">
+        <h3 class="font-display font-bold text-dark text-base mb-2 line-clamp-2">${esc(e.titulo)}</h3>
+        <p class="text-dark/40 text-xs flex items-center gap-4">
+          <span><i class="far fa-calendar text-brand mr-1"></i>${fecha}</span>
+          ${e.lugar ? `<span><i class="fas fa-map-marker-alt text-brand mr-1"></i>${esc(e.lugar)}</span>` : ''}
+        </p>
+      </div>
+    </a>`;
 }
 
-//FUNCIONES DE APOYO
+// ══════════════════════════════════════════════════════════
+// CATEGORÍAS DESTACADAS — GET /api/categorias/destacadas
+// ══════════════════════════════════════════════════════════
+async function loadCategoriasDestacadas() {
+  const grid = document.getElementById('categoryGrid');
+  try {
+    const res = await fetch(`${BASE}/api/categorias/destacadas`, { credentials: 'include' });
+    if (!res.ok) { console.warn('[Cats] /destacadas HTTP', res.status); grid.innerHTML = ''; return; }
+    const json = await res.json();
+    const cats = extraerArray(json);
+    grid.innerHTML = cats.length ? cats.map(cardCategoria).join('') : '';
+  } catch (e) {
+    console.error('[Cats] excepción:', e.message);
+    grid.innerHTML = '';
+  }
+}
 
-function formatearFecha(fechaString) {
-    if (!fechaString) return 'Fecha por determinar';
+function cardCategoria(c) {
+  const img = c.foto ? `/uploads/categorias/${c.foto}` : null;
+  return `
+    <a href="/infoCategoria.html?id=${c.id}"
+      class="cat-card relative block h-44 rounded-2xl overflow-hidden bg-gray-200">
+      ${img ? `<img src="${img}" alt="${esc(c.nombre)}" onerror="this.style.display='none'" class="w-full h-full object-cover"/>` : ''}
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+      <span class="absolute bottom-4 left-4 font-display font-bold text-white text-sm drop-shadow">${esc(c.nombre)}</span>
+    </a>`;
+}
 
-    const fecha = new Date(fechaString);
-    const opciones = { year: 'numeric', month: 'short', day: 'numeric' };
-    return fecha.toLocaleDateString('es-ES', opciones);
+// ══════════════════════════════════════════════════════════
+// SELECT TODAS LAS CATEGORÍAS — GET /api/categorias
+// ══════════════════════════════════════════════════════════
+async function loadTodasLasCategorias() {
+  const sel = document.getElementById('categorySelect');
+  try {
+    const res = await fetch(`${BASE}/api/categorias`, { credentials: 'include' });
+    if (!res.ok) return;
+    const json = await res.json();
+    extraerArray(json).forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = c.nombre; opt.className = 'bg-dark text-white';
+      sel.appendChild(opt);
+    });
+  } catch { /* silencioso */ }
+  sel.addEventListener('change', e => {
+    if (e.target.value) location.href = `/infoCategoria.html?id=${e.target.value}`;
+  });
+}
+
+//funciones de apoyo
+
+function extraerArray(json) {
+  if (!json) return [];
+  if (Array.isArray(json))        return json;
+  if (Array.isArray(json.data))   return json.data;
+  if (json.data != null)          return [json.data];
+  return [];
+}
+
+function formatFecha(v) {
+  if (!v) return 'Fecha por confirmar';
+  if (Array.isArray(v)) {
+    const [y, m, d] = v;
+    return new Date(y, m - 1, d).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  const d = new Date(v);
+  return isNaN(d) ? String(v) : d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }

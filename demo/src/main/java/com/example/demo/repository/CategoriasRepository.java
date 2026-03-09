@@ -9,6 +9,6 @@ import com.example.demo.model.Categoria;
 
 @Repository
 public interface CategoriasRepository extends JpaRepository <Categoria, Long> {
-    List<Categoria> findTop3ByOrderByNombreAsc();
+    List<Categoria> findTop4ByOrderByNombreAsc();
     Categoria findByNombre(String nombre);
 }

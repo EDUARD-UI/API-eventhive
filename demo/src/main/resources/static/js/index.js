@@ -6,8 +6,12 @@ document.addEventListener('DOMContentLoaded', () => {
   loadEventosDestacados();
   loadCategoriasDestacadas();
   loadTodasLasCategorias();
+  // búsqueda gestionada en tituloParcial.js
 });
 
+// ══════════════════════════════════════════════════════════
+// SESIÓN
+// ══════════════════════════════════════════════════════════
 async function checkSession() {
   try {
     const res = await fetch(`${BASE}/api/pagos`, { credentials: 'include' });
@@ -24,7 +28,7 @@ function renderNavAuth(nombre, rol) {
     <span class="text-dark/50 hidden sm:block text-sm font-medium">${esc(nombre)}</span>
     ${rol === 'organizador'
       ? `<a href="/organizador/dashboard" class="bg-brand text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition">Dashboard</a>`
-      : `<a href="/perfil" class="text-dark/60 hover:text-brand transition text-xs font-medium">Mi Perfil</a>`
+      : `<a href="/perfil.html" class="text-dark/60 hover:text-brand transition text-xs font-medium">Mi Perfil</a>`
     }
     <button id="btnLogout" class="text-dark/40 hover:text-brand text-xs transition font-medium">Salir</button>
   `;
@@ -38,13 +42,20 @@ function renderNavGuest() {
   const el = document.getElementById('navAuth');
   if (!el) return;
   el.innerHTML = `
-    <a href="/login" class="text-dark/60 hover:text-brand transition text-sm font-medium">Iniciar sesión</a>
-    <a href="/signin" class="bg-brand text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition shadow-sm">Registrarse</a>
+    <a href="/login.html" class="text-dark/60 hover:text-brand transition text-sm font-medium">Iniciar sesión</a>
+    <a href="/signin.html" class="bg-brand text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition shadow-sm">Registrarse</a>
   `;
 }
 
+// ══════════════════════════════════════════════════════════
+// EVENTOS DESTACADOS
+// Intenta /api/eventos/destacados primero.
+// Si falla (500 por lazy loading JPA), usa /api/eventos y toma los 3 primeros.
+// ══════════════════════════════════════════════════════════
 async function loadEventosDestacados() {
   const grid = document.getElementById('eventGrid');
+
+  // — Intento 1: endpoint dedicado
   try {
     const res = await fetch(`${BASE}/api/eventos/destacados`, { credentials: 'include' });
     if (res.ok) {
@@ -60,6 +71,7 @@ async function loadEventosDestacados() {
     console.warn('[Eventos] /destacados excepción:', e.message, '— usando fallback');
   }
 
+  // — Intento 2: fallback a /api/eventos (toma los 3 primeros)
   try {
     const res = await fetch(`${BASE}/api/eventos`, { credentials: 'include' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -79,6 +91,7 @@ async function loadEventosDestacados() {
 
 function cardEvento(e) {
   const img   = e.foto ? `/uploads/eventos/${e.foto}` : null;
+  // EventoDTO devuelve categoriaNombre (campo plano añadido)
   const cat   = e.categoriaNombre || '';
   const fecha = formatFecha(e.fecha);
   return `
@@ -153,16 +166,22 @@ async function loadTodasLasCategorias() {
   });
 }
 
-//funciones de apoyo
 
+
+// ══════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════
+
+// Extrae el array de la respuesta — soporta ApiResponse<List> y List directa
 function extraerArray(json) {
   if (!json) return [];
-  if (Array.isArray(json))        return json;
-  if (Array.isArray(json.data))   return json.data;
-  if (json.data != null)          return [json.data];
+  if (Array.isArray(json))        return json;       // respuesta es array directo
+  if (Array.isArray(json.data))   return json.data;  // ApiResponse<List>
+  if (json.data != null)          return [json.data]; // ApiResponse<Objeto>
   return [];
 }
 
+// Spring serializa LocalDate como [year, month, day] o "YYYY-MM-DD"
 function formatFecha(v) {
   if (!v) return 'Fecha por confirmar';
   if (Array.isArray(v)) {

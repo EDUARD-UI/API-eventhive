@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.example.demo.dto.EventoBusquedaDTO;
 import com.example.demo.dto.EventoDTO;
 import com.example.demo.dto.EventoDestacadoDTO;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Evento;
 import com.example.demo.repository.EventoRepository;
 
@@ -76,7 +77,7 @@ public class ServiceEvento {
 
     public Evento obtenerEventoPorId(Long id) {
         return eventoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado"));
     }
 
     public void actualizarEvento(Evento eventoExistente) {

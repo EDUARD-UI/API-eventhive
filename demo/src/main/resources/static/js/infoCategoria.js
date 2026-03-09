@@ -86,7 +86,7 @@ function cardHTML(e) {
   const img   = e.foto ? `/uploads/eventos/${e.foto}` : null;
   const fecha = formatFecha(e.fecha);
   return `
-    <a href="/eventos/${e.id}"
+    <a href="/infoEvento.html?id=${e.id}"
       class="event-card block bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
       <div class="relative h-48 overflow-hidden bg-gray-100">
         ${img

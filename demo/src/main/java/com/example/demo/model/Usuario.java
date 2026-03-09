@@ -2,6 +2,8 @@ package com.example.demo.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,39 +27,44 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idUsuario")
     private Long id;
-    
+
     @Column(length = 45)
     private String nombre;
-    
+
     @Column(length = 45)
     private String apellido;
-    
+
     @Column(length = 45, unique = true)
     private String correo;
-    
+
     @Column(length = 45)
     private String telefono;
 
+    @JsonIgnore
     @Column(length = 45)
     private String clave;
-    
+
     @ManyToOne
     @JoinColumn(name = "idEstado", nullable = false)
     private Estado estado;
-    
+
     @ManyToOne
     @JoinColumn(name = "idRoles", nullable = false)
     private Rol rol;
-    
+
+    @JsonIgnore
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
     private List<Evento> eventosOrganizados;
-    
+
+    @JsonIgnore
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
     private List<EventoDeseado> eventosDeseados;
-    
+
+    @JsonIgnore
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Valoracion> valoraciones;
-    
+
+    @JsonIgnore
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Compra> compras;
 }

@@ -6,18 +6,13 @@ document.addEventListener('DOMContentLoaded', () => {
   loadEventosDestacados();
   loadCategoriasDestacadas();
   loadTodasLasCategorias();
-  // búsqueda gestionada en tituloParcial.js
 });
 
-// ══════════════════════════════════════════════════════════
-// SESIÓN
-// ══════════════════════════════════════════════════════════
 async function checkSession() {
   try {
     const res = await fetch(`${BASE}/api/pagos`, { credentials: 'include' });
-    if (!res.ok) { renderNavGuest(); return; }
     const json = await res.json();
-    json.data ? renderNavAuth(json.data.nombre, json.data.rol?.nombre || '') : renderNavGuest();
+    json.data ? renderNavAuth(json.data.nombre, json.data.rolNombre || '') : renderNavGuest();
   } catch { renderNavGuest(); }
 }
 
@@ -47,15 +42,8 @@ function renderNavGuest() {
   `;
 }
 
-// ══════════════════════════════════════════════════════════
-// EVENTOS DESTACADOS
-// Intenta /api/eventos/destacados primero.
-// Si falla (500 por lazy loading JPA), usa /api/eventos y toma los 3 primeros.
-// ══════════════════════════════════════════════════════════
 async function loadEventosDestacados() {
   const grid = document.getElementById('eventGrid');
-
-  // — Intento 1: endpoint dedicado
   try {
     const res = await fetch(`${BASE}/api/eventos/destacados`, { credentials: 'include' });
     if (res.ok) {
@@ -71,7 +59,6 @@ async function loadEventosDestacados() {
     console.warn('[Eventos] /destacados excepción:', e.message, '— usando fallback');
   }
 
-  // — Intento 2: fallback a /api/eventos (toma los 3 primeros)
   try {
     const res = await fetch(`${BASE}/api/eventos`, { credentials: 'include' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -91,7 +78,6 @@ async function loadEventosDestacados() {
 
 function cardEvento(e) {
   const img   = e.foto ? `/uploads/eventos/${e.foto}` : null;
-  // EventoDTO devuelve categoriaNombre (campo plano añadido)
   const cat   = e.categoriaNombre || '';
   const fecha = formatFecha(e.fecha);
   return `
@@ -118,9 +104,7 @@ function cardEvento(e) {
     </a>`;
 }
 
-// ══════════════════════════════════════════════════════════
-// CATEGORÍAS DESTACADAS — GET /api/categorias/destacadas
-// ══════════════════════════════════════════════════════════
+//funcion para las categorias destacadas
 async function loadCategoriasDestacadas() {
   const grid = document.getElementById('categoryGrid');
   try {
@@ -146,9 +130,7 @@ function cardCategoria(c) {
     </a>`;
 }
 
-// ══════════════════════════════════════════════════════════
-// SELECT TODAS LAS CATEGORÍAS — GET /api/categorias
-// ══════════════════════════════════════════════════════════
+//cargar todas las categorias en el menu desplegable
 async function loadTodasLasCategorias() {
   const sel = document.getElementById('categorySelect');
   try {
@@ -166,22 +148,16 @@ async function loadTodasLasCategorias() {
   });
 }
 
+//funciones de apoyo
 
-
-// ══════════════════════════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════════════════════════
-
-// Extrae el array de la respuesta — soporta ApiResponse<List> y List directa
 function extraerArray(json) {
   if (!json) return [];
-  if (Array.isArray(json))        return json;       // respuesta es array directo
-  if (Array.isArray(json.data))   return json.data;  // ApiResponse<List>
-  if (json.data != null)          return [json.data]; // ApiResponse<Objeto>
+  if (Array.isArray(json))        return json;
+  if (Array.isArray(json.data))   return json.data;
+  if (json.data != null)          return [json.data];
   return [];
 }
 
-// Spring serializa LocalDate como [year, month, day] o "YYYY-MM-DD"
 function formatFecha(v) {
   if (!v) return 'Fecha por confirmar';
   if (Array.isArray(v)) {

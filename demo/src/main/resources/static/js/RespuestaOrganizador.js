@@ -21,10 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const res  = await fetch(`${BASE}/api/auth/registrar-organizador`, {
+      const res = await fetch(`${BASE}/api/auth/registrar-organizador`, {
         method: 'POST', credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, apellido, email, telefono, password })
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ nombre, apellido, correo: email, telefono, clave: password })
       });
       const json = await res.json();
 

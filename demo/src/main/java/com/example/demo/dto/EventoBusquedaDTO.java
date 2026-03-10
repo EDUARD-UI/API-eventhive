@@ -1,5 +1,10 @@
 package com.example.demo.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class EventoBusquedaDTO {
     private Long id;
     private String titulo, nombreCategoria;
@@ -9,30 +14,5 @@ public class EventoBusquedaDTO {
         this.titulo = titulo;
         this.nombreCategoria = nombreCategoria;
     }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitulo() {
-        return titulo;
-    }
-
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
-    }
-
-    public String getNombreCategoria() {
-        return nombreCategoria;
-    }
-
-    public void setNombreCategoria(String nombreCategoria) {
-        this.nombreCategoria = nombreCategoria;
-    }
-
     
 }

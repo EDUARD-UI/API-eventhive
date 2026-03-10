@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.EventoBusquedaDTO;
 import com.example.demo.dto.EventoDestacadoDTO;
+import com.example.demo.dto.EventoDetalleDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Categoria;
@@ -61,8 +62,8 @@ public class EventosApiController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Evento>> obtenerEvento(@PathVariable Long id) {
-        Evento evento = serviceEventos.obtenerEventoPorId(id);
+    public ResponseEntity<ApiResponse<EventoDetalleDTO>> obtenerEvento(@PathVariable Long id) {
+        EventoDetalleDTO evento = serviceEventos.obtenerEventoDetalleDTO(id);
         return ResponseEntity.ok(ApiResponse.ok("Evento obtenido", evento));
     }
 
@@ -77,7 +78,6 @@ public class EventosApiController {
         List<EventoDestacadoDTO> eventos = serviceEventos.obtenerTop3EventosDTO();
         return ResponseEntity.ok(ApiResponse.ok("Eventos destacados obtenidos", eventos));
     }
-    
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Void>> crearEvento(
@@ -94,10 +94,14 @@ public class EventosApiController {
         Usuario usuarioLogueado = getUsuarioSesion(session);
 
         Categoria categoria = serviceCategoria.obtenerCategoriaPorId(categoriaId);
-        if (categoria == null) throw new ResourceNotFoundException("La categoría seleccionada no existe");
+        if (categoria == null) {
+            throw new ResourceNotFoundException("La categoría seleccionada no existe");
+        }
 
         Estado estado = serviceEstado.obtenerEstadoPorId(estadoId);
-        if (estado == null) throw new ResourceNotFoundException("El estado seleccionado no existe");
+        if (estado == null) {
+            throw new ResourceNotFoundException("El estado seleccionado no existe");
+        }
 
         Evento nuevoEvento = new Evento();
         nuevoEvento.setTitulo(titulo);
@@ -137,10 +141,14 @@ public class EventosApiController {
         Evento eventoExistente = serviceEventos.obtenerEventoPorId(id);
 
         Categoria categoria = serviceCategoria.obtenerCategoriaPorId(categoriaId);
-        if (categoria == null) throw new ResourceNotFoundException("La categoría seleccionada no existe");
+        if (categoria == null) {
+            throw new ResourceNotFoundException("La categoría seleccionada no existe");
+        }
 
         Estado estado = serviceEstado.obtenerEstadoPorId(estadoId);
-        if (estado == null) throw new ResourceNotFoundException("El estado seleccionado no existe");
+        if (estado == null) {
+            throw new ResourceNotFoundException("El estado seleccionado no existe");
+        }
 
         eventoExistente.setTitulo(titulo);
         eventoExistente.setDescripcion(descripcion);
@@ -176,25 +184,34 @@ public class EventosApiController {
     }
 
     // FUNCIONES DE APOYO
-
     private Usuario getUsuarioSesion(HttpSession session) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogeado");
-        if (usuario == null) throw new BusinessException("Debe iniciar sesión para realizar esta acción");
+        if (usuario == null) {
+            throw new BusinessException("Debe iniciar sesión para realizar esta acción");
+        }
         return usuario;
     }
 
     private void validarFoto(MultipartFile foto) {
-        if (foto.getSize() > 5 * 1024 * 1024) throw new BusinessException("La foto no puede superar los 5MB");
+        if (foto.getSize() > 5 * 1024 * 1024) {
+            throw new BusinessException("La foto no puede superar los 5MB");
+        }
         String ct = foto.getContentType();
-        if (ct == null || !ct.startsWith("image/")) throw new BusinessException("Solo se permiten archivos de imagen");
+        if (ct == null || !ct.startsWith("image/")) {
+            throw new BusinessException("Solo se permiten archivos de imagen");
+        }
     }
 
     private String guardarFoto(MultipartFile foto) throws IOException {
         Path uploadDir = Paths.get(uploadPath);
-        if (!Files.exists(uploadDir)) Files.createDirectories(uploadDir);
+        if (!Files.exists(uploadDir)) {
+            Files.createDirectories(uploadDir);
+        }
         String ext = "";
         String original = foto.getOriginalFilename();
-        if (original != null && original.contains(".")) ext = original.substring(original.lastIndexOf("."));
+        if (original != null && original.contains(".")) {
+            ext = original.substring(original.lastIndexOf("."));
+        }
         String fileName = UUID.randomUUID() + ext;
         Files.copy(foto.getInputStream(), uploadDir.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
         return fileName;
@@ -202,8 +219,11 @@ public class EventosApiController {
 
     private void eliminarFoto(String nombreFoto) {
         if (nombreFoto != null && !nombreFoto.isBlank()) {
-            try { Files.deleteIfExists(Paths.get(uploadPath).resolve(nombreFoto)); }
-            catch (IOException e) { System.err.println("Error al eliminar foto: " + e.getMessage()); }
+            try {
+                Files.deleteIfExists(Paths.get(uploadPath).resolve(nombreFoto));
+            } catch (IOException e) {
+                System.err.println("Error al eliminar foto: " + e.getMessage());
+            }
         }
     }
 }

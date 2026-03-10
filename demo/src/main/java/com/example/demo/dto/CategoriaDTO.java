@@ -1,5 +1,10 @@
 package com.example.demo.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class CategoriaDTO{
 
     private Long id;
@@ -12,22 +17,4 @@ public class CategoriaDTO{
         this.id = id;
         this.nombre = nombre;
     }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    
 }

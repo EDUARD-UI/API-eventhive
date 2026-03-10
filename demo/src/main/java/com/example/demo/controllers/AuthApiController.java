@@ -76,7 +76,7 @@ public class AuthApiController {
             throw new BusinessException("El correo ya está registrado");
         }
 
-        Estado estadoActivo = estadoRepository.findByNombre("activo");
+        Estado estadoActivo = estadoRepository.findByNombre("registro activo");
         Rol rolCliente = rolRepository.findByNombre("cliente");
 
         Usuario nuevoUsuario = new Usuario();

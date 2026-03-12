@@ -1,5 +1,7 @@
 package com.example.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -28,6 +30,7 @@ public class TiqueteCompra {
     @JoinColumn(name = "idTiquete", nullable = false)
     private Tiquete tiquete;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "idCompra", nullable = false)
     private Compra compra;

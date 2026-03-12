@@ -2,7 +2,6 @@ package com.example.demo.controllers;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,19 +36,14 @@ public class ComprasApiController {
             @RequestParam String metodoPago,
             HttpSession session) {
 
-        Usuario usuario = getUsuarioSesion(session);
-        Compra compra = serviceCompra.procesarCompra(usuario, localidadId, cantidad, metodoPago);
-
+        Compra compra = serviceCompra.procesarCompra(getUsuarioSesion(session), localidadId, cantidad, metodoPago);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Compra realizada exitosamente",
-                        Map.of("compraId", compra.getId())));
+                .body(ApiResponse.ok("Compra realizada exitosamente", Map.of("compraId", compra.getId())));
     }
 
     @GetMapping("/historial")
     public ResponseEntity<ApiResponse<List<CompraDetalleDTO>>> historialCompras(HttpSession session) {
-        Usuario usuario = getUsuarioSesion(session);
-        List<Compra> compras = serviceCompra.obtenerComprasConDetallesPorCliente(usuario.getId());
-        List<CompraDetalleDTO> dtos = compras.stream().map(this::toDTO).collect(Collectors.toList());
+        List<CompraDetalleDTO> dtos = serviceCompra.obtenerHistorialDTO(getUsuarioSesion(session).getId());
         return ResponseEntity.ok(ApiResponse.ok("Historial de compras", dtos));
     }
 
@@ -59,7 +53,7 @@ public class ComprasApiController {
             HttpSession session) {
 
         Usuario usuario = getUsuarioSesion(session);
-        Compra compra = serviceCompra.obtenerCompraPorIdConDetalles(compraId);
+        Compra compra   = serviceCompra.obtenerCompraPorIdConDetalles(compraId);
 
         if (!compra.getCliente().getId().equals(usuario.getId())) {
             throw new BusinessException("No tiene permiso para ver esta compra");
@@ -74,29 +68,5 @@ public class ComprasApiController {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogeado");
         if (usuario == null) throw new BusinessException("Debe iniciar sesión para realizar esta acción");
         return usuario;
-    }
-
-    private CompraDetalleDTO toDTO(Compra compra) {
-        CompraDetalleDTO dto = new CompraDetalleDTO();
-        dto.setId(compra.getId());
-        dto.setFechaCompra(compra.getFechaCompra());
-        dto.setTotal(compra.getTotal());
-        dto.setMetodoPago(compra.getMetodoPago());
-
-        if (compra.getTiqueteCompras() != null && !compra.getTiqueteCompras().isEmpty()) {
-            var primerTiquete = compra.getTiqueteCompras().get(0).getTiquete();
-            if (primerTiquete != null && primerTiquete.getLocalidad() != null) {
-                dto.setLocalidadNombre(primerTiquete.getLocalidad().getNombre());
-                dto.setCantidad(compra.getTiqueteCompras().size());
-                var evento = primerTiquete.getLocalidad().getEvento();
-                if (evento != null) {
-                    dto.setEventoTitulo(evento.getTitulo());
-                    dto.setEventoFecha(evento.getFecha());
-                    dto.setEventoHora(evento.getHora());
-                    dto.setEventoLugar(evento.getLugar());
-                }
-            }
-        }
-        return dto;
     }
 }

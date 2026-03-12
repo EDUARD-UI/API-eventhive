@@ -24,6 +24,7 @@ import com.example.demo.service.ServiceEstado;
 import com.example.demo.service.ServiceRoles;
 import com.example.demo.service.ServiceUsuario;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -36,11 +37,13 @@ public class UsuariosApiController {
     private final ServiceEstado serviceEstado;
     private final UsuarioRepository usuarioRepository;
 
+    // GET /api/usuarios → listar todos (admin)
     @GetMapping
     public ResponseEntity<ApiResponse<List<Usuario>>> listarUsuarios() {
         return ResponseEntity.ok(ApiResponse.ok("Usuarios obtenidos", serviceUsuario.obtenerTodosLosUsuarios()));
     }
 
+    // GET /api/usuarios/{id} → obtener por id (admin)
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Usuario>> obtenerUsuario(@PathVariable Long id) {
         Usuario usuario = serviceUsuario.obtenerUsuarioPorId(id);
@@ -48,6 +51,7 @@ public class UsuariosApiController {
         return ResponseEntity.ok(ApiResponse.ok("Usuario obtenido", usuario));
     }
 
+    // POST /api/usuarios → crear usuario desde admin (requiere rol y estado)
     @PostMapping
     public ResponseEntity<ApiResponse<Void>> crearUsuario(
             @RequestParam String nombre,
@@ -82,6 +86,7 @@ public class UsuariosApiController {
                 .body(ApiResponse.ok("Usuario creado exitosamente"));
     }
 
+    // PUT /api/usuarios/{id} → actualizar usuario desde admin (requiere rol y estado)
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> actualizarUsuario(
             @PathVariable Long id,
@@ -113,15 +118,40 @@ public class UsuariosApiController {
         usuarioExistente.setTelefono(telefono);
         usuarioExistente.setRol(rolObj);
         usuarioExistente.setEstado(estadoObj);
-
-        if (clave != null && !clave.isBlank()) {
-            usuarioExistente.setClave(clave);
-        }
+        if (clave != null && !clave.isBlank()) usuarioExistente.setClave(clave);
 
         serviceUsuario.actualizarUsuario(usuarioExistente);
         return ResponseEntity.ok(ApiResponse.ok("Usuario actualizado exitosamente"));
     }
 
+    // PUT /api/usuarios/perfil → el usuario logueado actualiza sus propios datos (sin rol ni estado)
+    @PutMapping("/perfil")
+    public ResponseEntity<ApiResponse<Void>> actualizarPerfil(
+            @RequestParam String nombre,
+            @RequestParam String correo,
+            @RequestParam(required = false) String telefono,
+            @RequestParam(required = false) String clave,
+            HttpSession session) {
+
+        Usuario usuarioEnSesion = (Usuario) session.getAttribute("usuarioLogeado");
+        if (usuarioEnSesion == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Debe iniciar sesión para editar el perfil"));
+        }
+
+        // La validacion de correo duplicado y la actualizacion la maneja el service
+        serviceUsuario.actualizarPerfil(usuarioEnSesion.getId(), nombre, correo, telefono, clave);
+
+        // Refrescar sesion con los nuevos datos
+        Usuario actualizado = serviceUsuario.obtenerUsuarioPorId(usuarioEnSesion.getId());
+        session.setAttribute("usuarioLogeado", actualizado);
+        session.setAttribute("usuarioNombre", actualizado.getNombre());
+        session.setAttribute("usuarioEmail", actualizado.getCorreo());
+
+        return ResponseEntity.ok(ApiResponse.ok("Perfil actualizado exitosamente"));
+    }
+
+    // DELETE /api/usuarios/{id} → eliminar usuario (admin)
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> eliminarUsuario(@PathVariable Long id) {
         if (serviceUsuario.obtenerUsuarioPorId(id) == null) {

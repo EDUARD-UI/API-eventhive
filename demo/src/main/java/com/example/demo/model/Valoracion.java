@@ -1,5 +1,7 @@
 package com.example.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -27,10 +29,12 @@ public class Valoracion {
 
     private long calificacion;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "idCliente", nullable = false)
     private Usuario cliente;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "idEvento", nullable = false)
     private Evento evento;

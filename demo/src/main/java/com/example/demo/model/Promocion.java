@@ -3,6 +3,8 @@ package com.example.demo.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -37,6 +39,7 @@ public class Promocion {
     @Column(name = "fecha_final")
     private LocalDate fechaFinal;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "idEvento", nullable = false)
     private Evento evento;

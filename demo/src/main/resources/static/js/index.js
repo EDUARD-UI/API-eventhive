@@ -22,7 +22,7 @@ function renderNavAuth(nombre, rol) {
   el.innerHTML = `
     <span class="text-dark/50 hidden sm:block text-sm font-medium">${esc(nombre)}</span>
     ${rol === 'organizador'
-      ? `<a href="/organizador/dashboard" class="bg-brand text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition">Dashboard</a>`
+      ? `<a href="/organizador/index.html" class="bg-brand text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition">Dashboard</a>`
       : `<a href="/perfil.html" class="text-dark/60 hover:text-brand transition text-xs font-medium">Mi Perfil</a>`
     }
     <button id="btnLogout" class="text-dark/40 hover:text-brand text-xs transition font-medium">Salir</button>

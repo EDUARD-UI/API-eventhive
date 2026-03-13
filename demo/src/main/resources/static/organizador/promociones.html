@@ -1,0 +1,110 @@
+<!-- ═══════════════════════════════════════════════
+     promociones.html  —  gestión de promociones + modal
+     Inyectado en #page-content por el router
+═══════════════════════════════════════════════ -->
+
+<!-- Cabecera -->
+<div class="sec-head">
+  <div>
+    <h2>Promociones</h2>
+    <p>Descuentos y ofertas especiales para tus eventos</p>
+  </div>
+  <button class="btn btn-amber" onclick="openModal('modal-promo')">+ Nueva promoción</button>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <div class="search-box">
+    <span class="si">🔍</span>
+    <input
+      type="text"
+      id="pr-srch"
+      placeholder="Buscar promoción o evento..."
+      oninput="renderPromos()"
+    />
+  </div>
+  <div class="view-toggle">
+    <button class="vt active" onclick="toggleView(this,'pr','grid')">⊞ Cards</button>
+    <button class="vt"        onclick="toggleView(this,'pr','table')">≡ Tabla</button>
+  </div>
+</div>
+
+<!-- Vista grid -->
+<div
+  id="pr-grid"
+  style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:16px"
+></div>
+
+<!-- Vista tabla -->
+<div id="pr-table" style="display:none">
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th>Evento</th>
+          <th>Descuento</th>
+          <th>Inicio</th>
+          <th>Fin</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="pr-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════ MODAL: Nueva Promoción ════ -->
+<div class="modal-overlay" id="modal-promo">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-promo')">✕</button>
+    <div class="modal-title">Nueva promoción</div>
+
+    <form id="form-promo" onsubmit="submitPromo(event)">
+      <input type="hidden" id="pr-id"/>
+
+      <div class="fg">
+        <label class="fl">Descripción</label>
+        <input
+          class="fi" id="pr-desc" type="text"
+          placeholder="Ej: Lanzamiento anticipado..." required
+        />
+      </div>
+
+      <div class="fg">
+        <label class="fl">Evento</label>
+        <select class="fs" id="pr-ev" required>
+          <option value="">Seleccionar evento...</option>
+        </select>
+      </div>
+
+      <div class="fg">
+        <label class="fl">Descuento (%)</label>
+        <input class="fi" id="pr-pct" type="number" min="1" max="100" required/>
+      </div>
+
+      <div class="fgrid">
+        <div class="fg">
+          <label class="fl">Fecha inicio</label>
+          <input class="fi" id="pr-ini" type="date" required/>
+        </div>
+        <div class="fg">
+          <label class="fl">Fecha fin</label>
+          <input class="fi" id="pr-fin" type="date" required/>
+        </div>
+      </div>
+
+      <div class="f-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-promo')">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-amber" id="btn-pr">
+          Crear promoción
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- JS específico de promociones -->
+<script src="../js/organizador/promociones.js"></script>

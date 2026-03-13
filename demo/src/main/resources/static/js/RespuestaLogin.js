@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           window.location.href =
             json.data.rol?.nombre === "organizador"
-              ? "/organizador/dashboard"
+              ? "/organizador/index.html"
               : "/index.html";
         }
       } else {

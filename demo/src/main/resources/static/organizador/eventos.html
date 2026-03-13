@@ -1,0 +1,130 @@
+<!-- ═══════════════════════════════════════════════
+     eventos.html  —  gestión de eventos + modal
+     Inyectado en #page-content por el router
+═══════════════════════════════════════════════ -->
+
+<!-- Cabecera de sección -->
+<div class="sec-head">
+  <div>
+    <h2>Mis Eventos</h2>
+    <p>Filtra, busca y gestiona todos tus eventos</p>
+  </div>
+  <button class="btn btn-primary" onclick="openModal('modal-evento')">+ Nuevo evento</button>
+</div>
+
+<!-- Toolbar: buscador + toggle vista -->
+<div class="toolbar">
+  <div class="search-box">
+    <span class="si">🔍</span>
+    <input
+      type="text"
+      id="ev-srch"
+      placeholder="Buscar evento..."
+      oninput="Store.filtros.eventos.q = this.value.toLowerCase(); renderEventos()"
+    />
+  </div>
+  <div class="view-toggle">
+    <button class="vt active" onclick="toggleView(this,'ev','grid')">⊞ Cards</button>
+    <button class="vt"        onclick="toggleView(this,'ev','table')">≡ Tabla</button>
+  </div>
+</div>
+
+<!-- Filtros por categoría -->
+<div class="cat-bar" id="cat-bar">
+  <span class="cat-lbl">Filtrar:</span>
+  <button class="chip active" data-cat="all" onclick="selCat(this)">
+    Todos <span class="cc" id="cc-all">0</span>
+  </button>
+</div>
+
+<!-- Vista grid -->
+<div id="ev-grid" class="cards-grid"></div>
+
+<!-- Vista tabla -->
+<div id="ev-table" style="display:none">
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Categoría</th>
+          <th>Fecha</th>
+          <th>Lugar</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="ev-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════ MODAL: Crear / Editar Evento ════ -->
+<div class="modal-overlay" id="modal-evento">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-evento')">✕</button>
+    <div class="modal-title" id="mt-ev">Crear nuevo evento</div>
+
+    <form id="form-evento" onsubmit="submitEvento(event)">
+      <input type="hidden" id="ev-id"/>
+
+      <div class="fg">
+        <label class="fl">Título</label>
+        <input class="fi" id="ev-titulo" type="text" placeholder="Nombre del evento" required/>
+      </div>
+
+      <div class="fg">
+        <label class="fl">Descripción</label>
+        <textarea class="fta" id="ev-desc" placeholder="Describe el evento..."></textarea>
+      </div>
+
+      <div class="fgrid">
+        <div class="fg">
+          <label class="fl">Fecha</label>
+          <input class="fi" id="ev-fecha" type="date" required/>
+        </div>
+        <div class="fg">
+          <label class="fl">Hora</label>
+          <input class="fi" id="ev-hora" type="time" required/>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label class="fl">Lugar</label>
+        <input class="fi" id="ev-lugar" type="text" placeholder="Ciudad, recinto..." required/>
+      </div>
+
+      <div class="fgrid">
+        <div class="fg">
+          <label class="fl">Categoría</label>
+          <select class="fs" id="ev-cat" required>
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Estado</label>
+          <select class="fs" id="ev-est" required>
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label class="fl">Foto del evento (opcional)</label>
+        <input class="fi" id="ev-foto" type="file" accept="image/*"/>
+      </div>
+
+      <div class="f-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-evento')">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary" id="btn-ev">
+          Crear evento
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- JS específico de eventos -->
+<script src="../js/organizador/eventos.js"></script>

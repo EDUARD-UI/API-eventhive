@@ -1,0 +1,56 @@
+<!-- demo/src/main/resources/static/organizador/org-dashboard.html -->
+
+<div class="dash-hero">
+  <div class="hero-greeting" id="h-greeting">Bienvenido 👋</div>
+  <div class="hero-sub">Resumen de tu actividad</div>
+  <div class="hero-date" id="h-date"></div>
+  <div class="hero-actions">
+    <button class="btn btn-primary" onclick="navegarA('eventos')">+ Crear evento</button>
+    <button class="btn btn-amber"   onclick="navegarA('localidades')">🏟 Nueva localidad</button>
+  </div>
+</div>
+
+<div class="stats-strip">
+  <div class="stat-tile">
+    <div class="st-icon" style="background:var(--blue-l)">🗓</div>
+    <div>
+      <div class="st-val" id="st-ev">—</div>
+      <div class="st-lbl">Eventos creados</div>
+    </div>
+  </div>
+  <div class="stat-tile">
+    <div class="st-icon" style="background:var(--amber-l)">🏟</div>
+    <div>
+      <div class="st-val" id="st-loc">—</div>
+      <div class="st-lbl">Localidades activas</div>
+    </div>
+  </div>
+</div>
+
+<div class="dash-cols">
+  <div class="card-inner">
+    <div class="flex-between" style="margin-bottom:18px">
+      <div style="font-family:'Fraunces',serif;font-weight:800;font-size:1.05rem">Próximos eventos</div>
+      <button class="btn btn-ghost btn-sm" onclick="navegarA('eventos')">Ver todos →</button>
+    </div>
+    <div class="tl" id="dash-tl">
+      <div style="color:var(--muted);font-size:.85rem">Cargando...</div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-family:'Fraunces',serif;font-weight:800;font-size:1.05rem">Accesos rápidos</div>
+    <div class="qa-tile" style="background:linear-gradient(135deg,var(--blue),#0066dd);cursor:pointer"
+         onclick="navegarA('eventos')">
+      <div class="qa-icon">🗓</div>
+      <div class="qa-name" style="color:#fff">Crear evento</div>
+      <div class="qa-desc" style="color:rgba(255,255,255,.6)">Nuevo evento desde cero</div>
+    </div>
+    <div class="qa-tile" style="background:var(--amber-l);border:1.5px solid var(--amber);cursor:pointer"
+         onclick="navegarA('localidades')">
+      <div class="qa-icon">🏟</div>
+      <div class="qa-name">Nueva localidad</div>
+      <div class="qa-desc" style="color:var(--muted)">Añadir zona a un evento</div>
+    </div>
+  </div>
+</div>

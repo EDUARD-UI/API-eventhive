@@ -9,4 +9,10 @@ public class NombreEventoDTO {
     private long id;
     private String titulo;
 
+    public NombreEventoDTO(Long id, String titulo) {
+        this.id = id;
+        this.titulo = titulo;
+    }
+    
+    public NombreEventoDTO() {}
 }

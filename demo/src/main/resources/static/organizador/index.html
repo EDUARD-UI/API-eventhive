@@ -4,15 +4,14 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>EventHive — Panel del Organizador</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="../css/organizador/variables.css"/>
   <link rel="stylesheet" href="../css/organizador/sidebar.css"/>
   <link rel="stylesheet" href="../css/organizador/components.css"/>
   <link rel="stylesheet" href="../css/organizador/pages.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
-  <!-- ════════ SIDEBAR (vive aquí, nunca se recarga) ════════ -->
   <nav id="sidebar">
     <div class="sb-brand">
       <div class="sb-hex">H</div>
@@ -32,9 +31,6 @@
     <a class="nav-item" data-s="localidades" href="#">
       <span class="ni">🏟</span> Localidades
     </a>
-    <a class="nav-item" data-s="promociones" href="#">
-      <span class="ni">🏷</span> Promociones
-    </a>
 
     <div class="nav-grp">Cuenta</div>
     <a class="nav-item" data-s="perfil" href="#">
@@ -42,7 +38,7 @@
     </a>
 
     <div class="sb-bottom">
-      <div class="sb-user" id="sb-user-btn">
+      <div class="sb-user">
         <div class="sb-avatar" id="sb-av">OG</div>
         <div>
           <div class="sb-uname" id="sb-nm">Organizador</div>
@@ -55,14 +51,11 @@
     </div>
   </nav>
 
-  <!-- ════════ MAIN ════════ -->
   <div id="main">
     <header class="topbar">
       <div class="topbar-title" id="topbar-title">Dashboard</div>
       <span id="topbar-sub" style="font-size:.78rem;color:var(--muted)"></span>
     </header>
-
-    <!-- Aquí se inyecta el HTML de cada página -->
     <div class="page" id="page-content">
       <div style="display:flex;align-items:center;justify-content:center;height:60vh;color:var(--muted)">
         Cargando...
@@ -70,17 +63,8 @@
     </div>
   </div>
 
-  <!-- Toast container (global, siempre presente) -->
   <div id="toast-wrap"></div>
 
-  <!-- ════════ JS GLOBALES (store, api, ui, sidebar — siempre cargados) ════════ -->
-  <script src="../js/organizador/store.js"></script>
-  <script src="../js/organizador/helpers.js"></script>
-  <script src="../js/organizador/api.js"></script>
-  <script src="../js/organizador/ui.js"></script>
-  <script src="../js/organizador/sidebar.js"></script>
-  <script src="../js/organizador/globals.js"></script>
-  <script src="../js/organizador/main.js"></script>
-
+  <script src="../js/organizador/org-main.js"></script>
 </body>
 </html>

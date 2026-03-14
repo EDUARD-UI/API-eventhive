@@ -1,28 +1,24 @@
-// demo/src/main/resources/static/js/organizador/org-main.js
-
 const ORG = {
   usuario: null,
-  dashboard: null,  // datos del dashboard (eventos, localidades, etc.)
+  dashboard: null,
 };
 
 const TITLES = {
-  dashboard: 'Dashboard',
-  eventos: 'Mis Eventos',
+  dashboard:   'Dashboard',
+  eventos:     'Mis Eventos',
   localidades: 'Localidades',
-  perfil: 'Mi Perfil',
+  perfil:      'Mi Perfil',
 };
 
-/* ── INIT ── */
 document.addEventListener('DOMContentLoaded', async () => {
   await cargarSesion();
   initSidebar();
   await navegarA('dashboard');
 });
 
-/* ── SESIÓN ── */
 async function cargarSesion() {
   try {
-    const res = await fetch('/api/pagos', { credentials: 'include' });
+    const res  = await fetch('/api/pagos', { credentials: 'include' });
     const json = await res.json();
     if (!json.data || json.data.rolNombre !== 'organizador') {
       window.location.href = '/login.html';
@@ -38,7 +34,6 @@ async function cargarSesion() {
   }
 }
 
-/* ── SIDEBAR ── */
 function initSidebar() {
   document.querySelectorAll('.nav-item[data-s]').forEach(el => {
     el.addEventListener('click', e => {
@@ -52,7 +47,6 @@ function initSidebar() {
   });
 }
 
-/* ── ROUTER ── */
 async function navegarA(sec) {
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
   document.querySelector(`.nav-item[data-s="${sec}"]`)?.classList.add('active');
@@ -64,13 +58,43 @@ async function navegarA(sec) {
   try {
     const res = await fetch(`/organizador/org-${sec}.html`);
     if (!res.ok) throw new Error('Página no encontrada');
-    pageContent.innerHTML = await res.text();
+    const html = await res.text();
+
+    // Separar HTML de scripts para ejecutarlos correctamente
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+
+    // Extraer y remover scripts del fragment
+    const scripts = Array.from(tmp.querySelectorAll('script'));
+    scripts.forEach(s => s.remove());
+
+    // Inyectar HTML sin scripts
+    pageContent.innerHTML = tmp.innerHTML;
+
+    // Ejecutar cada script manualmente (así el navegador los procesa)
+    for (const oldScript of scripts) {
+      const newScript = document.createElement('script');
+      if (oldScript.src) {
+        // Script externo — esperar a que cargue
+        await new Promise((resolve, reject) => {
+          newScript.src = oldScript.src;
+          newScript.onload  = resolve;
+          newScript.onerror = reject;
+          document.head.appendChild(newScript);
+        });
+      } else {
+        // Script inline
+        newScript.textContent = oldScript.textContent;
+        document.head.appendChild(newScript);
+      }
+    }
+
   } catch (err) {
-    pageContent.innerHTML = `<div style="padding:40px;color:var(--red)">Error: ${err.message}</div>`;
+    pageContent.innerHTML = `<div style="padding:40px;color:red">Error: ${err.message}</div>`;
     return;
   }
 
-  // Inicializar la sección
+  // Inicializar sección tras cargar scripts
   switch (sec) {
     case 'dashboard':   await initDashboard();   break;
     case 'eventos':     await initEventos();     break;
@@ -79,22 +103,37 @@ async function navegarA(sec) {
   }
 }
 
-/* ── TOAST ── */
+/* ── TOAST (SWEETALERT2) ── */
 function toast(msg, type = 'ok') {
-  const wrap = document.getElementById('toast-wrap');
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.innerHTML = `<span>${type === 'ok' ? '✓' : '✕'}</span><span>${msg}</span>`;
-  wrap.appendChild(el);
-  setTimeout(() => el.remove(), 3500);
+  const iconMap = {
+    'ok': 'success',
+    'err': 'error',
+    'info': 'info',
+    'warning': 'warning'
+  };
+  
+  Swal.fire({
+    icon: iconMap[type] || 'info',
+    title: msg,
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3500,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener('mouseenter', Swal.stopTimer)
+      toast.addEventListener('mouseleave', Swal.resumeTimer)
+    }
+  });
 }
 
 /* ── MODAL ── */
 function openModal(id) {
   const el = document.getElementById(id);
-  el?.classList.add('open');
-  el?.querySelector('form')?.reset();
-  const hid = el?.querySelector('input[type=hidden]');
+  if (!el) return;
+  el.classList.add('open');
+  el.querySelector('form')?.reset();
+  const hid = el.querySelector('input[type=hidden]');
   if (hid) hid.value = '';
 }
 function closeModal(id) {

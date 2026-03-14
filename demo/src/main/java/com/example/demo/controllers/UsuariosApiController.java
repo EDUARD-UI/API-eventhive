@@ -37,13 +37,13 @@ public class UsuariosApiController {
     private final ServiceEstado serviceEstado;
     private final UsuarioRepository usuarioRepository;
 
-    // GET /api/usuarios → listar todos (admin)
+    // GET /api/usuarios → listar todos (exlusivo para admin)
     @GetMapping
     public ResponseEntity<ApiResponse<List<Usuario>>> listarUsuarios() {
         return ResponseEntity.ok(ApiResponse.ok("Usuarios obtenidos", serviceUsuario.obtenerTodosLosUsuarios()));
     }
 
-    // GET /api/usuarios/{id} → obtener por id (admin)
+    // GET /api/usuarios/{id} → obtener por id (exlusivo para admin)
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Usuario>> obtenerUsuario(@PathVariable Long id) {
         Usuario usuario = serviceUsuario.obtenerUsuarioPorId(id);
@@ -51,7 +51,7 @@ public class UsuariosApiController {
         return ResponseEntity.ok(ApiResponse.ok("Usuario obtenido", usuario));
     }
 
-    // POST /api/usuarios → crear usuario desde admin (requiere rol y estado)
+    // POST /api/usuarios → crear usuario desde admin
     @PostMapping
     public ResponseEntity<ApiResponse<Void>> crearUsuario(
             @RequestParam String nombre,
@@ -86,7 +86,7 @@ public class UsuariosApiController {
                 .body(ApiResponse.ok("Usuario creado exitosamente"));
     }
 
-    // PUT /api/usuarios/{id} → actualizar usuario desde admin (requiere rol y estado)
+    // PUT /api/usuarios/{id} → actualizar usuario (exlusivo para admin)
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> actualizarUsuario(
             @PathVariable Long id,
@@ -124,7 +124,7 @@ public class UsuariosApiController {
         return ResponseEntity.ok(ApiResponse.ok("Usuario actualizado exitosamente"));
     }
 
-    // PUT /api/usuarios/perfil → el usuario logueado actualiza sus propios datos (sin rol ni estado)
+    // PUT /api/usuarios/perfil → el usuario logueado actualiza sus propios datos personales
     @PutMapping("/perfil")
     public ResponseEntity<ApiResponse<Void>> actualizarPerfil(
             @RequestParam String nombre,
@@ -139,7 +139,7 @@ public class UsuariosApiController {
                     .body(ApiResponse.error("Debe iniciar sesión para editar el perfil"));
         }
 
-        // La validacion de correo duplicado y la actualizacion la maneja el service
+        // validacion y actualización
         serviceUsuario.actualizarPerfil(usuarioEnSesion.getId(), nombre, correo, telefono, clave);
 
         // Refrescar sesion con los nuevos datos
@@ -151,7 +151,7 @@ public class UsuariosApiController {
         return ResponseEntity.ok(ApiResponse.ok("Perfil actualizado exitosamente"));
     }
 
-    // DELETE /api/usuarios/{id} → eliminar usuario (admin)
+    // DELETE /api/usuarios/{id} → eliminar usuario (exlusivo para admin)
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> eliminarUsuario(@PathVariable Long id) {
         if (serviceUsuario.obtenerUsuarioPorId(id) == null) {

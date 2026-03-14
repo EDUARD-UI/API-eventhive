@@ -9,6 +9,7 @@ import com.example.demo.dto.EventoBusquedaDTO;
 import com.example.demo.dto.EventoDTO;
 import com.example.demo.dto.EventoDestacadoDTO;
 import com.example.demo.dto.EventoDetalleDTO;
+import com.example.demo.dto.NombreEventoDTO;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Evento;
 import com.example.demo.model.Localidad;
@@ -94,6 +95,17 @@ public class ServiceEvento {
         }).collect(Collectors.toList()));
 
         return dto;
+    }
+
+    // Conversión a NombreEventoDTO
+    public List<NombreEventoDTO> obtenerNombresEventosPorOrganizador(Long organizadorId) {
+        return eventoRepository.findNombresByOrganizadorId(organizadorId);
+    }
+
+    public List<NombreEventoDTO> convertirANombreEventoDTO(List<Evento> eventos) {
+        return eventos.stream()
+                .map(e -> new NombreEventoDTO(e.getId(), e.getTitulo()))
+                .collect(Collectors.toList());
     }
     
     public List<Evento> todosLosEventos() {

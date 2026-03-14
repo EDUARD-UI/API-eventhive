@@ -1,5 +1,3 @@
-// demo/src/main/resources/static/js/organizador/org-eventos.js
-
 let _eventos = [];
 let _vista = 'grid';
 
@@ -17,7 +15,7 @@ async function cargarEventos() {
     renderEventos(_eventos);
     document.getElementById('nb-ev').textContent = _eventos.length;
   } catch (err) {
-    toast('Error cargando eventos: ' + err.message, 'err');
+    Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo cargar los eventos: ' + err.message, confirmButtonColor: '#007bff' });
   }
 }
 
@@ -121,7 +119,7 @@ function renderEventos(lista) {
     : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Sin eventos</td></tr>';
 }
 
-/* ── CRUD ── */
+// operaciones crud
 async function submitEvento(e) {
   e.preventDefault();
   const id  = document.getElementById('ev-id').value;
@@ -144,11 +142,18 @@ async function submitEvento(e) {
     const res    = await fetch(url, { method, credentials: 'include', body: fd });
     const json   = await res.json();
     if (!res.ok) throw new Error(json.mensaje || 'Error al guardar');
-    toast(id ? 'Evento actualizado ✓' : 'Evento creado ✓');
+    Swal.fire({
+      icon: 'success',
+      title: id ? '¡Evento actualizado!' : '¡Evento creado!',
+      text: 'Los cambios se han guardado correctamente.',
+      confirmButtonColor: '#007bff',
+      timer: 3000,
+      timerProgressBar: true
+    });
     closeModal('modal-evento');
     await cargarEventos();
   } catch (err) {
-    toast(err.message, 'err');
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#007bff' });
   } finally {
     btn.textContent = document.getElementById('ev-id').value ? 'Guardar cambios' : 'Crear evento';
     btn.disabled = false;
@@ -183,10 +188,17 @@ async function delEvento(id) {
     const res = await fetch(`/api/eventos/${id}`, { method: 'DELETE', credentials: 'include' });
     const json = await res.json();
     if (!res.ok) throw new Error(json.mensaje);
-    toast('Evento eliminado ✓');
+    Swal.fire({
+      icon: 'success',
+      title: '¡Evento eliminado!',
+      text: 'El evento ha sido eliminado correctamente.',
+      confirmButtonColor: '#007bff',
+      timer: 2500,
+      timerProgressBar: true
+    });
     await cargarEventos();
   } catch (err) {
-    toast(err.message, 'err');
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#007bff' });
   }
 }
 

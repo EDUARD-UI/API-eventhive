@@ -1,5 +1,3 @@
-// demo/src/main/resources/static/js/organizador/org-localidades.js
-
 let _localidades = [];
 let _vistaLoc = 'grid';
 
@@ -9,26 +7,24 @@ async function initLocalidades() {
 
 async function cargarLocalidades() {
   try {
-    const res = await fetch('/api/localidades', { credentials: 'include' });
-    const json = await res.json();
-    // Filtrar solo localidades de eventos del organizador
-    if (!ORG.usuario) return;
-    // Usamos /api/organizador/eventos/nombres para saber qué eventos son del org
-    const resEv = await fetch('/api/organizador/eventos/nombres', { credentials: 'include' });
+    const resEv  = await fetch('/api/eventos/nombres-Eventos', { credentials: 'include' });
     const jsonEv = await resEv.json();
     const idsOrg = new Set((jsonEv.data || []).map(e => String(e.id)));
+
+    const res  = await fetch('/api/localidades', { credentials: 'include' });
+    const json = await res.json();
     _localidades = (json.data || []).filter(l => idsOrg.has(String(l.evento?.id)));
     renderLocalidades(_localidades);
   } catch (err) {
-    toast('Error cargando localidades: ' + err.message, 'err');
+    Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo cargar las localidades: ' + err.message, confirmButtonColor: '#007bff' });
   }
 }
 
 async function cargarEventosDropdown() {
   try {
-    const res = await fetch('/api/organizador/eventos/nombres', { credentials: 'include' });
+    const res  = await fetch('api/eventos/nombres-Eventos', { credentials: 'include' });
     const json = await res.json();
-    const sel = document.getElementById('loc-ev');
+    const sel  = document.getElementById('loc-ev');
     (json.data || []).forEach(e => {
       const o = document.createElement('option');
       o.value = e.id; o.textContent = e.titulo; sel.appendChild(o);
@@ -38,10 +34,9 @@ async function cargarEventosDropdown() {
 
 function filtrarLocalidades() {
   const q = document.getElementById('loc-srch').value.toLowerCase();
-  const lista = _localidades.filter(l =>
+  renderLocalidades(_localidades.filter(l =>
     !q || l.nombre?.toLowerCase().includes(q) || l.evento?.titulo?.toLowerCase().includes(q)
-  );
-  renderLocalidades(lista);
+  ));
 }
 
 function toggleVistaLoc(v) {
@@ -66,7 +61,7 @@ function renderLocalidades(lista) {
   }
 
   grid.innerHTML = lista.map(l => {
-    const ocu = l.capacidad > 0 ? Math.round(((l.capacidad - (l.disponibles||0)) / l.capacidad) * 100) : 0;
+    const ocu = l.capacidad > 0 ? Math.round(((l.capacidad-(l.disponibles||0))/l.capacidad)*100) : 0;
     const col = ocu >= 80 ? 'var(--red)' : ocu >= 50 ? 'var(--amber-d)' : 'var(--green)';
     return `
       <div class="loc-card">
@@ -123,7 +118,6 @@ function renderLocalidades(lista) {
   }).join('');
 }
 
-/* ── CRUD ── */
 async function submitLocalidad(e) {
   e.preventDefault();
   const id  = document.getElementById('loc-id').value;
@@ -138,21 +132,25 @@ async function submitLocalidad(e) {
 
   btn.textContent = 'Guardando…'; btn.disabled = true;
   try {
-    const url    = id ? `/api/localidades/${id}` : '/api/localidades';
-    const method = id ? 'PUT' : 'POST';
-    const res    = await fetch(url, {
-      method, credentials: 'include',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: data
-    });
+    const res  = await fetch(id ? `/api/localidades/${id}` : '/api/localidades',
+      { method: id ? 'PUT' : 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: data });
     const json = await res.json();
     if (!res.ok) throw new Error(json.mensaje || 'Error al guardar');
-    toast(id ? 'Localidad actualizada ✓' : 'Localidad creada ✓');
+    Swal.fire({
+      icon: 'success',
+      title: id ? '¡Localidad actualizada!' : '¡Localidad creada!',
+      text: 'Los cambios se han guardado correctamente.',
+      confirmButtonColor: '#007bff',
+      timer: 3000,
+      timerProgressBar: true
+    });
     closeModal('modal-localidad');
     await cargarLocalidades();
-  } catch (err) {
-    toast(err.message, 'err');
-  } finally {
+  } catch (err) { 
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#007bff' });
+  }
+  finally {
     btn.textContent = document.getElementById('loc-id').value ? 'Guardar cambios' : 'Crear localidad';
     btn.disabled = false;
   }
@@ -173,20 +171,27 @@ function editLoc(id) {
 }
 
 async function delLoc(id) {
-  const confirm = await Swal.fire({
-    title: '¿Eliminar localidad?', icon: 'warning', showCancelButton: true,
-    confirmButtonColor: 'var(--red)', cancelButtonColor: 'var(--muted)',
-    confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar'
+  const c = await Swal.fire({
+    title:'¿Eliminar localidad?', icon:'warning', showCancelButton:true,
+    confirmButtonColor:'var(--red)', cancelButtonColor:'var(--muted)',
+    confirmButtonText:'Sí, eliminar', cancelButtonText:'Cancelar'
   });
-  if (!confirm.isConfirmed) return;
+  if (!c.isConfirmed) return;
   try {
-    const res = await fetch(`/api/localidades/${id}`, { method: 'DELETE', credentials: 'include' });
+    const res  = await fetch(`/api/localidades/${id}`, { method:'DELETE', credentials:'include' });
     const json = await res.json();
     if (!res.ok) throw new Error(json.mensaje);
-    toast('Localidad eliminada ✓');
+    Swal.fire({
+      icon: 'success',
+      title: '¡Localidad eliminada!',
+      text: 'La localidad ha sido eliminada correctamente.',
+      confirmButtonColor: '#007bff',
+      timer: 2500,
+      timerProgressBar: true
+    });
     await cargarLocalidades();
-  } catch (err) {
-    toast(err.message, 'err');
+  } catch (err) { 
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#007bff' });
   }
 }
 

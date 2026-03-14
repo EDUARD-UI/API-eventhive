@@ -29,6 +29,8 @@ import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.EventoBusquedaDTO;
 import com.example.demo.dto.EventoDestacadoDTO;
 import com.example.demo.dto.EventoDetalleDTO;
+import com.example.demo.dto.NombreEventoDTO;
+import com.example.demo.dto.OrganizadorDashboardDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Categoria;
@@ -63,22 +65,43 @@ public class EventosApiController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<EventoDetalleDTO>> obtenerEvento(@PathVariable Long id) {
-        EventoDetalleDTO evento = serviceEventos.obtenerEventoDetalleDTO(id);
-        return ResponseEntity.ok(ApiResponse.ok("Evento obtenido", evento));
+        return ResponseEntity.ok(ApiResponse.ok("Evento obtenido", serviceEventos.obtenerEventoDetalleDTO(id)));
     }
 
     @GetMapping("/buscar")
     public ResponseEntity<ApiResponse<List<EventoBusquedaDTO>>> buscarEventos(@RequestParam String titulo) {
-        List<EventoBusquedaDTO> resultados = serviceEventos.buscarPorTituloParcialDTO(titulo);
-        return ResponseEntity.ok(ApiResponse.ok("Resultados de búsqueda", resultados));
+        return ResponseEntity.ok(ApiResponse.ok("Resultados", serviceEventos.buscarPorTituloParcialDTO(titulo)));
     }
 
     @GetMapping("/destacados")
     public ResponseEntity<ApiResponse<List<EventoDestacadoDTO>>> obtenerEventosDestacados() {
-        List<EventoDestacadoDTO> eventos = serviceEventos.obtenerTop3EventosDTO();
-        return ResponseEntity.ok(ApiResponse.ok("Eventos destacados obtenidos", eventos));
+        return ResponseEntity.ok(ApiResponse.ok("Eventos destacados", serviceEventos.obtenerTop3EventosDTO()));
     }
 
+    @GetMapping("/organizador/estadisticas")
+    public ResponseEntity<ApiResponse<OrganizadorDashboardDTO>> dashboardOrganizador(HttpSession session) {
+        Usuario usuario = GlobalController.rolRequerido(session, "organizador");
+
+        List<Evento> eventos = serviceEventos.obtenerPorOrganizador(usuario.getId());
+        int totalLocalidades = serviceLocalidad.obtenerPorOrganizador(usuario.getId()).size();
+
+        OrganizadorDashboardDTO dto = new OrganizadorDashboardDTO();
+        dto.setTotalEventos(eventos.size());
+        dto.setTotalLocalidades(totalLocalidades);
+        dto.setNombresEventos(serviceEventos.convertirANombreEventoDTO(eventos));
+
+        return ResponseEntity.ok(ApiResponse.ok("Dashboard cargado", dto));
+    }
+
+    // id + titulo de eventos relacionados a organizador logeado
+    @GetMapping("/nombres-Eventos")
+    public ResponseEntity<ApiResponse<List<NombreEventoDTO>>> nombresEventosOrganizador(HttpSession session) {
+        Usuario usuario = GlobalController.rolRequerido(session, "organizador");
+        List<NombreEventoDTO> nombres = serviceEventos.obtenerNombresEventosPorOrganizador(usuario.getId());
+        return ResponseEntity.ok(ApiResponse.ok("Nombres de eventos", nombres));
+    }
+
+    // operaciones Crud para eventos
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Void>> crearEvento(
             @RequestParam String titulo,
@@ -91,17 +114,11 @@ public class EventosApiController {
             @RequestParam(required = false) MultipartFile foto,
             HttpSession session) throws IOException {
 
-        Usuario usuarioLogueado = getUsuarioSesion(session);
+        Usuario usuarioLogueado = GlobalController.rolRequerido(session, "organizador", "administrador");
 
         Categoria categoria = serviceCategoria.obtenerCategoriaPorId(categoriaId);
-        if (categoria == null) {
-            throw new ResourceNotFoundException("La categoría seleccionada no existe");
-        }
-
         Estado estado = serviceEstado.obtenerEstadoPorId(estadoId);
-        if (estado == null) {
-            throw new ResourceNotFoundException("El estado seleccionado no existe");
-        }
+        if (estado == null) throw new ResourceNotFoundException("Estado no encontrado");
 
         Evento nuevoEvento = new Evento();
         nuevoEvento.setTitulo(titulo);
@@ -119,8 +136,7 @@ public class EventosApiController {
         }
 
         serviceEventos.crearEvento(nuevoEvento);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Evento creado exitosamente"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Evento creado exitosamente"));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -136,82 +152,71 @@ public class EventosApiController {
             @RequestParam(required = false) MultipartFile foto,
             HttpSession session) throws IOException {
 
-        getUsuarioSesion(session); // valida sesión
+        Usuario usuario = GlobalController.rolRequerido(session, "organizador", "administrador");
+        Evento ev = serviceEventos.obtenerEventoPorId(id);
 
-        Evento eventoExistente = serviceEventos.obtenerEventoPorId(id);
+        // solo el organizador o admin puede editar
+        if (!ev.getUsuario().getId().equals(usuario.getId())
+                && !usuario.getRol().getNombre().equalsIgnoreCase("administrador")) {
+            throw new BusinessException("No tiene permisos para editar este evento");
+        }
 
         Categoria categoria = serviceCategoria.obtenerCategoriaPorId(categoriaId);
-        if (categoria == null) {
-            throw new ResourceNotFoundException("La categoría seleccionada no existe");
-        }
-
         Estado estado = serviceEstado.obtenerEstadoPorId(estadoId);
-        if (estado == null) {
-            throw new ResourceNotFoundException("El estado seleccionado no existe");
-        }
+        if (estado == null) throw new ResourceNotFoundException("Estado no encontrado");
 
-        eventoExistente.setTitulo(titulo);
-        eventoExistente.setDescripcion(descripcion);
-        eventoExistente.setLugar(lugar);
-        eventoExistente.setFecha(LocalDate.parse(fecha, DateTimeFormatter.ISO_LOCAL_DATE));
-        eventoExistente.setHora(LocalTime.parse(hora, DateTimeFormatter.ISO_LOCAL_TIME));
-        eventoExistente.setCategoria(categoria);
-        eventoExistente.setEstado(estado);
+        ev.setTitulo(titulo);
+        ev.setDescripcion(descripcion);
+        ev.setLugar(lugar);
+        ev.setFecha(LocalDate.parse(fecha, DateTimeFormatter.ISO_LOCAL_DATE));
+        ev.setHora(LocalTime.parse(hora, DateTimeFormatter.ISO_LOCAL_TIME));
+        ev.setCategoria(categoria);
+        ev.setEstado(estado);
 
         if (foto != null && !foto.isEmpty()) {
             validarFoto(foto);
-            eliminarFoto(eventoExistente.getFoto());
-            eventoExistente.setFoto(guardarFoto(foto));
+            eliminarFoto(ev.getFoto());
+            ev.setFoto(guardarFoto(foto));
         }
 
-        serviceEventos.actualizarEvento(eventoExistente);
+        serviceEventos.actualizarEvento(ev);
         return ResponseEntity.ok(ApiResponse.ok("Evento actualizado exitosamente"));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> eliminarEvento(@PathVariable Long id, HttpSession session) {
-        getUsuarioSesion(session);
+        Usuario usuario = GlobalController.rolRequerido(session, "organizador", "administrador");
+        Evento ev = serviceEventos.obtenerEventoPorId(id);
 
-        Evento evento = serviceEventos.obtenerEventoPorId(id);
-
-        if (!serviceLocalidad.obtenerLocalidadesPorEvento(id).isEmpty()) {
-            throw new BusinessException("No se puede eliminar el evento porque tiene localidades asociadas");
+        if (!ev.getUsuario().getId().equals(usuario.getId())
+                && !usuario.getRol().getNombre().equalsIgnoreCase("administrador")) {
+            throw new BusinessException("No tiene permisos para eliminar este evento");
         }
 
-        eliminarFoto(evento.getFoto());
+        if (!serviceLocalidad.obtenerLocalidadesPorEvento(id).isEmpty())
+            throw new BusinessException("No se puede eliminar el evento porque tiene localidades asociadas");
+
+        eliminarFoto(ev.getFoto());
         serviceEventos.eliminarEvento(id);
         return ResponseEntity.ok(ApiResponse.ok("Evento eliminado exitosamente"));
     }
 
-    // FUNCIONES DE APOYO
-    private Usuario getUsuarioSesion(HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogeado");
-        if (usuario == null) {
-            throw new BusinessException("Debe iniciar sesión para realizar esta acción");
-        }
-        return usuario;
-    }
-
+    //funciones de apoyo
     private void validarFoto(MultipartFile foto) {
-        if (foto.getSize() > 5 * 1024 * 1024) {
+        if (foto.getSize() > 5 * 1024 * 1024)
             throw new BusinessException("La foto no puede superar los 5MB");
-        }
         String ct = foto.getContentType();
-        if (ct == null || !ct.startsWith("image/")) {
+        if (ct == null || !ct.startsWith("image/"))
             throw new BusinessException("Solo se permiten archivos de imagen");
-        }
     }
 
     private String guardarFoto(MultipartFile foto) throws IOException {
         Path uploadDir = Paths.get(uploadPath);
-        if (!Files.exists(uploadDir)) {
-            Files.createDirectories(uploadDir);
-        }
+        if (!Files.exists(uploadDir)) Files.createDirectories(uploadDir);
         String ext = "";
         String original = foto.getOriginalFilename();
-        if (original != null && original.contains(".")) {
+        if (original != null && original.contains("."))
             ext = original.substring(original.lastIndexOf("."));
-        }
         String fileName = UUID.randomUUID() + ext;
         Files.copy(foto.getInputStream(), uploadDir.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
         return fileName;
@@ -219,11 +224,8 @@ public class EventosApiController {
 
     private void eliminarFoto(String nombreFoto) {
         if (nombreFoto != null && !nombreFoto.isBlank()) {
-            try {
-                Files.deleteIfExists(Paths.get(uploadPath).resolve(nombreFoto));
-            } catch (IOException e) {
-                System.err.println("Error al eliminar foto: " + e.getMessage());
-            }
+            try { Files.deleteIfExists(Paths.get(uploadPath).resolve(nombreFoto)); }
+            catch (IOException e) { System.err.println("Error al eliminar foto: " + e.getMessage()); }
         }
     }
 }

@@ -16,6 +16,7 @@ public interface EventoRepository extends JpaRepository<Evento, Long>{
     List<Evento> findByCategoriaId(Long categoriaId);
     List<Evento> findByTituloContainingIgnoreCase(String titulo);
     List<Evento> findByUsuarioId(Long organizadorId);
+    long countByUsuarioId(Long organizadorId);
     Long countByCategoriaId(Long id);
     Long countByEstadoId(Long id);
 

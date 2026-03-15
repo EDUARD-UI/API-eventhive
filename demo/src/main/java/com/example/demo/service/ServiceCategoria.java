@@ -91,4 +91,8 @@ public class ServiceCategoria {
         return categoriasRepository.findByNombre(nombre);
     }
 
+    public List<Categoria> obtenerTodasCategorias(){
+        return categoriasRepository.findAll();
+    }
+
 }

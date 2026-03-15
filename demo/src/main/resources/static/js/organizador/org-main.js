@@ -7,6 +7,7 @@ const TITLES = {
   dashboard:   'Dashboard',
   eventos:     'Mis Eventos',
   localidades: 'Localidades',
+  promociones: 'Promociones',
   perfil:      'Mi Perfil',
 };
 
@@ -60,82 +61,125 @@ async function navegarA(sec) {
     if (!res.ok) throw new Error('Página no encontrada');
     const html = await res.text();
 
-    // Separar HTML de scripts para ejecutarlos correctamente
     const tmp = document.createElement('div');
     tmp.innerHTML = html;
-
-    // Extraer y remover scripts del fragment
-    const scripts = Array.from(tmp.querySelectorAll('script'));
-    scripts.forEach(s => s.remove());
-
-    // Inyectar HTML sin scripts
+    tmp.querySelectorAll('script').forEach(s => s.remove());
     pageContent.innerHTML = tmp.innerHTML;
-
-    // Ejecutar cada script manualmente (así el navegador los procesa)
-    for (const oldScript of scripts) {
-      const newScript = document.createElement('script');
-      if (oldScript.src) {
-        // Script externo — esperar a que cargue
-        await new Promise((resolve, reject) => {
-          newScript.src = oldScript.src;
-          newScript.onload  = resolve;
-          newScript.onerror = reject;
-          document.head.appendChild(newScript);
-        });
-      } else {
-        // Script inline
-        newScript.textContent = oldScript.textContent;
-        document.head.appendChild(newScript);
-      }
-    }
 
   } catch (err) {
     pageContent.innerHTML = `<div style="padding:40px;color:red">Error: ${err.message}</div>`;
     return;
   }
 
-  // Inicializar sección tras cargar scripts
   switch (sec) {
     case 'dashboard':   await initDashboard();   break;
     case 'eventos':     await initEventos();     break;
     case 'localidades': await initLocalidades(); break;
+    case 'promociones': await initPromociones(); break;
     case 'perfil':      initPerfil();            break;
   }
 }
 
-/* ── TOAST (SWEETALERT2) ── */
+/* ── TOAST ── */
 function toast(msg, type = 'ok') {
-  const iconMap = {
-    'ok': 'success',
-    'err': 'error',
-    'info': 'info',
-    'warning': 'warning'
-  };
-  
   Swal.fire({
-    icon: iconMap[type] || 'info',
-    title: msg,
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 3500,
-    timerProgressBar: true,
-    didOpen: (toast) => {
-      toast.addEventListener('mouseenter', Swal.stopTimer)
-      toast.addEventListener('mouseleave', Swal.resumeTimer)
+    icon: { ok:'success', err:'error', info:'info', warning:'warning' }[type] || 'info',
+    title: msg, toast: true, position: 'top-end',
+    showConfirmButton: false, timer: 3500, timerProgressBar: true,
+    didOpen: t => {
+      t.addEventListener('mouseenter', Swal.stopTimer);
+      t.addEventListener('mouseleave', Swal.resumeTimer);
     }
   });
 }
 
-/* ── MODAL ── */
+/* ── MODAL ──
+   openModal(id)        → abre el modal y LIMPIA el form  (para crear nuevo)
+   openModalEdit(id)    → abre el modal SIN limpiar       (para editar, los datos ya están cargados)
+*/
 function openModal(id) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.classList.add('open');
+  // Limpiar form y hidden para crear nuevo
   el.querySelector('form')?.reset();
   const hid = el.querySelector('input[type=hidden]');
   if (hid) hid.value = '';
+  el.classList.add('open');
 }
+
+function openModalEdit(id) {
+  // Abrir sin reset — los datos ya fueron escritos por editXxx()
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('open');
+}
+
 function closeModal(id) {
   document.getElementById(id)?.classList.remove('open');
+}
+
+/* ── PAGINACIÓN ──
+   Botones con estilos Tailwind inline.
+   Activo: fondo azul, texto blanco.
+   Inactivo: fondo blanco, borde gris, hover gris claro.
+   Disabled: opacidad reducida, cursor not-allowed.
+*/
+function buildPagHTML(total, actual, fn) {
+  if (total <= 1) return '';
+  const rango = getPagRango(actual, total);
+
+  const baseBtn  = `style="display:inline-flex;align-items:center;justify-content:center;
+    min-width:36px;height:36px;padding:0 10px;border-radius:8px;font-size:.82rem;font-weight:500;
+    cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;color:#374151;
+    transition:background .15s,color .15s,border-color .15s;"
+    onmouseover="if(!this.disabled&&!this.classList.contains('pag-active')){this.style.background='#f1f5f9';this.style.borderColor='#cbd5e1'}"
+    onmouseout="if(!this.disabled&&!this.classList.contains('pag-active')){this.style.background='#fff';this.style.borderColor='#e2e8f0'}"`;
+
+  const activeBtn = `style="display:inline-flex;align-items:center;justify-content:center;
+    min-width:36px;height:36px;padding:0 10px;border-radius:8px;font-size:.82rem;font-weight:600;
+    cursor:default;border:1.5px solid #2563eb;background:#2563eb;color:#fff;"`;
+
+  const disabledBtn = `style="display:inline-flex;align-items:center;justify-content:center;
+    min-width:36px;height:36px;padding:0 10px;border-radius:8px;font-size:.82rem;font-weight:500;
+    cursor:not-allowed;border:1.5px solid #e2e8f0;background:#f8fafc;color:#94a3b8;opacity:.6;"`;
+
+  const dotsStyle = `style="display:inline-flex;align-items:center;justify-content:center;
+    min-width:36px;height:36px;color:#94a3b8;font-size:.9rem;"`;
+
+  let html = `<div style="display:flex;align-items:center;justify-content:center;gap:6px;padding:20px 0;">`;
+
+  // ← Anterior
+  if (actual === 1) {
+    html += `<button disabled ${disabledBtn}>← Anterior</button>`;
+  } else {
+    html += `<button ${baseBtn} onclick="${fn}(${actual-1})">← Anterior</button>`;
+  }
+
+  // Números
+  rango.forEach(p => {
+    if (p === '…') {
+      html += `<span ${dotsStyle}>…</span>`;
+    } else if (p === actual) {
+      html += `<button class="pag-active" ${activeBtn}>${p}</button>`;
+    } else {
+      html += `<button ${baseBtn} onclick="${fn}(${p})">${p}</button>`;
+    }
+  });
+
+  // Siguiente →
+  if (actual === total) {
+    html += `<button disabled ${disabledBtn}>Siguiente →</button>`;
+  } else {
+    html += `<button ${baseBtn} onclick="${fn}(${actual+1})">Siguiente →</button>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+function getPagRango(actual, total) {
+  if (total <= 7) return Array.from({length:total}, (_,i) => i+1);
+  if (actual <= 4) return [1,2,3,4,5,'…',total];
+  if (actual >= total-3) return [1,'…',total-4,total-3,total-2,total-1,total];
+  return [1,'…',actual-1,actual,actual+1,'…',total];
 }

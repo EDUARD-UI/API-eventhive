@@ -41,6 +41,7 @@ import com.example.demo.service.ServiceCategoria;
 import com.example.demo.service.ServiceEstado;
 import com.example.demo.service.ServiceEvento;
 import com.example.demo.service.ServiceLocalidad;
+import com.example.demo.service.ServicePromocion;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +55,7 @@ public class EventosApiController {
     private final ServiceLocalidad serviceLocalidad;
     private final ServiceCategoria serviceCategoria;
     private final ServiceEstado serviceEstado;
+    private final ServicePromocion servicePromocion;
 
     @Value("${upload.path.eventos:uploads/eventos}")
     private String uploadPath;
@@ -82,22 +84,29 @@ public class EventosApiController {
     public ResponseEntity<ApiResponse<OrganizadorDashboardDTO>> dashboardOrganizador(HttpSession session) {
         Usuario usuario = GlobalController.rolRequerido(session, "organizador");
 
-        List<Evento> eventos = serviceEventos.obtenerPorOrganizador(usuario.getId());
-        int totalLocalidades = serviceLocalidad.obtenerPorOrganizador(usuario.getId()).size();
+        int totalEventos = (int) serviceEventos.contarPorOrganizador(usuario.getId());
+        int totalLocalidades = (int) serviceLocalidad.contarPorOrganizador(usuario.getId());
+        int totalPromociones = (int) servicePromocion.contarPorOrganizador(usuario.getId());
 
         OrganizadorDashboardDTO dto = new OrganizadorDashboardDTO();
-        dto.setTotalEventos(eventos.size());
+        dto.setTotalEventos(totalEventos);
         dto.setTotalLocalidades(totalLocalidades);
-        dto.setNombresEventos(serviceEventos.convertirANombreEventoDTO(eventos));
+        dto.setTotalPromociones(totalPromociones);
 
         return ResponseEntity.ok(ApiResponse.ok("Dashboard cargado", dto));
     }
 
     // id + titulo de eventos relacionados a organizador logeado
-    @GetMapping("/nombres-Eventos")
+    @GetMapping("/organizador/nombres-Eventos")
     public ResponseEntity<ApiResponse<List<NombreEventoDTO>>> nombresEventosOrganizador(HttpSession session) {
         Usuario usuario = GlobalController.rolRequerido(session, "organizador");
         List<NombreEventoDTO> nombres = serviceEventos.obtenerNombresEventosPorOrganizador(usuario.getId());
+        return ResponseEntity.ok(ApiResponse.ok("Nombres de eventos", nombres));
+    }
+
+    @GetMapping("/nombres-Eventos")
+    public ResponseEntity<ApiResponse<List<NombreEventoDTO>>> nombresEventos() {
+        List<NombreEventoDTO> nombres = serviceEventos.obtenerNombresEventos();
         return ResponseEntity.ok(ApiResponse.ok("Nombres de eventos", nombres));
     }
 

@@ -15,4 +15,7 @@ public interface LocalidadRepository extends JpaRepository<Localidad, Long>{
     
     @Query("SELECT l FROM Localidad l WHERE l.evento.usuario.id = :organizadorId")
     List<Localidad> findByEventoUsuarioId(@Param("organizadorId") Long organizadorId);
+    
+    @Query("SELECT COUNT(l) FROM Localidad l WHERE l.evento.usuario.id = :organizadorId")
+    long countByEventoUsuarioId(@Param("organizadorId") Long organizadorId);
 }

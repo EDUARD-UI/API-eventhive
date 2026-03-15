@@ -1,30 +1,36 @@
 let _localidades = [];
+let _localidadesFiltradas = [];
 let _vistaLoc = 'grid';
+const LOC_CARDS_PAG = 8;
+const LOC_FILAS_PAG = 8;
+let _locPagGrid = 1;
+let _locPagTable = 1;
 
 async function initLocalidades() {
-  await Promise.all([cargarEventosDropdown(), cargarLocalidades()]);
+  await Promise.all([cargarEventosDropdownLoc(), cargarLocalidades()]);
 }
 
+// CARDS/TABLE: endpoint del organizador logueado
 async function cargarLocalidades() {
   try {
-    const resEv  = await fetch('/api/eventos/nombres-Eventos', { credentials: 'include' });
-    const jsonEv = await resEv.json();
-    const idsOrg = new Set((jsonEv.data || []).map(e => String(e.id)));
-
-    const res  = await fetch('/api/localidades', { credentials: 'include' });
+    const res  = await fetch('/api/localidades/organizador', { credentials: 'include' });
     const json = await res.json();
-    _localidades = (json.data || []).filter(l => idsOrg.has(String(l.evento?.id)));
-    renderLocalidades(_localidades);
+    _localidades = json.data || [];
+    _localidadesFiltradas = [..._localidades];
+    _locPagGrid = _locPagTable = 1;
+    renderLocalidades();
   } catch (err) {
     Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo cargar las localidades: ' + err.message, confirmButtonColor: '#007bff' });
   }
 }
 
-async function cargarEventosDropdown() {
+// DROPDOWN del modal: solo id+titulo de eventos del organizador logueado
+async function cargarEventosDropdownLoc() {
   try {
-    const res  = await fetch('api/eventos/nombres-Eventos', { credentials: 'include' });
+    const res  = await fetch('/api/eventos/organizador/nombres-Eventos', { credentials: 'include' });
     const json = await res.json();
     const sel  = document.getElementById('loc-ev');
+    if (!sel) return;
     (json.data || []).forEach(e => {
       const o = document.createElement('option');
       o.value = e.id; o.textContent = e.titulo; sel.appendChild(o);
@@ -33,34 +39,55 @@ async function cargarEventosDropdown() {
 }
 
 function filtrarLocalidades() {
-  const q = document.getElementById('loc-srch').value.toLowerCase();
-  renderLocalidades(_localidades.filter(l =>
+  const el = document.getElementById('loc-srch');
+  const q  = el ? el.value.toLowerCase() : '';
+  _localidadesFiltradas = _localidades.filter(l =>
     !q || l.nombre?.toLowerCase().includes(q) || l.evento?.titulo?.toLowerCase().includes(q)
-  ));
+  );
+  _locPagGrid = _locPagTable = 1;
+  renderLocalidades();
 }
 
 function toggleVistaLoc(v) {
   _vistaLoc = v;
-  document.getElementById('loc-grid').style.display  = v === 'grid'  ? 'grid'  : 'none';
-  document.getElementById('loc-table').style.display = v === 'table' ? 'block' : 'none';
-  document.getElementById('vt-grid-loc').classList.toggle('active',  v === 'grid');
-  document.getElementById('vt-table-loc').classList.toggle('active', v === 'table');
+  const locGrid     = document.getElementById('loc-grid');
+  const locPagGrid  = document.getElementById('loc-pag-grid');
+  const locTable    = document.getElementById('loc-table');
+  const locPagTable = document.getElementById('loc-pag-table');
+  const vtGrid      = document.getElementById('vt-grid-loc');
+  const vtTable     = document.getElementById('vt-table-loc');
+  if (locGrid)     locGrid.style.display     = v === 'grid'  ? 'grid'  : 'none';
+  if (locPagGrid)  locPagGrid.style.display  = v === 'grid'  ? 'block' : 'none';
+  if (locTable)    locTable.style.display    = v === 'table' ? 'block' : 'none';
+  if (locPagTable) locPagTable.style.display = v === 'table' ? 'block' : 'none';
+  if (vtGrid)      vtGrid.classList.toggle('active',  v === 'grid');
+  if (vtTable)     vtTable.classList.toggle('active', v === 'table');
 }
 
-function renderLocalidades(lista) {
-  const grid  = document.getElementById('loc-grid');
-  const tbody = document.getElementById('loc-tbody');
+function renderLocalidades() {
+  renderGridLocalidades();
+  renderTablaLocalidades();
+}
 
-  if (!lista.length) {
+function renderGridLocalidades() {
+  const grid    = document.getElementById('loc-grid');
+  const pagWrap = document.getElementById('loc-pag-grid');
+  if (!grid || !pagWrap) return;
+
+  const total    = _localidadesFiltradas.length;
+  const totalPag = Math.ceil(total / LOC_CARDS_PAG);
+
+  if (!total) {
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">
       <div style="font-size:2rem;margin-bottom:8px">🏟</div>
       <div>Sin localidades. <button class="btn btn-primary btn-sm" onclick="openModal('modal-localidad')">Crear una</button></div>
     </div>`;
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Sin localidades</td></tr>';
+    pagWrap.innerHTML = '';
     return;
   }
 
-  grid.innerHTML = lista.map(l => {
+  const slice = _localidadesFiltradas.slice((_locPagGrid-1)*LOC_CARDS_PAG, _locPagGrid*LOC_CARDS_PAG);
+  grid.innerHTML = slice.map(l => {
     const ocu = l.capacidad > 0 ? Math.round(((l.capacidad-(l.disponibles||0))/l.capacidad)*100) : 0;
     const col = ocu >= 80 ? 'var(--red)' : ocu >= 50 ? 'var(--amber-d)' : 'var(--green)';
     return `
@@ -90,7 +117,25 @@ function renderLocalidades(lista) {
       </div>`;
   }).join('');
 
-  tbody.innerHTML = lista.map(l => {
+  pagWrap.innerHTML = buildPagHTML(totalPag, _locPagGrid, 'cambiarPagLocGrid');
+}
+
+function renderTablaLocalidades() {
+  const tbody   = document.getElementById('loc-tbody');
+  const pagWrap = document.getElementById('loc-pag-table');
+  if (!tbody || !pagWrap) return;
+
+  const total    = _localidadesFiltradas.length;
+  const totalPag = Math.ceil(total / LOC_FILAS_PAG);
+
+  if (!total) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Sin localidades</td></tr>';
+    pagWrap.innerHTML = '';
+    return;
+  }
+
+  const slice = _localidadesFiltradas.slice((_locPagTable-1)*LOC_FILAS_PAG, _locPagTable*LOC_FILAS_PAG);
+  tbody.innerHTML = slice.map(l => {
     const ocu = l.capacidad > 0 ? Math.round(((l.capacidad-(l.disponibles||0))/l.capacidad)*100) : 0;
     const col = ocu >= 80 ? 'var(--red)' : ocu >= 50 ? 'var(--amber-d)' : 'var(--green)';
     return `
@@ -116,7 +161,12 @@ function renderLocalidades(lista) {
         </td>
       </tr>`;
   }).join('');
+
+  pagWrap.innerHTML = buildPagHTML(totalPag, _locPagTable, 'cambiarPagLocTable');
 }
+
+function cambiarPagLocGrid(p)  { _locPagGrid  = p; renderGridLocalidades();  }
+function cambiarPagLocTable(p) { _locPagTable = p; renderTablaLocalidades(); }
 
 async function submitLocalidad(e) {
   e.preventDefault();
@@ -137,20 +187,13 @@ async function submitLocalidad(e) {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: data });
     const json = await res.json();
     if (!res.ok) throw new Error(json.mensaje || 'Error al guardar');
-    Swal.fire({
-      icon: 'success',
-      title: id ? '¡Localidad actualizada!' : '¡Localidad creada!',
-      text: 'Los cambios se han guardado correctamente.',
-      confirmButtonColor: '#007bff',
-      timer: 3000,
-      timerProgressBar: true
-    });
+    Swal.fire({ icon: 'success', title: id ? '¡Localidad actualizada!' : '¡Localidad creada!',
+      text: 'Los cambios se han guardado correctamente.', confirmButtonColor: '#007bff', timer: 3000, timerProgressBar: true });
     closeModal('modal-localidad');
     await cargarLocalidades();
-  } catch (err) { 
+  } catch (err) {
     Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#007bff' });
-  }
-  finally {
+  } finally {
     btn.textContent = document.getElementById('loc-id').value ? 'Guardar cambios' : 'Crear localidad';
     btn.disabled = false;
   }
@@ -167,30 +210,23 @@ function editLoc(id) {
   document.getElementById('loc-pre').value = l.precio      || '';
   document.getElementById('mt-loc').textContent  = 'Editar localidad';
   document.getElementById('btn-loc').textContent = 'Guardar cambios';
-  openModal('modal-localidad');
+  openModalEdit('modal-localidad');
 }
 
 async function delLoc(id) {
   const c = await Swal.fire({
-    title:'¿Eliminar localidad?', icon:'warning', showCancelButton:true,
-    confirmButtonColor:'var(--red)', cancelButtonColor:'var(--muted)',
-    confirmButtonText:'Sí, eliminar', cancelButtonText:'Cancelar'
+    title: '¿Eliminar localidad?', icon: 'warning', showCancelButton: true,
+    confirmButtonColor: 'var(--red)', cancelButtonColor: 'var(--muted)',
+    confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar'
   });
   if (!c.isConfirmed) return;
   try {
-    const res  = await fetch(`/api/localidades/${id}`, { method:'DELETE', credentials:'include' });
+    const res  = await fetch(`/api/localidades/${id}`, { method: 'DELETE', credentials: 'include' });
     const json = await res.json();
     if (!res.ok) throw new Error(json.mensaje);
-    Swal.fire({
-      icon: 'success',
-      title: '¡Localidad eliminada!',
-      text: 'La localidad ha sido eliminada correctamente.',
-      confirmButtonColor: '#007bff',
-      timer: 2500,
-      timerProgressBar: true
-    });
+    Swal.fire({ icon: 'success', title: '¡Localidad eliminada!', confirmButtonColor: '#007bff', timer: 2500, timerProgressBar: true });
     await cargarLocalidades();
-  } catch (err) { 
+  } catch (err) {
     Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#007bff' });
   }
 }

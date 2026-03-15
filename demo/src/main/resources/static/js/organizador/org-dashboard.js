@@ -15,13 +15,15 @@ async function initDashboard() {
     if (!json.success) throw new Error(json.mensaje);
 
     const d = json.data;
-    document.getElementById('st-ev').textContent  = d.totalEventos;
-    document.getElementById('st-loc').textContent = d.totalLocalidades;
-    document.getElementById('nb-ev').textContent  = d.totalEventos;
+    document.getElementById('st-ev').textContent     = d.totalEventos;
+    document.getElementById('st-loc').textContent    = d.totalLocalidades;
+    document.getElementById('st-promo').textContent  = d.totalPromociones;
+    document.getElementById('nb-ev').textContent     = d.totalEventos;
 
     ORG.dashboard = d;
   } catch {
-    document.getElementById('st-ev').textContent  = '—';
-    document.getElementById('st-loc').textContent = '—';
+    document.getElementById('st-ev').textContent    = '—';
+    document.getElementById('st-loc').textContent   = '—';
+    document.getElementById('st-promo').textContent = '—';
   }
 }

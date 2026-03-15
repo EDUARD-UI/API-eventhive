@@ -31,6 +31,9 @@
     <a class="nav-item" data-s="localidades" href="#">
       <span class="ni">🏟</span> Localidades
     </a>
+    <a class="nav-item" data-s="promociones" href="#">
+      <span class="ni">🏷</span> Promociones
+    </a>
 
     <div class="nav-grp">Cuenta</div>
     <a class="nav-item" data-s="perfil" href="#">
@@ -65,13 +68,14 @@
 
   <div id="toast-wrap"></div>
 
-  <!-- Scripts de los módulos -->
+  <!-- Módulos cargados estáticamente para que initXxx() existan en el scope global -->
   <script src="../js/organizador/org-dashboard.js"></script>
   <script src="../js/organizador/org-eventos.js"></script>
   <script src="../js/organizador/org-localidades.js"></script>
+  <script src="../js/organizador/org-promociones.js"></script>
   <script src="../js/organizador/org-perfil.js"></script>
-  
-  <!-- Script principal -->
+
+  <!-- Script principal (debe ir ÚLTIMO) -->
   <script src="../js/organizador/org-main.js"></script>
 </body>
 </html>

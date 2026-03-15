@@ -19,9 +19,11 @@ import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Evento;
 import com.example.demo.model.Localidad;
+import com.example.demo.model.Usuario;
 import com.example.demo.service.ServiceEvento;
 import com.example.demo.service.ServiceLocalidad;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -35,6 +37,13 @@ public class LocalidadesApiController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<Localidad>>> listarLocalidades() {
         return ResponseEntity.ok(ApiResponse.ok("Localidades obtenidas", serviceLocalidad.obtenerTodasLasLocalidades()));
+    }
+
+    @GetMapping("/organizador")
+    public ResponseEntity<ApiResponse<List<Localidad>>> listarPorOrganizador(HttpSession session) {
+        Usuario u = GlobalController.rolRequerido(session, "organizador");
+        List<Localidad> lista = serviceLocalidad.obtenerPorOrganizador(u.getId());
+        return ResponseEntity.ok(ApiResponse.ok("Localidades obtenidas", lista));
     }
 
     @GetMapping("/evento/{eventoId}")

@@ -42,4 +42,8 @@ public class ServiceLocalidad {
     public List<Localidad> obtenerPorOrganizador(Long organizadorId) {
         return localidadRepository.findByEventoUsuarioId(organizadorId);
     }
+
+    public long contarPorOrganizador(Long organizadorId) {
+        return localidadRepository.countByEventoUsuarioId(organizadorId);
+    }
 }

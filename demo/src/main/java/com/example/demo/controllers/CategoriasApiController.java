@@ -40,9 +40,14 @@ public class CategoriasApiController {
     private final String uploadPath = "uploads/categorias";
 
     @GetMapping
+    public ResponseEntity<ApiResponse<List<Categoria>>> obtenerNombresCategorias() {;
+        return ResponseEntity.ok(ApiResponse.ok("categorías obtenidos exitosamente", serviceCategoria.obtenerTodasCategorias()));
+    }
+
+    @GetMapping("/nombres")
     public ResponseEntity<ApiResponse<List<CategoriaDTO>>> listarCategorias() {
         List<CategoriaDTO> categorias = serviceCategoria.obtenerCategoriaDTO();
-        return ResponseEntity.ok(ApiResponse.ok("Categorías obtenidas exitosamente", categorias));
+        return ResponseEntity.ok(ApiResponse.ok("Nombres de Categorías obtenidas exitosamente", categorias));
     }
 
     @GetMapping("/destacadas")

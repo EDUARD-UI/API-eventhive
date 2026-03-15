@@ -97,17 +97,16 @@ public class ServiceEvento {
         return dto;
     }
 
-    // Conversión a NombreEventoDTO
     public List<NombreEventoDTO> obtenerNombresEventosPorOrganizador(Long organizadorId) {
         return eventoRepository.findNombresByOrganizadorId(organizadorId);
     }
-
-    public List<NombreEventoDTO> convertirANombreEventoDTO(List<Evento> eventos) {
-        return eventos.stream()
+    
+    public List<NombreEventoDTO> obtenerNombresEventos() {
+        return eventoRepository.findAll().stream()
                 .map(e -> new NombreEventoDTO(e.getId(), e.getTitulo()))
                 .collect(Collectors.toList());
     }
-    
+
     public List<Evento> todosLosEventos() {
         return eventoRepository.findAll();
     }
@@ -133,6 +132,10 @@ public class ServiceEvento {
         return eventoRepository.findByUsuarioId(id);
     }
 
+    public long contarPorOrganizador(Long id) {
+        return eventoRepository.countByUsuarioId(id);
+    }
+
     public List<Evento> eventosPorCategoria(Long id) {
         return eventoRepository.findByCategoriaId(id);
     }
@@ -140,4 +143,5 @@ public class ServiceEvento {
     public long contarEventosPorCategoria(Long categoriaId) {
         return eventoRepository.countByCategoriaId(categoriaId);
     }
+    
 }

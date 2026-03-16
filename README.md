@@ -1,14 +1,24 @@
-USO DE UNA API
-cada accion nececita de su endpoint
+EventHive es una aplicación web full-stack para la publicación, descubrimiento y compra de boletos a eventos culturales, musicales y de entretenimiento en Cartagena, Colombia. La arquitectura sigue el patrón clásico de backend MVC + frontend estático, con una API REST como puente entre ambas capas.
 
-tareas restante:
+Stack tecnológico
+Backend
 
-1. pasarela de pago implementada
-2. correos implementados
-3. seguridad implementada
-4. dashboard de power bi para el organizador
-5. diseño de panel de administradores
+Java 17 + Spring Boot 3.5
+Spring MVC (REST controllers), Spring Data JPA, Hibernate
+Maven como gestor de dependencias
+Lombok para reducir boilerplate
+Sesiones HTTP nativas (Jakarta HttpSession) para autenticación
+GraphQL incluido en el pom.xml pero no activo en la vista pública
 
-DESARROLLAR EL DISEÑO DE ADMIN LLAMANDO A LOS ENDPOINT DE LOS CONTROLLER
-replicar el modelo modular q se esta usando en el diseño de organizador usando solo html, tailwind y js vanilla
-NO USAR CSS PURO, y q el js mande los datos al backend y inserte los registros en el html
+Base de datos
+
+MySQL — base de datos eventhive
+Esquema gestionado por Hibernate con ddl-auto=update
+
+Frontend
+
+HTML + JavaScript vanilla (sin framework)
+Tailwind CSS vía CDN
+SweetAlert2 para alertas
+QRCode.js para generación de boletos
+Panel del organizador con router SPA

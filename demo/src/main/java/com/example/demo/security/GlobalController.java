@@ -1,4 +1,4 @@
-package com.example.demo.controllers;
+package com.example.demo.security;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,13 +24,14 @@ public class GlobalController {
         if (usuario != null) model.addAttribute("usuarioActual", usuario);
     }
 
-    /** Devuelve el usuario en sesión o lanza excepción */
+    // Devuelve el usuario en sesión o lanza excepción
     public static Usuario sesionRequerida(HttpSession session) {
         Usuario u = (Usuario) session.getAttribute("usuarioLogeado");
         if (u == null) throw new BusinessException("Debe iniciar sesión para continuar");
         return u;
     }
 
+    //valida q haya session logeada y q el rol sea permitido
     public static Usuario rolRequerido(HttpSession session, String... roles) {
         Usuario u = sesionRequerida(session);
         String rolActual = u.getRol().getNombre().toLowerCase();
@@ -40,12 +41,14 @@ public class GlobalController {
         throw new BusinessException("No tiene permisos para realizar esta acción");
     }
 
-    /** Valida que el recurso pertenezca al usuario en sesión */
+    // valida q el usuario no ingrese a una funcion q no le corresponde
     public static void propietarioRequerido(Long idRecurso, Long idUsuario) {
         if (!idRecurso.equals(idUsuario))
             throw new BusinessException("No autorizado para acceder a este recurso");
     }
 
+
+    //MANEJO DE EXCEPCIONES GLOBALES
     @ExceptionHandler(BusinessException.class)
     @ResponseBody
     public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException ex) {

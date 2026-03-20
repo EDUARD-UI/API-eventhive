@@ -20,6 +20,7 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Evento;
 import com.example.demo.model.Localidad;
 import com.example.demo.model.Usuario;
+import com.example.demo.security.GlobalController;
 import com.example.demo.service.ServiceEvento;
 import com.example.demo.service.ServiceLocalidad;
 

@@ -1,4 +1,3 @@
-// ── CONFIG ────────────────────────────────────────────────
 const BASE = '';
 
 document.addEventListener('DOMContentLoaded', () => {

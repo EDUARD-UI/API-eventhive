@@ -22,6 +22,7 @@ import com.example.demo.exception.BusinessException;
 import com.example.demo.model.Evento;
 import com.example.demo.model.Promocion;
 import com.example.demo.model.Usuario;
+import com.example.demo.security.GlobalController;
 import com.example.demo.service.ServiceEvento;
 import com.example.demo.service.ServicePromocion;
 

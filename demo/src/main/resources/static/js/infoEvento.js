@@ -239,7 +239,7 @@ function mostrarNotFound() {
   document.getElementById("notFound").classList.remove("hidden");
 }
 
-// ── HELPERS ───────────────────────────────────────────────
+// funciones de apoyo
 function formatFecha(v) {
   if (!v) return "Fecha por confirmar";
   if (Array.isArray(v)) {

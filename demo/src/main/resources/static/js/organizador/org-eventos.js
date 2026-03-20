@@ -10,14 +10,12 @@ async function initEventos() {
   await Promise.all([cargarCategorias(), cargarEstados(), cargarEventos()]);
 }
 
-// CARDS/TABLE: trae TODOS los eventos y filtra por el organizador logueado en el cliente
+// CARDS/TABLE: trae eventos del organizador logueado
 async function cargarEventos() {
   try {
-    const res  = await fetch('/api/eventos', { credentials: 'include' });
+    const res  = await fetch('/api/eventos/organizador', { credentials: 'include' });
     const json = await res.json();
-    _eventos = (json.data || []).filter(e =>
-      ORG.usuario && e.usuario?.id === ORG.usuario.id
-    );
+    _eventos = json.data || [];
     _eventosFiltrados = [..._eventos];
     _evPagGrid = _evPagTable = 1;
     renderEventos();
@@ -28,7 +26,7 @@ async function cargarEventos() {
   }
 }
 
-// DROPDOWN del modal: solo id+nombre via endpoint del organizador
+// menu desplegable del modal: solo id+nombre via endpoint del organizador
 async function cargarCategorias() {
   try {
     const res  = await fetch('/api/categorias/nombres', { credentials: 'include' });
@@ -42,7 +40,7 @@ async function cargarCategorias() {
   } catch {}
 }
 
-// DROPDOWN del modal: estados
+// menu desplegable del modal: estados
 async function cargarEstados() {
   try {
     const res  = await fetch('/api/estados', { credentials: 'include' });

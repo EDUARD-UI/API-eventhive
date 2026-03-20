@@ -97,8 +97,33 @@ public class ServiceEvento {
         return dto;
     }
 
-    public List<NombreEventoDTO> obtenerNombresEventosPorOrganizador(Long organizadorId) {
-        return eventoRepository.findNombresByOrganizadorId(organizadorId);
+    public List<EventoDTO> obtenerEventosPorOrganizador(Long id) {
+        return eventoRepository.findByUsuarioId(id).stream()
+                .map(e -> {
+                    EventoDTO dto = new EventoDTO();
+                    dto.setId(e.getId());
+                    dto.setTitulo(e.getTitulo());
+                    dto.setDescripcion(e.getDescripcion());
+                    dto.setLugar(e.getLugar());
+                    dto.setFoto(e.getFoto());
+                    dto.setFecha(e.getFecha());
+                    dto.setHora(e.getHora());
+                    
+                    if (e.getCategoria() != null) {
+                        dto.setCategoria(new EventoDTO.Categoria(e.getCategoria().getId(), e.getCategoria().getNombre()));
+                    }
+                    if (e.getEstado() != null) {
+                        dto.setEstado(new EventoDTO.Estado(e.getEstado().getId(), e.getEstado().getNombre()));
+                    }
+                    
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public Evento obtenerEventoPorId(Long id) {
+        return eventoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + id));
     }
     
     public List<NombreEventoDTO> obtenerNombresEventos() {
@@ -113,11 +138,6 @@ public class ServiceEvento {
 
     public Evento crearEvento(Evento evento) {
         return eventoRepository.save(evento);
-    }
-
-    public Evento obtenerEventoPorId(Long id) {
-        return eventoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + id));
     }
 
     public void actualizarEvento(Evento eventoExistente) {
@@ -136,6 +156,10 @@ public class ServiceEvento {
         return eventoRepository.countByUsuarioId(id);
     }
 
+    public List<NombreEventoDTO> obtenerNombresEventosPorOrganizador(Long organizadorId) {
+        return eventoRepository.findNombresByOrganizadorId(organizadorId);
+    }
+
     public List<Evento> eventosPorCategoria(Long id) {
         return eventoRepository.findByCategoriaId(id);
     }
@@ -143,5 +167,4 @@ public class ServiceEvento {
     public long contarEventosPorCategoria(Long categoriaId) {
         return eventoRepository.countByCategoriaId(categoriaId);
     }
-    
 }

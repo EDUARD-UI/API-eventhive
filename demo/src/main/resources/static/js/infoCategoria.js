@@ -1,12 +1,10 @@
-// ── CONFIG ────────────────────────────────────────────────
 const BASE     = '';
 const PER_PAGE = 12;
 
-// ── STATE ─────────────────────────────────────────────────
+
 let allEventos  = [];
 let currentPage = 1;
 
-// ── INIT ──────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   const id = getCategoriaId();
   if (!id) { showEmpty(); return; }
@@ -14,15 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
   loadEventos(id);
 });
 
-// Soporta:  /categorias/3  y  /infoCategoria.html?id=3
 function getCategoriaId() {
   const m = location.pathname.match(/\/categorias\/(\d+)/);
   if (m) return m[1];
   return new URLSearchParams(location.search).get('id');
 }
 
-// ── BANNER — GET /api/categorias/{id} ─────────────────────
-// Respuesta: ApiResponse<Categoria> → { data: {id, nombre, foto} }
+// banner de la categoria (foto con el nombre)
 async function loadCategoria(id) {
   try {
     const res  = await fetch(`${BASE}/api/categorias/${id}`, { credentials: 'include' });
@@ -42,10 +38,7 @@ async function loadCategoria(id) {
   } catch { /* mantiene defaults */ }
 }
 
-// ── EVENTOS POR CATEGORÍA ─────────────────────────────────
-// El backend NO tiene /api/eventos?categoriaId=X
-// Usa GET /api/eventos → ApiResponse<List<Evento>> y filtra en el cliente
-// La respuesta incluye: {id, titulo, descripcion, lugar, fecha, foto, categoria:{id, nombre}}
+// mostrar los eventos de la categoria
 async function loadEventos(categoriaId) {
   try {
     const res  = await fetch(`${BASE}/api/eventos`, { credentials: 'include' });
@@ -67,7 +60,7 @@ async function loadEventos(categoriaId) {
   buildPagination();
 }
 
-// ── RENDER PÁGINA ─────────────────────────────────────────
+// renderizacion de paginas
 function renderPage(page) {
   currentPage = page;
   const start = (page - 1) * PER_PAGE;
@@ -120,7 +113,7 @@ function cardHTML(e) {
     </a>`;
 }
 
-// ── PAGINACIÓN ────────────────────────────────────────────
+// paginacion para las cards
 function buildPagination() {
   const total = Math.ceil(allEventos.length / PER_PAGE);
   if (total <= 1) return;
@@ -166,7 +159,7 @@ function getPageRange(cur, total) {
   return [1, '…', cur - 1, cur, cur + 1, '…', total];
 }
 
-// ── HELPERS ───────────────────────────────────────────────
+//funciones de apoyo
 function showEmpty() {
   document.getElementById('eventosGrid').innerHTML = '';
   document.getElementById('emptyState').classList.remove('hidden');

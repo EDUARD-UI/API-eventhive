@@ -24,7 +24,7 @@ async function cargarPromociones() {
   }
 }
 
-// DROPDOWN del modal: solo id+titulo de eventos del organizador logueado
+// menu desplegable del modal: solo id+titulo de eventos del organizador logueado
 async function cargarEventosDropdownPromo() {
   try {
     const res  = await fetch('/api/eventos/organizador/nombres-Eventos', { credentials: 'include' });
@@ -217,7 +217,7 @@ async function delPromo(id) {
   }
 }
 
-// ── HELPERS ──
+// funciones de apoyo
 function esVigente(p) {
   const hoy = new Date().toISOString().slice(0,10);
   return fmtISO(p.fechaInicio) <= hoy && hoy <= fmtISO(p.fechaFinal);

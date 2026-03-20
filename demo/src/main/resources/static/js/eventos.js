@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// ── SESIÓN ────────────────────────────────────────────────
+// validar sesion
 async function checkSession() {
   try {
     const res = await fetch('/api/pagos', { credentials: 'include' });
@@ -38,7 +38,7 @@ function renderNavGuest() {
     <a href="/signin.html" class="bg-brand text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition shadow-sm">Registrarse</a>`;
 }
 
-// ── CATEGORÍAS SELECT ──────────────────────────────────────
+// menu desplegable de categorias
 async function cargarCategorias() {
   try {
     const res = await fetch('/api/categorias', { credentials: 'include' });
@@ -51,10 +51,7 @@ async function cargarCategorias() {
   } catch {}
 }
 
-// ── CARGAR TODO (con-eventos) ──────────────────────────────
-// GET /api/categorias/con-eventos → List<CategoriaEventosDTO>
-// CategoriaEventosDTO: { id, nombre, totalEventos, eventos[EventoDTO] }
-// EventoDTO: { id, titulo, descripcion, lugar, foto, fecha }
+// categorias y sus eventos
 async function cargarTodo() {
   try {
     const res = await fetch('/api/categorias/con-eventos', { credentials: 'include' });
@@ -99,8 +96,7 @@ function renderCategorias(lista) {
     </div>`).join('');
 }
 
-// ── FILTRAR POR CATEGORÍA ──────────────────────────────────
-// Reutiliza los datos de con-eventos filtrando por id
+//mostrar eventos solo de categoria seleccionada
 async function filtrarPorCategoria(id) {
   try {
     const res = await fetch('/api/categorias/con-eventos', { credentials: 'include' });
@@ -111,7 +107,7 @@ async function filtrarPorCategoria(id) {
   } catch {}
 }
 
-// ── CARD EVENTO ────────────────────────────────────────────
+// card de evento
 function cardEvento(e) {
   const img = e.foto ? `/uploads/eventos/${e.foto}` : null;
   const fecha = formatFecha(e.fecha);
@@ -132,7 +128,7 @@ function cardEvento(e) {
     </a>`;
 }
 
-// ── HELPERS ───────────────────────────────────────────────
+//funciones de apoyo
 function formatFecha(v) {
   if (!v) return 'Fecha por confirmar';
   if (Array.isArray(v)) { const [y,m,d]=v; return new Date(y,m-1,d).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}); }

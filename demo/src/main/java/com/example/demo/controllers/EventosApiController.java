@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.EventoBusquedaDTO;
+import com.example.demo.dto.EventoDTO;
 import com.example.demo.dto.EventoDestacadoDTO;
 import com.example.demo.dto.EventoDetalleDTO;
 import com.example.demo.dto.NombreEventoDTO;
@@ -37,6 +38,7 @@ import com.example.demo.model.Categoria;
 import com.example.demo.model.Estado;
 import com.example.demo.model.Evento;
 import com.example.demo.model.Usuario;
+import com.example.demo.security.GlobalController;
 import com.example.demo.service.ServiceCategoria;
 import com.example.demo.service.ServiceEstado;
 import com.example.demo.service.ServiceEvento;
@@ -64,6 +66,14 @@ public class EventosApiController {
     public ResponseEntity<ApiResponse<List<Evento>>> listarEventos() {
         return ResponseEntity.ok(ApiResponse.ok("Eventos obtenidos", serviceEventos.todosLosEventos()));
     }
+
+    @GetMapping("/organizador")
+    public ResponseEntity<ApiResponse<List<EventoDTO>>> obtenerEventosOrganizador(HttpSession session) {
+        Usuario usuario = GlobalController.rolRequerido(session, "organizador");
+        List<EventoDTO> eventosOrganizador = serviceEventos.obtenerEventosPorOrganizador(usuario.getId());
+        return ResponseEntity.ok(ApiResponse.ok("eventos del organizador", eventosOrganizador));
+    }
+    
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<EventoDetalleDTO>> obtenerEvento(@PathVariable Long id) {
@@ -209,6 +219,9 @@ public class EventosApiController {
         serviceEventos.eliminarEvento(id);
         return ResponseEntity.ok(ApiResponse.ok("Evento eliminado exitosamente"));
     }
+
+
+
 
     //funciones de apoyo
     private void validarFoto(MultipartFile foto) {

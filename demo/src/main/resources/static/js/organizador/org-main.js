@@ -80,7 +80,7 @@ async function navegarA(sec) {
   }
 }
 
-/* ── TOAST ── */
+//alertas de sweetalert personalizadas
 function toast(msg, type = 'ok') {
   Swal.fire({
     icon: { ok:'success', err:'error', info:'info', warning:'warning' }[type] || 'info',
@@ -93,10 +93,6 @@ function toast(msg, type = 'ok') {
   });
 }
 
-/* ── MODAL ──
-   openModal(id)        → abre el modal y LIMPIA el form  (para crear nuevo)
-   openModalEdit(id)    → abre el modal SIN limpiar       (para editar, los datos ya están cargados)
-*/
 function openModal(id) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -118,12 +114,7 @@ function closeModal(id) {
   document.getElementById(id)?.classList.remove('open');
 }
 
-/* ── PAGINACIÓN ──
-   Botones con estilos Tailwind inline.
-   Activo: fondo azul, texto blanco.
-   Inactivo: fondo blanco, borde gris, hover gris claro.
-   Disabled: opacidad reducida, cursor not-allowed.
-*/
+//paginacion de las cards y tablas
 function buildPagHTML(total, actual, fn) {
   if (total <= 1) return '';
   const rango = getPagRango(actual, total);

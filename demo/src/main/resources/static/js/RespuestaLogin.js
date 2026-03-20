@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
           showConfirmButton: false,
         });
 
-        // 👇 REDIRECCIÓN INTELIGENTE
+        // redireccionar segun rol
         if (redirect) {
           window.location.href = redirect;
         } else {

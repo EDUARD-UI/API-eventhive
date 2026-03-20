@@ -10,7 +10,7 @@ async function initLocalidades() {
   await Promise.all([cargarEventosDropdownLoc(), cargarLocalidades()]);
 }
 
-// CARDS/TABLE: endpoint del organizador logueado
+// CARDS/TABLE: endpoint para localidades del organizador logueado
 async function cargarLocalidades() {
   try {
     const res  = await fetch('/api/localidades/organizador', { credentials: 'include' });
@@ -24,7 +24,7 @@ async function cargarLocalidades() {
   }
 }
 
-// DROPDOWN del modal: solo id+titulo de eventos del organizador logueado
+// menu desplegable del modal: solo id+titulo de eventos del organizador logueado
 async function cargarEventosDropdownLoc() {
   try {
     const res  = await fetch('/api/eventos/organizador/nombres-Eventos', { credentials: 'include' });

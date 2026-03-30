@@ -21,8 +21,8 @@ function renderNavAuth(nombre, rol) {
   el.innerHTML = `
     <span class="text-dark/50 hidden sm:block text-sm font-medium">${esc(nombre)}</span>
     ${rol === 'organizador'
-      ? `<a href="/organizador/index.html" class="bg-brand text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition">Dashboard</a>`
-      : `<a href="/perfil.html" class="text-dark/60 hover:text-brand transition text-xs font-medium">Mi Perfil</a>`
+      ? `<a href="/pages/organizador/index.html" class="bg-brand text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition">Dashboard</a>`
+      : `<a href="/pages/perfil.html" class="text-dark/60 hover:text-brand transition text-xs font-medium">Mi Perfil</a>`
     }
     <button id="btnLogout" class="text-dark/40 hover:text-brand text-xs transition font-medium">Salir</button>
   `;
@@ -36,8 +36,8 @@ function renderNavGuest() {
   const el = document.getElementById('navAuth');
   if (!el) return;
   el.innerHTML = `
-    <a href="/login.html" class="text-dark/60 hover:text-brand transition text-sm font-medium">Iniciar sesión</a>
-    <a href="/signin.html" class="bg-brand text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition shadow-sm">Registrarse</a>
+    <a href="/pages/login.html" class="text-dark/60 hover:text-brand transition text-sm font-medium">Iniciar sesión</a>
+    <a href="/pages/signin.html" class="bg-brand text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition shadow-sm">Registrarse</a>
   `;
 }
 
@@ -80,7 +80,7 @@ function cardEvento(e) {
   const cat   = e.categoriaNombre || '';
   const fecha = formatFecha(e.fecha);
   return `
-    <a href="/infoEvento.html?id=${e.id}"
+    <a href="/pages/infoEvento.html?id=${e.id}"
       class="event-card block bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
       <div class="relative h-52 overflow-hidden bg-gray-100">
         ${img
@@ -121,7 +121,7 @@ async function loadCategoriasDestacadas() {
 function cardCategoria(c) {
   const img = c.foto ? `/uploads/categorias/${c.foto}` : null;
   return `
-    <a href="/infoCategoria.html?id=${c.id}"
+    <a href="/pages/infoCategoria.html?id=${c.id}"
       class="cat-card relative block h-44 rounded-2xl overflow-hidden bg-gray-200">
       ${img ? `<img src="${img}" alt="${esc(c.nombre)}" onerror="this.style.display='none'" class="w-full h-full object-cover"/>` : ''}
       <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
@@ -143,7 +143,7 @@ async function loadTodasLasCategorias() {
     });
   } catch { /* silencioso */ }
   sel.addEventListener('change', e => {
-    if (e.target.value) location.href = `/infoCategoria.html?id=${e.target.value}`;
+    if (e.target.value) location.href = `/pages/infoCategoria.html?id=${e.target.value}`;
   });
 }
 

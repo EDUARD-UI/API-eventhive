@@ -223,7 +223,7 @@ async function procesarCompra(metodoPago) {
         cancelButtonColor: "#6c5ce7",
       }).then((result) => {
         if (result.isConfirmed) {
-          window.location.href = "/compras/historialCompras";
+          window.location.href = "/pages/historialCompras.html";
         } else {
           window.location.href = "/";
         }

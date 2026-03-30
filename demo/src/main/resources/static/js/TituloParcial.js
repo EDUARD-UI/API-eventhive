@@ -47,7 +47,7 @@ async function buscarPorTitulo(q) {
     }
 
     results.innerHTML = lista.map(e => `
-      <a href="/infoEvento.html?id=${e.id}"
+      <a href="/pages/infoEvento.html?id=${e.id}"
         class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition
                border-b border-gray-100 last:border-0">
         <div class="w-9 h-9 rounded-lg bg-brand/10 flex items-center justify-center shrink-0">

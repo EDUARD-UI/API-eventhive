@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,14 +37,13 @@ public class UsuariosApiController {
     private final ServiceRoles serviceRol;
     private final ServiceEstado serviceEstado;
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    // GET /api/usuarios → listar todos (exlusivo para admin)
     @GetMapping
     public ResponseEntity<ApiResponse<List<Usuario>>> listarUsuarios() {
         return ResponseEntity.ok(ApiResponse.ok("Usuarios obtenidos", serviceUsuario.obtenerTodosLosUsuarios()));
     }
 
-    // GET /api/usuarios/{id} → obtener por id (exlusivo para admin)
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Usuario>> obtenerUsuario(@PathVariable Long id) {
         Usuario usuario = serviceUsuario.obtenerUsuarioPorId(id);
@@ -51,7 +51,6 @@ public class UsuariosApiController {
         return ResponseEntity.ok(ApiResponse.ok("Usuario obtenido", usuario));
     }
 
-    // POST /api/usuarios → crear usuario desde admin
     @PostMapping
     public ResponseEntity<ApiResponse<Void>> crearUsuario(
             @RequestParam String nombre,
@@ -77,7 +76,7 @@ public class UsuariosApiController {
         nuevoUsuario.setApellido(apellido);
         nuevoUsuario.setCorreo(correo);
         nuevoUsuario.setTelefono(telefono);
-        nuevoUsuario.setClave(clave);
+        nuevoUsuario.setClave(passwordEncoder.encode(clave)); // clave encriptada
         nuevoUsuario.setRol(rolObj);
         nuevoUsuario.setEstado(estadoObj);
 
@@ -86,7 +85,6 @@ public class UsuariosApiController {
                 .body(ApiResponse.ok("Usuario creado exitosamente"));
     }
 
-    // PUT /api/usuarios/{id} → actualizar usuario (exlusivo para admin)
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> actualizarUsuario(
             @PathVariable Long id,
@@ -118,13 +116,16 @@ public class UsuariosApiController {
         usuarioExistente.setTelefono(telefono);
         usuarioExistente.setRol(rolObj);
         usuarioExistente.setEstado(estadoObj);
-        if (clave != null && !clave.isBlank()) usuarioExistente.setClave(clave);
+
+        if (clave != null && !clave.isBlank()) {
+            usuarioExistente.setClave(passwordEncoder.encode(clave));
+        }
 
         serviceUsuario.actualizarUsuario(usuarioExistente);
         return ResponseEntity.ok(ApiResponse.ok("Usuario actualizado exitosamente"));
     }
 
-    // PUT /api/usuarios/perfil → el usuario logueado actualiza sus propios datos personales
+    //metodo para editar el perfil logeado
     @PutMapping("/perfil")
     public ResponseEntity<ApiResponse<Void>> actualizarPerfil(
             @RequestParam String nombre,
@@ -139,10 +140,8 @@ public class UsuariosApiController {
                     .body(ApiResponse.error("Debe iniciar sesión para editar el perfil"));
         }
 
-        // validacion y actualización
         serviceUsuario.actualizarPerfil(usuarioEnSesion.getId(), nombre, correo, telefono, clave);
 
-        // Refrescar sesion con los nuevos datos
         Usuario actualizado = serviceUsuario.obtenerUsuarioPorId(usuarioEnSesion.getId());
         session.setAttribute("usuarioLogeado", actualizado);
         session.setAttribute("usuarioNombre", actualizado.getNombre());
@@ -151,7 +150,6 @@ public class UsuariosApiController {
         return ResponseEntity.ok(ApiResponse.ok("Perfil actualizado exitosamente"));
     }
 
-    // DELETE /api/usuarios/{id} → eliminar usuario (exlusivo para admin)
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> eliminarUsuario(@PathVariable Long id) {
         if (serviceUsuario.obtenerUsuarioPorId(id) == null) {

@@ -22,7 +22,7 @@ async function cargarSesion() {
     const res  = await fetch('/api/pagos', { credentials: 'include' });
     const json = await res.json();
     if (!json.data || json.data.rolNombre !== 'organizador') {
-      window.location.href = '/login.html';
+      window.location.href = '/pages/login.html';
       return;
     }
     ORG.usuario = json.data;
@@ -31,7 +31,7 @@ async function cargarSesion() {
     document.getElementById('sb-nm').textContent =
       `${ORG.usuario.nombre||''} ${ORG.usuario.apellido||''}`.trim();
   } catch {
-    window.location.href = '/login.html';
+    window.location.href = '/pages/login.html';
   }
 }
 
@@ -44,7 +44,7 @@ function initSidebar() {
   });
   document.getElementById('btn-logout')?.addEventListener('click', async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-    window.location.href = '/login.html';
+    window.location.href = '/pages/login.html';
   });
 }
 

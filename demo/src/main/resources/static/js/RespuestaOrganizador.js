@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (res.ok) {
         await Swal.fire({ icon: 'success', title: '¡Cuenta creada!', text: json.message || 'Tu cuenta de organizador fue creada.', confirmButtonColor: '#007bff' });
-        window.location.href = '/login.html';
+        window.location.href = '/pages/login.html';
       } else {
         Swal.fire({ icon: 'error', title: 'Error', text: json.message || 'No se pudo registrar.', confirmButtonColor: '#007bff' });
       }

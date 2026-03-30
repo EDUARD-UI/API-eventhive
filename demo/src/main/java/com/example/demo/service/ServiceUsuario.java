@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.exception.BusinessException;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class ServiceUsuario {
 
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public List<Usuario> obtenerTodosLosUsuarios() {
         return usuarioRepository.findAll();
@@ -48,7 +50,6 @@ public class ServiceUsuario {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("El usuario no existe"));
 
-        // Verificar q el correo no esté en uso por otro usuario
         Usuario conMismoCorreo = usuarioRepository.findByCorreo(correo);
         if (conMismoCorreo != null && !conMismoCorreo.getId().equals(usuarioId)) {
             throw new BusinessException("El correo ya está registrado por otro usuario");
@@ -57,7 +58,10 @@ public class ServiceUsuario {
         usuario.setNombre(nombre);
         usuario.setCorreo(correo);
         if (telefono != null) usuario.setTelefono(telefono);
-        if (clave != null && !clave.isBlank()) usuario.setClave(clave);
+
+        if (clave != null && !clave.isBlank()) {
+            usuario.setClave(passwordEncoder.encode(clave));
+        }
 
         usuarioRepository.save(usuario);
     }

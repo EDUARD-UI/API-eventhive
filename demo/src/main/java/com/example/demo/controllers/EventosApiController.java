@@ -73,7 +73,12 @@ public class EventosApiController {
         List<EventoDTO> eventosOrganizador = serviceEventos.obtenerEventosPorOrganizador(usuario.getId());
         return ResponseEntity.ok(ApiResponse.ok("eventos del organizador", eventosOrganizador));
     }
-    
+
+    @GetMapping("/categoria/{categoriaId}")
+    public ResponseEntity<ApiResponse<List<EventoDTO>>> obtenerEventosPorCategoria(@PathVariable Long categoriaId) {
+        List<EventoDTO> eventos = serviceEventos.buscarPorCategoriaDTO(categoriaId);
+        return ResponseEntity.ok(ApiResponse.ok("Eventos de la categoría obtenidos", eventos));
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<EventoDetalleDTO>> obtenerEvento(@PathVariable Long id) {

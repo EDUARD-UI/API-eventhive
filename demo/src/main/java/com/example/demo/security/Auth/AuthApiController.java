@@ -1,9 +1,10 @@
-package com.example.demo.controllers;
+package com.example.demo.security.Auth;
 
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,6 +30,7 @@ public class AuthApiController {
     private final UsuarioRepository usuarioRepository;
     private final RolesRepository rolRepository;
     private final EstadoRepository estadoRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<Map<String, String>>> login(
@@ -36,9 +38,9 @@ public class AuthApiController {
             @RequestParam String clave,
             HttpSession session) {
 
-        Usuario user = usuarioRepository.findByCorreoAndClave(correo, clave);
+        Usuario user = usuarioRepository.findByCorreo(correo);
 
-        if (user == null) {
+        if (user == null || !passwordEncoder.matches(clave, user.getClave())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponse.error("Correo o contraseña incorrectos"));
         }
@@ -84,7 +86,7 @@ public class AuthApiController {
         nuevoUsuario.setApellido(apellido);
         nuevoUsuario.setCorreo(correo);
         nuevoUsuario.setTelefono(telefono);
-        nuevoUsuario.setClave(clave);
+        nuevoUsuario.setClave(passwordEncoder.encode(clave)); // clave encriptada
         nuevoUsuario.setEstado(estadoActivo);
         nuevoUsuario.setRol(rolCliente);
 
@@ -114,7 +116,7 @@ public class AuthApiController {
         nuevoUsuario.setApellido(apellido);
         nuevoUsuario.setCorreo(correo);
         nuevoUsuario.setTelefono(telefono);
-        nuevoUsuario.setClave(clave);
+        nuevoUsuario.setClave(passwordEncoder.encode(clave)); // clave encriptada
         nuevoUsuario.setEstado(estadoActivo);
         nuevoUsuario.setRol(rolOrganizador);
 

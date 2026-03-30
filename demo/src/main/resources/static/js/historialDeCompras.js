@@ -6,10 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
 async function cargarHistorial() {
   try {
     const res = await fetch('/api/compras/historial', { credentials: 'include' });
-    if (res.status === 401 || res.status === 403) { window.location.href = '/login.html'; return; }
+    if (res.status === 401 || res.status === 403) { window.location.href = '/pages/login.html'; return; }
     if (!res.ok) throw new Error('Error al cargar historial');
     const json = await res.json();
-    if (!json.success) { window.location.href = '/login.html'; return; }
+    if (!json.success) { window.location.href = '/pages/login.html'; return; }
     const compras = Array.isArray(json.data) ? json.data : [];
     renderHistorial(compras);
   } catch {
@@ -43,7 +43,7 @@ function renderHistorial(compras) {
       </div>
       <div class="flex flex-col items-end gap-3 shrink-0">
         <span class="font-extrabold text-brand text-lg">$${Number(c.total || 0).toLocaleString('es-CO')} COP</span>
-        <a href="/misBoletos.html?id=${c.id}"
+        <a href="/pages/misBoletos.html?id=${c.id}"
           class="bg-accent text-dark text-xs font-bold px-4 py-2 rounded-xl hover:bg-yellow-400 transition flex items-center gap-2">
           <i class="fas fa-qrcode"></i> Ver boletos
         </a>

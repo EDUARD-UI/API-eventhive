@@ -16,9 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
 async function cargarPerfil() {
   try {
     const res = await fetch('/api/pagos', { credentials: 'include' });
-    if (!res.ok) { window.location.href = '/login.html'; return; }
+    if (!res.ok) { window.location.href = '/pages/login.html'; return; }
     const json = await res.json();
-    if (!json.data) { window.location.href = '/login.html'; return; }
+    if (!json.data) { window.location.href = '/pages/login.html'; return; }
     usuarioActual = json.data;
     document.getElementById('perfilNombre').textContent = `${usuarioActual.nombre || ''} ${usuarioActual.apellido || ''}`.trim();
     document.getElementById('perfilEmail').textContent   = usuarioActual.correo || '';
@@ -28,7 +28,7 @@ async function cargarPerfil() {
     cargarCompras();
     cargarDeseados();
     cargarComentarios();
-  } catch { window.location.href = '/login.html'; }
+  } catch { window.location.href = '/pages/login.html'; }
 }
 
 // COMPRAS (tiquetes)
@@ -60,7 +60,7 @@ function renderTiquetes(compras) {
         <p class="text-xs text-dark/40 mt-0.5">${esc(c.localidadNombre || '')} · ${c.cantidad || 1} boleto${(c.cantidad || 1) > 1 ? 's' : ''}</p>
         <p class="text-xs font-bold text-brand mt-1">$${Number(c.total || 0).toLocaleString('es-CO')} COP</p>
       </div>
-      <a href="/misBoletos.html?id=${c.id}"
+      <a href="/pages/misBoletos.html?id=${c.id}"
         class="bg-accent text-dark text-xs font-bold px-4 py-2 rounded-xl hover:bg-yellow-400 transition shrink-0">
         <i class="fas fa-qrcode mr-1"></i> Ver boletos
       </a>
@@ -84,7 +84,7 @@ function renderDeseados(lista) {
   const vacio = document.getElementById('deseadosVacio');
   if (!lista.length) { vacio.classList.remove('hidden'); return; }
   el.innerHTML = lista.map(d => `
-    <a href="/infoEvento.html?id=${d.eventoId}" class="block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition">
+    <a href="/pages/infoEvento.html?id=${d.eventoId}" class="block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition">
       <div class="h-36 bg-gray-100 flex items-center justify-center">
         ${d.eventoFoto
           ? `<img src="/uploads/eventos/${esc(d.eventoFoto)}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-calendar-alt text-3xl text-gray-200\\'></i>'"/>`

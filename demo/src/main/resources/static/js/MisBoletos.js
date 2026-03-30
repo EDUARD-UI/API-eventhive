@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function cargarBoletos(id) {
   try {
     const res = await fetch(`/api/boletos/${id}`, { credentials: 'include' });
-    if (res.status === 401 || res.status === 403) { window.location.href = '/login.html'; return; }
+    if (res.status === 401 || res.status === 403) { window.location.href = '/pages/login.html'; return; }
     if (!res.ok) { mostrarVacio(); return; }
     const json = await res.json();
     if (!json.success || !json.data) { mostrarVacio(); return; }

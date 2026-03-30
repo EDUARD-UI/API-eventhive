@@ -41,12 +41,9 @@ async function loadCategoria(id) {
 // mostrar los eventos de la categoria
 async function loadEventos(categoriaId) {
   try {
-    const res  = await fetch(`${BASE}/api/eventos`, { credentials: 'include' });
+    const res  = await fetch(`${BASE}/api/eventos/categoria/${categoriaId}`, { credentials: 'include' });
     const json = await res.json();
-    const todos = json.data || [];
-
-    // Filtra por categoría en el cliente
-    allEventos = todos.filter(e => String(e.categoria?.id) === String(categoriaId));
+    allEventos = json.data || [];
   } catch {
     allEventos = [];
   }
@@ -79,7 +76,7 @@ function cardHTML(e) {
   const img   = e.foto ? `/uploads/eventos/${e.foto}` : null;
   const fecha = formatFecha(e.fecha);
   return `
-    <a href="/infoEvento.html?id=${e.id}"
+    <a href="/pages/infoEvento.html?id=${e.id}"
       class="event-card block bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
       <div class="relative h-48 overflow-hidden bg-gray-100">
         ${img

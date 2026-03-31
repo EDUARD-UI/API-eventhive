@@ -37,7 +37,7 @@ public class Rol {
     @JoinColumn(name = "idEstado", nullable = false)
     private Estado estado;
 
-    @JsonIgnore
     @OneToMany(mappedBy = "rol")
+    @JsonIgnore
     private List<Usuario> usuarios;
 }

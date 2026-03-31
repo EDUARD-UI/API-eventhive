@@ -41,7 +41,7 @@ public class Usuario {
     private String telefono;
 
     @JsonIgnore
-    @Column(length = 45)
+    @Column(length = 60)
     private String clave;
 
     @ManyToOne

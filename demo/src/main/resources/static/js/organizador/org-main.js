@@ -57,7 +57,7 @@ async function navegarA(sec) {
   pageContent.innerHTML = '<div style="padding:40px;color:var(--muted)">Cargando...</div>';
 
   try {
-    const res = await fetch(`/organizador/org-${sec}.html`);
+    const res = await fetch(`/pages/organizador/org-${sec}.html`);
     if (!res.ok) throw new Error('Página no encontrada');
     const html = await res.text();
 

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,6 +42,7 @@ public class EstadosApiController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> crearEstado(
             @RequestParam String nombre,
             @RequestParam(required = false) String descripcion) {
@@ -59,6 +61,7 @@ public class EstadosApiController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> actualizarEstado(
             @PathVariable Long id,
             @RequestParam String nombre,
@@ -80,6 +83,7 @@ public class EstadosApiController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> eliminarEstado(@PathVariable Long id) {
         if (serviceEstado.findById(id) == null) throw new ResourceNotFoundException("El estado no existe");
 

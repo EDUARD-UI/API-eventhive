@@ -36,7 +36,7 @@ public class ServiceCategoria {
                     dto.setNombre(categoria.getNombre());
                     List<EventoDTO> eventosDTO = serviceEvento.buscarPorCategoriaDTO(categoria.getId())
                             .stream()
-                            .limit(12)
+                            .limit(8)
                             .collect(Collectors.toList());
                     dto.setEventos(eventosDTO);
 

@@ -71,12 +71,3 @@ function highlight(text, q) {
   return esc(text).replace(new RegExp(`(${safe})`, 'gi'),
     '<mark style="background:#ffc107;color:#212529;border-radius:2px;padding:0 2px">$1</mark>');
 }
-
-function esc(s) {
-  if (!s) return '';
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}

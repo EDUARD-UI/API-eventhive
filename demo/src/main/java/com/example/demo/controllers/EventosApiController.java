@@ -38,6 +38,7 @@ import com.example.demo.model.Categoria;
 import com.example.demo.model.Estado;
 import com.example.demo.model.Evento;
 import com.example.demo.model.Usuario;
+import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.security.GlobalController;
 import com.example.demo.service.ServiceCategoria;
 import com.example.demo.service.ServiceEstado;
@@ -58,6 +59,7 @@ public class EventosApiController {
     private final ServiceCategoria serviceCategoria;
     private final ServiceEstado serviceEstado;
     private final ServicePromocion servicePromocion;
+    private final UsuarioRepository usuarioRepository;
 
     @Value("${upload.path.eventos:uploads/eventos}")
     private String uploadPath;
@@ -67,9 +69,9 @@ public class EventosApiController {
         return ResponseEntity.ok(ApiResponse.ok("Eventos obtenidos", serviceEventos.todosLosEventos()));
     }
 
-    @GetMapping("/organizador")
-    public ResponseEntity<ApiResponse<List<EventoDTO>>> obtenerEventosOrganizador(HttpSession session) {
-        Usuario usuario = GlobalController.rolRequerido(session, "organizador");
+    @GetMapping("/organizador/mis-eventos")
+    public ResponseEntity<ApiResponse<List<EventoDTO>>> obtenerEventosOrganizador() {
+        Usuario usuario = GlobalController.rolRequerido(usuarioRepository, "organizador");
         List<EventoDTO> eventosOrganizador = serviceEventos.obtenerEventosPorOrganizador(usuario.getId());
         return ResponseEntity.ok(ApiResponse.ok("eventos del organizador", eventosOrganizador));
     }
@@ -95,9 +97,9 @@ public class EventosApiController {
         return ResponseEntity.ok(ApiResponse.ok("Eventos destacados", serviceEventos.obtenerTop3EventosDTO()));
     }
 
-    @GetMapping("/organizador/estadisticas")
-    public ResponseEntity<ApiResponse<OrganizadorDashboardDTO>> dashboardOrganizador(HttpSession session) {
-        Usuario usuario = GlobalController.rolRequerido(session, "organizador");
+    @GetMapping("/organizador/dashboard")
+    public ResponseEntity<ApiResponse<OrganizadorDashboardDTO>> dashboardOrganizador() {
+        Usuario usuario = GlobalController.rolRequerido(usuarioRepository, "organizador");
 
         int totalEventos = (int) serviceEventos.contarPorOrganizador(usuario.getId());
         int totalLocalidades = (int) serviceLocalidad.contarPorOrganizador(usuario.getId());
@@ -114,7 +116,7 @@ public class EventosApiController {
     // id + titulo de eventos relacionados a organizador logeado
     @GetMapping("/organizador/nombres-Eventos")
     public ResponseEntity<ApiResponse<List<NombreEventoDTO>>> nombresEventosOrganizador(HttpSession session) {
-        Usuario usuario = GlobalController.rolRequerido(session, "organizador");
+        Usuario usuario = GlobalController.rolRequerido(usuarioRepository, "organizador");
         List<NombreEventoDTO> nombres = serviceEventos.obtenerNombresEventosPorOrganizador(usuario.getId());
         return ResponseEntity.ok(ApiResponse.ok("Nombres de eventos", nombres));
     }
@@ -138,7 +140,7 @@ public class EventosApiController {
             @RequestParam(required = false) MultipartFile foto,
             HttpSession session) throws IOException {
 
-        Usuario usuarioLogueado = GlobalController.rolRequerido(session, "organizador", "administrador");
+        Usuario usuario = GlobalController.rolRequerido(usuarioRepository, "organizador", "administrador");
 
         Categoria categoria = serviceCategoria.obtenerCategoriaPorId(categoriaId);
         Estado estado = serviceEstado.obtenerEstadoPorId(estadoId);
@@ -152,7 +154,7 @@ public class EventosApiController {
         nuevoEvento.setHora(LocalTime.parse(hora, DateTimeFormatter.ISO_LOCAL_TIME));
         nuevoEvento.setCategoria(categoria);
         nuevoEvento.setEstado(estado);
-        nuevoEvento.setUsuario(usuarioLogueado);
+        nuevoEvento.setUsuario(usuario);
 
         if (foto != null && !foto.isEmpty()) {
             validarFoto(foto);
@@ -176,7 +178,7 @@ public class EventosApiController {
             @RequestParam(required = false) MultipartFile foto,
             HttpSession session) throws IOException {
 
-        Usuario usuario = GlobalController.rolRequerido(session, "organizador", "administrador");
+        Usuario usuario = GlobalController.rolRequerido(usuarioRepository, "organizador", "administrador");
         Evento ev = serviceEventos.obtenerEventoPorId(id);
 
         // solo el organizador o admin puede editar
@@ -209,7 +211,7 @@ public class EventosApiController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> eliminarEvento(@PathVariable Long id, HttpSession session) {
-        Usuario usuario = GlobalController.rolRequerido(session, "organizador", "administrador");
+        Usuario usuario = GlobalController.rolRequerido(usuarioRepository, "organizador", "administrador");
         Evento ev = serviceEventos.obtenerEventoPorId(id);
 
         if (!ev.getUsuario().getId().equals(usuario.getId())

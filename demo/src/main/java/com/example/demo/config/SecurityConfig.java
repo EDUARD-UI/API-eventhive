@@ -1,14 +1,18 @@
 package com.example.demo.config;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -20,7 +24,7 @@ import com.example.demo.security.Users.CustomUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true) // Habilitar @PreAuthorize
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Autowired
@@ -32,7 +36,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
@@ -42,36 +47,95 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .userDetailsService(customUserDetailsService)
+                .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .maximumSessions(1)
+                )
                 .authorizeHttpRequests(auth -> {
+                    // Archivos estáticos y home
                     auth.requestMatchers(
-                            "/swagger-ui.html",
-                            "/swagger-ui/**",
-                            "/api-docs",
-                            "/api-docs/**",
-                            "/v3/api-docs",
-                            "/v3/api-docs/**"
+                            "/", "/index.html", "/css/**", "/js/**",
+                            "/images/**", "/pages/**", "/uploads/**"
                     ).permitAll();
 
-                    // Página principal y recursos estáticos
-                    auth.requestMatchers(
-                            "/",
-                            "/index.html",
-                            "/css/**",
-                            "/js/**",
-                            "/images/**",
-                            "/pages/**"
-                    ).permitAll();
+                    // Endpoints de Autenticación
+                    auth.requestMatchers("/api/auth/login").permitAll();
+                    auth.requestMatchers("/api/auth/logout").permitAll();
+                    auth.requestMatchers("/api/auth/registrar-cliente").permitAll();
+                    auth.requestMatchers("/api/auth/registrar-organizador").permitAll();
 
-                    auth.requestMatchers("/api/auth/**").permitAll();
-                    auth.requestMatchers("/api/boletos/**").permitAll();
+                    // Información pública
+                    auth.requestMatchers(HttpMethod.GET, "/api/eventos").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/eventos/{id}").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/categorias").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/categorias/{id}").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/localidades").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/localidades/{id}").permitAll();
 
-                    // Rutas protegidas por rol
-                    auth.requestMatchers("/administracion/**").hasRole("ADMINISTRADOR");
-                    auth.requestMatchers("/organizador/**").hasRole("ORGANIZADOR");
+                    //(cualquier rol autenticado) datos de session activa 
+                    auth.requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated();
+
+                    // Perfil del usuario (cualquier usuario autenticado)
+                    auth.requestMatchers(HttpMethod.PUT, "/api/usuarios/perfil").authenticated();
+                    auth.requestMatchers(HttpMethod.GET, "/api/usuarios/perfil").authenticated();
+                    auth.requestMatchers(HttpMethod.POST, "/api/compras").hasRole("CLIENTE");
+                    auth.requestMatchers(HttpMethod.GET, "/api/compras/historial").hasRole("CLIENTE");
+                    auth.requestMatchers(HttpMethod.GET, "/api/compras/{id}").hasRole("CLIENTE");
+
+                    // Pagos
+                    auth.requestMatchers(HttpMethod.POST, "/api/pagos").hasRole("CLIENTE");
+                    auth.requestMatchers(HttpMethod.GET, "/api/pagos/**").hasRole("CLIENTE");
+
+                    // Mis boletos
+                    auth.requestMatchers(HttpMethod.GET, "/api/boletos/mis-boletos").hasRole("CLIENTE");
+
+                    // Eventos deseados
+                    auth.requestMatchers(HttpMethod.POST, "/api/evento-deseado").hasRole("CLIENTE");
+                    auth.requestMatchers(HttpMethod.GET, "/api/evento-deseado").hasRole("CLIENTE");
+                    auth.requestMatchers(HttpMethod.DELETE, "/api/evento-deseado/{id}").hasRole("CLIENTE");
+
+                    // Valoraciones
+                    auth.requestMatchers(HttpMethod.POST, "/api/valoraciones").hasRole("CLIENTE");
+                    auth.requestMatchers(HttpMethod.GET, "/api/valoraciones/**").hasRole("CLIENTE");
+                    
+                    // Compras
+                    auth.requestMatchers(HttpMethod.POST, "/api/eventos").hasRole("ORGANIZADOR");
+                    auth.requestMatchers(HttpMethod.PUT, "/api/eventos/{id}").hasRole("ORGANIZADOR");
+                    auth.requestMatchers(HttpMethod.DELETE, "/api/eventos/{id}").hasRole("ORGANIZADOR");
+
+                    // Dashboard del organizador
+                    auth.requestMatchers(HttpMethod.GET, "/api/eventos/organizador/dashboard").hasRole("ORGANIZADOR");
+                    auth.requestMatchers(HttpMethod.GET, "/api/eventos/organizador/mis-eventos").hasRole("ORGANIZADOR");
+
+                    // Promociones
+                    auth.requestMatchers(HttpMethod.POST, "/api/promociones").hasRole("ORGANIZADOR");
+                    auth.requestMatchers(HttpMethod.PUT, "/api/promociones/{id}").hasRole("ORGANIZADOR");
+                    auth.requestMatchers(HttpMethod.DELETE, "/api/promociones/{id}").hasRole("ORGANIZADOR");
+
+                    // Reportes del organizador
+                    auth.requestMatchers(HttpMethod.GET, "/api/reportes/organizador").hasRole("ORGANIZADOR");
+
+                    // Gestión de usuarios
+                    auth.requestMatchers(HttpMethod.GET, "/api/usuarios").hasRole("ADMINISTRADOR");
+                    auth.requestMatchers(HttpMethod.PUT, "/api/usuarios/{id}").hasRole("ADMINISTRADOR");
+                    auth.requestMatchers(HttpMethod.DELETE, "/api/usuarios/{id}").hasRole("ADMINISTRADOR");
+
+                    // Gestión de roles y estados
+                    auth.requestMatchers("/api/roles/**").hasRole("ADMINISTRADOR");
+                    auth.requestMatchers("/api/estados/**").hasRole("ADMINISTRADOR");
+
+                    // Reportes generales
+                    auth.requestMatchers(HttpMethod.GET, "/api/reportes").hasRole("ADMINISTRADOR");
+                    auth.requestMatchers(HttpMethod.GET, "/api/reportes/**").hasRole("ADMINISTRADOR");
+
+                    // Gestión de eventos (admin puede eliminar)
+                    auth.requestMatchers(HttpMethod.DELETE, "/api/eventos/**").hasRole("ADMINISTRADOR");
+
+                    //Por defecto, todo lo demás requiere autenticación
+                    auth.anyRequest().authenticated();
                 })
-                // Configurar autenticación basada en sesión (no JWT)
-                .formLogin(form -> form.disable()) // Deshabilitar formulario por defecto
-                .httpBasic(httpBasic -> httpBasic.disable()); // Deshabilitar basic auth
+                .formLogin(form -> form.disable())
+                .httpBasic(httpBasic -> httpBasic.disable());
 
         return http.build();
     }
@@ -79,13 +143,20 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(java.util.Arrays.asList("http://localhost:8082", "http://localhost:3000", "http://127.0.0.1:8082"));
-        configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(java.util.Arrays.asList("*"));
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:8082",
+                "http://localhost:3000",
+                "http://127.0.0.1:8082"
+        ));
+        configuration.setAllowedMethods(Arrays.asList(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
+        ));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
-        
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+
+        UrlBasedCorsConfigurationSource source
+                = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }

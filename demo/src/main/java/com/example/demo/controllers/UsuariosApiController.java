@@ -1,6 +1,7 @@
 package com.example.demo.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +22,11 @@ import com.example.demo.model.Estado;
 import com.example.demo.model.Rol;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.security.GlobalController;
 import com.example.demo.service.ServiceEstado;
 import com.example.demo.service.ServiceRoles;
 import com.example.demo.service.ServiceUsuario;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -125,29 +126,73 @@ public class UsuariosApiController {
         return ResponseEntity.ok(ApiResponse.ok("Usuario actualizado exitosamente"));
     }
 
-    //metodo para editar el perfil logeado
+    // Obtener perfil del usuario logueado
+    @GetMapping("/perfil")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> obtenerPerfil() {
+        String correo = GlobalController.getCorreoAutenticado();
+        Usuario usuario = usuarioRepository.findByCorreo(correo);
+        
+        if (usuario == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado");
+        }
+
+        Map<String, Object> perfil = Map.of(
+                "id", usuario.getId(),
+                "nombre", usuario.getNombre(),
+                "apellido", usuario.getApellido(),
+                "correo", usuario.getCorreo(),
+                "telefono", usuario.getTelefono() != null ? usuario.getTelefono() : "",
+                "rolNombre", usuario.getRol().getNombre(),
+                "estado", usuario.getEstado().getNombre()
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok("Perfil obtenido", perfil));
+    }
+
+    // Actualizar perfil del usuario logueado
     @PutMapping("/perfil")
-    public ResponseEntity<ApiResponse<Void>> actualizarPerfil(
+    public ResponseEntity<ApiResponse<Map<String, Object>>> actualizarPerfil(
             @RequestParam String nombre,
             @RequestParam String correo,
             @RequestParam(required = false) String telefono,
-            @RequestParam(required = false) String clave,
-            HttpSession session) {
+            @RequestParam(required = false) String clave) {
 
-        Usuario usuarioEnSesion = (Usuario) session.getAttribute("usuarioLogeado");
+        String correoActual = GlobalController.getCorreoAutenticado();
+        Usuario usuarioEnSesion = usuarioRepository.findByCorreo(correoActual);
+        
         if (usuarioEnSesion == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("Debe iniciar sesión para editar el perfil"));
+            throw new BusinessException("Usuario no encontrado");
         }
 
-        serviceUsuario.actualizarPerfil(usuarioEnSesion.getId(), nombre, correo, telefono, clave);
+        // Validar que el nuevo correo no esté en uso por otro usuario
+        if (!correo.equals(usuarioEnSesion.getCorreo())) {
+            Usuario usuarioConCorreo = usuarioRepository.findByCorreo(correo);
+            if (usuarioConCorreo != null) {
+                throw new BusinessException("El correo ya está registrado por otro usuario");
+            }
+        }
 
-        Usuario actualizado = serviceUsuario.obtenerUsuarioPorId(usuarioEnSesion.getId());
-        session.setAttribute("usuarioLogeado", actualizado);
-        session.setAttribute("usuarioNombre", actualizado.getNombre());
-        session.setAttribute("usuarioEmail", actualizado.getCorreo());
+        usuarioEnSesion.setNombre(nombre);
+        usuarioEnSesion.setCorreo(correo);
+        if (telefono != null && !telefono.isBlank()) {
+            usuarioEnSesion.setTelefono(telefono);
+        }
+        if (clave != null && !clave.isBlank()) {
+            usuarioEnSesion.setClave(passwordEncoder.encode(clave));
+        }
 
-        return ResponseEntity.ok(ApiResponse.ok("Perfil actualizado exitosamente"));
+        serviceUsuario.actualizarUsuario(usuarioEnSesion);
+        
+        Map<String, Object> perfil = Map.of(
+                "id", usuarioEnSesion.getId(),
+                "nombre", usuarioEnSesion.getNombre(),
+                "apellido", usuarioEnSesion.getApellido(),
+                "correo", usuarioEnSesion.getCorreo(),
+                "telefono", usuarioEnSesion.getTelefono() != null ? usuarioEnSesion.getTelefono() : "",
+                "rolNombre", usuarioEnSesion.getRol().getNombre()
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok("Perfil actualizado exitosamente", perfil));
     }
 
     @DeleteMapping("/{id}")

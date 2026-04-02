@@ -4,11 +4,14 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,7 +38,38 @@ public class AuthApiController {
     private final RolesRepository rolRepository;
     private final EstadoRepository estadoRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager; // Nuevo
+    private final AuthenticationManager authenticationManager;
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> me() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        // Sin sesión activa o usuario anónimo
+        if (auth == null || !auth.isAuthenticated()
+                || auth instanceof AnonymousAuthenticationToken) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("No hay sesión activa"));
+        }
+
+        String correo = auth.getName();
+        Usuario usuario = usuarioRepository.findByCorreo(correo);
+
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Usuario no encontrado"));
+        }
+
+        Map<String, Object> data = Map.of(
+                "id", usuario.getId(),
+                "nombre", usuario.getNombre(),
+                "apellido", usuario.getApellido(),
+                "correo", usuario.getCorreo(),
+                "telefono", usuario.getTelefono() != null ? usuario.getTelefono() : "",
+                "rolNombre", usuario.getRol().getNombre()
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok("Sesión activa", data));
+    }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<Map<String, String>>> login(
@@ -43,43 +77,39 @@ public class AuthApiController {
             @RequestParam String clave,
             HttpSession session) {
 
-        // Autenticar con Spring Security
+        // Spring Security autentica y guarda en SecurityContext
         Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(correo, clave)
+                new UsernamePasswordAuthenticationToken(correo, clave)
         );
-        
-        // Establecer la autenticación en el contexto de seguridad
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Obtener usuario de BD
+        // Necesario para que la sesión persista entre requests
+        session.setAttribute(
+                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
+                SecurityContextHolder.getContext()
+        );
+
         Usuario user = usuarioRepository.findByCorreo(correo);
-        
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("Correo o contraseña incorrectos"));
-        }
 
-        // Guardar datos en sesión (opcional, si necesitas mantener compatibilidad)
-        session.setAttribute("usuarioLogeado", user);
-        session.setAttribute("usuarioID", user.getId());
-        session.setAttribute("usuarioNombre", user.getNombre());
-        session.setAttribute("usuarioEmail", user.getCorreo());
-        session.setAttribute("usuarioTelefono", user.getTelefono());
-        session.setAttribute("rolUsuario", user.getRol().getNombre());
-        session.setAttribute("estadoUsuario", user.getEstado().getNombre());
-        session.setAttribute("isLoggedIn", true);
-        session.setMaxInactiveInterval(30 * 60);
-
-        // Redirección según rol
         String redirectUrl = switch (user.getRol().getNombre()) {
-            case "administrador" -> "/administracion/dashboard";
-            case "organizador"   -> "/organizador/dashboard";
-            case "cliente"       -> "/";
-            default              -> "/login";
+            case "administrador" ->
+                "/administracion/dashboard";
+            case "organizador" ->
+                "/organizador/dashboard";
+            default ->
+                "/";
         };
 
         return ResponseEntity.ok(ApiResponse.ok("Inicio de sesión exitoso",
-                Map.of("redirectUrl", redirectUrl, "rol", user.getRol().getNombre())));
+                Map.of("redirectUrl", redirectUrl,
+                        "rol", user.getRol().getNombre())));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(HttpSession session) {
+        SecurityContextHolder.clearContext();
+        session.invalidate();
+        return ResponseEntity.ok(ApiResponse.ok("Sesión cerrada exitosamente"));
     }
 
     @PostMapping("/registrar-cliente")
@@ -142,12 +172,4 @@ public class AuthApiController {
                 .body(ApiResponse.ok("Registro exitoso"));
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(HttpSession session) {
-        // Limpiar contexto de Spring Security
-        SecurityContextHolder.clearContext();
-        // Invalidar sesión
-        session.invalidate();
-        return ResponseEntity.ok(ApiResponse.ok("Sesión cerrada exitosamente"));
-    }
 }

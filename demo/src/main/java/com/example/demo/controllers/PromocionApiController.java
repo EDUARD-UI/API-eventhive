@@ -22,6 +22,7 @@ import com.example.demo.exception.BusinessException;
 import com.example.demo.model.Evento;
 import com.example.demo.model.Promocion;
 import com.example.demo.model.Usuario;
+import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.security.GlobalController;
 import com.example.demo.service.ServiceEvento;
 import com.example.demo.service.ServicePromocion;
@@ -36,10 +37,11 @@ public class PromocionApiController {
 
     private final ServicePromocion servicePromocion;
     private final ServiceEvento serviceEvento;
+    private final UsuarioRepository usuarioRepository;
 
     @GetMapping("/organizador")
     public ResponseEntity<ApiResponse<List<PromocionDTO>>> listarPorOrganizador(HttpSession session) {
-        Usuario u = GlobalController.rolRequerido(session, "organizador");
+        Usuario u = GlobalController.rolRequerido(usuarioRepository, "organizador");
         List<PromocionDTO> lista = servicePromocion.obtenerPorOrganizador(u.getId())
             .stream().map(this::toDTO).collect(Collectors.toList());
         return ResponseEntity.ok(ApiResponse.ok("Promociones obtenidas", lista));
@@ -54,7 +56,7 @@ public class PromocionApiController {
             @RequestParam String fechaFin,
             HttpSession session) {
 
-        Usuario u = GlobalController.rolRequerido(session, "organizador");
+        Usuario u = GlobalController.rolRequerido(usuarioRepository, "organizador");
         validarDescuento(descuento);
 
         LocalDate inicio = LocalDate.parse(fechaInicio);
@@ -87,7 +89,7 @@ public class PromocionApiController {
             @RequestParam String fechaFin,
             HttpSession session) {
 
-        Usuario u = GlobalController.rolRequerido(session, "organizador");
+        Usuario u = GlobalController.rolRequerido(usuarioRepository, "organizador");
         Promocion p = servicePromocion.obtenerPromocionPorId(id);
         if (p == null) throw new BusinessException("La promoción no existe");
         if (!p.getEvento().getUsuario().getId().equals(u.getId()))
@@ -114,7 +116,7 @@ public class PromocionApiController {
     public ResponseEntity<ApiResponse<Void>> eliminar(
             @PathVariable Long id, HttpSession session) {
 
-        Usuario u = GlobalController.rolRequerido(session, "organizador");
+        Usuario u = GlobalController.rolRequerido(usuarioRepository, "organizador");
         Promocion p = servicePromocion.obtenerPromocionPorId(id);
         if (p == null) throw new BusinessException("La promoción no existe");
         if (!p.getEvento().getUsuario().getId().equals(u.getId()))

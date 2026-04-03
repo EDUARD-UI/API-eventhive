@@ -8,21 +8,21 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.UsuarioSesionDTO;
 import com.example.demo.model.Usuario;
+import com.example.demo.security.SecurityController;
 
-import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/pagos")
 public class PagosApiController {
 
-    @GetMapping
-    public ResponseEntity<ApiResponse<UsuarioSesionDTO>> mostrarPago(HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogeado");
+    private final SecurityController securityController;
 
-        if (usuario == null) {
-            // 200 con data null → frontend detecta "no autenticado"
-            return ResponseEntity.ok(ApiResponse.ok("Sin sesión activa"));
-        }
+    // Spring Security ya bloquea con 401 si no hay sesión (SecurityConfig: hasRole CLIENTE)
+    @GetMapping
+    public ResponseEntity<ApiResponse<UsuarioSesionDTO>> mostrarPago() {
+        Usuario usuario = securityController.usuarioAutenticado();
 
         UsuarioSesionDTO dto = new UsuarioSesionDTO();
         dto.setId(usuario.getId());

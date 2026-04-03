@@ -13,62 +13,45 @@ import com.example.demo.dto.ApiResponse;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Usuario;
-import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.service.ServiceUsuario;
+
+import lombok.RequiredArgsConstructor;
 
 @ControllerAdvice
-public class GlobalController {
+@RequiredArgsConstructor
+public class SecurityController {
 
-    // Obtiene el usuario autenticado desde Spring Security
-    public static String getCorreoAutenticado() {
-        Authentication auth = SecurityContextHolder
-            .getContext()
-            .getAuthentication();
+    private final ServiceUsuario serviceUsuario;
 
+    // correo del usuario autenticado via Spring Security
+    public String getCorreoAutenticado() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()
-                || auth instanceof AnonymousAuthenticationToken) {
+                || auth instanceof AnonymousAuthenticationToken)
             throw new BusinessException("Debe iniciar sesión para continuar");
-        }
-        return auth.getName(); // getName() devuelve el correo (username)
+        return auth.getName();
     }
 
-    // Reemplaza sesionRequerida — ahora usa Spring Security
-    public Usuario sesionRequerida(UsuarioRepository repo) {
+    // obtener usuario autenticado
+    public Usuario usuarioAutenticado() {
         String correo = getCorreoAutenticado();
-        Usuario u = repo.findByCorreo(correo);
-        if (u == null) throw new BusinessException(
-            "Usuario autenticado no encontrado en BD");
-        return u;
-    }
-
-    // Valida rol usando Spring Security + BD
-    public static Usuario rolRequerido(
-            UsuarioRepository repo, String... roles) {
-
-        String correo = getCorreoAutenticado();
-        Usuario u = repo.findByCorreo(correo);
-        if (u == null) throw new BusinessException("Usuario no encontrado");
-
-        String rolActual = u.getRol().getNombre().toLowerCase();
-        for (String rol : roles) {
-            if (rolActual.equals(rol.toLowerCase())) return u;
+        Usuario usuario = serviceUsuario.obtenerUsuarioPorCorreo(correo);
+        if (usuario == null) {
+            throw new BusinessException("Usuario no encontrado en la base de datos");
         }
-        throw new BusinessException(
-            "No tiene permisos para realizar esta acción");
+        return usuario;
     }
 
-    // Manejo de excepciones globales
     @ExceptionHandler(BusinessException.class)
     @ResponseBody
-    public ResponseEntity<ApiResponse<Void>> handleBusiness(
-            BusinessException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseBody
-    public ResponseEntity<ApiResponse<Void>> handleNotFound(
-            ResourceNotFoundException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.error(ex.getMessage()));
     }

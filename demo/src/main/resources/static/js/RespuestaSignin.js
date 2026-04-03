@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const res = await fetch(`${BASE}/api/auth/registrar-cliente`, {
-        method: 'POST', credentials: 'include',
+        method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ nombre, apellido, correo: email, telefono, clave: password })
       });

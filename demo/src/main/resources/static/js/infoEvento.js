@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 //verificar la session
 async function checkSession() {
   try {
-    const res = await fetch("/api/pagos", { credentials: "include" });
+    const res = await fetch("/api/auth/me", { credentials: "include" });
     const json = await res.json();
     if (json.data) {
       renderNavAuth(json.data.nombre, json.data.rolNombre || "");
@@ -190,7 +190,7 @@ function cambiarCantidad(btn, delta) {
 async function irAPago(localidadId, localidadNombre, precio, eventoNombre) {
   try {
     // Verificar si existe sesión
-    const res = await fetch("/api/pagos", { credentials: "include" });
+    const res = await fetch("/api/auth/me", { credentials: "include" });
     const json = await res.json();
 
     // Si no hay sesión

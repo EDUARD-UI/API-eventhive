@@ -97,7 +97,7 @@ public class SecurityConfig {
                     // Valoraciones
                     auth.requestMatchers(HttpMethod.POST, "/api/valoraciones").hasRole("CLIENTE");
                     auth.requestMatchers(HttpMethod.GET, "/api/valoraciones/**").hasRole("CLIENTE");
-                    
+
                     // Compras
                     auth.requestMatchers(HttpMethod.POST, "/api/eventos").hasRole("ORGANIZADOR");
                     auth.requestMatchers(HttpMethod.PUT, "/api/eventos/{id}").hasRole("ORGANIZADOR");

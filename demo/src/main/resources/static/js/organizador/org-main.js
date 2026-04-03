@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function cargarSesion() {
   try {
-    const res  = await fetch('/api/pagos', { credentials: 'include' });
+    const res  = await fetch('/api/auth/me', { credentials: 'include' });
     const json = await res.json();
     if (!json.data || json.data.rolNombre !== 'organizador') {
       window.location.href = '/pages/login.html';

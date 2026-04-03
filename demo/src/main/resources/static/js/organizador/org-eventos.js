@@ -13,7 +13,7 @@ async function initEventos() {
 // CARDS/TABLE: trae eventos del organizador logueado
 async function cargarEventos() {
   try {
-    const res  = await fetch('/api/eventos/organizador', { credentials: 'include' });
+    const res  = await fetch('/api/eventos/organizador/mis-eventos', { credentials: 'include' });
     const json = await res.json();
     _eventos = json.data || [];
     _eventosFiltrados = [..._eventos];

@@ -189,8 +189,9 @@ async function procesarCompra(metodoPago) {
   });
 
   try {
-    const response = await fetch("/compras/procesar", {
+    const response = await fetch("/api/compras", {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },

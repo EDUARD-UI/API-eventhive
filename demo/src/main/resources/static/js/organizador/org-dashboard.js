@@ -10,7 +10,7 @@ async function initDashboard() {
   }
 
   try {
-    const res  = await fetch('/api/eventos/organizador/estadisticas', { credentials: 'include' });
+    const res  = await fetch('/api/eventos/organizador/dashboard', { credentials: 'include' });
     const json = await res.json();
     if (!json.success) throw new Error(json.mensaje);
 

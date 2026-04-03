@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,10 +21,10 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Evento;
 import com.example.demo.model.Usuario;
 import com.example.demo.model.Valoracion;
+import com.example.demo.security.SecurityController;
 import com.example.demo.service.ServiceEvento;
 import com.example.demo.service.ServiceValoracion;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -33,28 +34,27 @@ public class ValoracionesApiController {
 
     private final ServiceValoracion serviceValoracion;
     private final ServiceEvento serviceEvento;
+    private final SecurityController securityController;
 
-    //retornar valoraciones del usuario logeado
     @GetMapping("/usuario")
-    public ResponseEntity<ApiResponse<List<ValoracionDTO>>> valoracionesDelUsuario(HttpSession session) {
-        List<ValoracionDTO> dtos = serviceValoracion
-                .obtenerValoracionesDTOPorUsuario(getUsuarioSesion(session).getId());
-        return ResponseEntity.ok(ApiResponse.ok("Valoraciones obtenidas", dtos));
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<ApiResponse<List<ValoracionDTO>>> valoracionesDelUsuario() {
+        return ResponseEntity.ok(ApiResponse.ok("Valoraciones obtenidas",
+                serviceValoracion.obtenerValoracionesDTOPorUsuario(usuarioAutenticado().getId())));
     }
 
-    //retornar valoraciones de un evento
     @GetMapping("/evento/{eventoId}")
     public ResponseEntity<ApiResponse<List<ValoracionDTO>>> valoracionesPorEvento(@PathVariable Long eventoId) {
-        List<ValoracionDTO> dtos = serviceValoracion.obtenerValoracionesDTOPorEvento(eventoId);
-        return ResponseEntity.ok(ApiResponse.ok("Valoraciones del evento", dtos));
+        return ResponseEntity.ok(ApiResponse.ok("Valoraciones del evento",
+                serviceValoracion.obtenerValoracionesDTOPorEvento(eventoId)));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<ApiResponse<Void>> crearValoracion(
             @RequestParam Long eventoId,
             @RequestParam String comentario,
-            @RequestParam long calificacion,
-            HttpSession session) {
+            @RequestParam long calificacion) {
 
         if (calificacion < 1 || calificacion > 5)
             throw new BusinessException("La calificación debe estar entre 1 y 5");
@@ -62,27 +62,26 @@ public class ValoracionesApiController {
         Evento evento = serviceEvento.obtenerEventoPorId(eventoId);
 
         Valoracion v = new Valoracion();
-        v.setCliente(getUsuarioSesion(session));
+        v.setCliente(usuarioAutenticado());
         v.setEvento(evento);
         v.setComentario(comentario);
         v.setCalificacion(calificacion);
         serviceValoracion.crear(v);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Valoración creada exitosamente"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Valoración creada exitosamente"));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<ApiResponse<Void>> actualizarValoracion(
             @PathVariable Long id,
             @RequestParam String comentario,
-            @RequestParam long calificacion,
-            HttpSession session) {
+            @RequestParam long calificacion) {
 
         if (calificacion < 1 || calificacion > 5)
             throw new BusinessException("La calificación debe estar entre 1 y 5");
 
-        Valoracion v = obtenerValoracionVerificada(id, getUsuarioSesion(session));
+        Valoracion v = obtenerValoracionVerificada(id, usuarioAutenticado());
         v.setComentario(comentario);
         v.setCalificacion(calificacion);
         serviceValoracion.actualizarValoracion(v);
@@ -91,26 +90,23 @@ public class ValoracionesApiController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> eliminarValoracion(
-            @PathVariable Long id, HttpSession session) {
-
-        obtenerValoracionVerificada(id, getUsuarioSesion(session));
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<ApiResponse<Void>> eliminarValoracion(@PathVariable Long id) {
+        obtenerValoracionVerificada(id, usuarioAutenticado());
         serviceValoracion.eliminarValoracion(id);
         return ResponseEntity.ok(ApiResponse.ok("Valoración eliminada exitosamente"));
     }
 
-    
-    //funcines de apoyo
-    private Usuario getUsuarioSesion(HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogeado");
-        if (usuario == null) throw new BusinessException("Debe iniciar sesión para realizar esta acción");
-        return usuario;
+    private Usuario usuarioAutenticado() {
+        return securityController.usuarioAutenticado();
     }
 
     private Valoracion obtenerValoracionVerificada(Long id, Usuario usuario) {
-        Valoracion v = serviceValoracion.obtenerValoracionPorId(id);
-        if (v == null) throw new ResourceNotFoundException("Valoración no encontrada");
-        if (v.getCliente().getId() != usuario.getId()) throw new BusinessException("No autorizado");
-        return v;
-    }
+    Valoracion v = serviceValoracion.obtenerValoracionPorId(id);
+    if (v == null) 
+        throw new ResourceNotFoundException("Valoración no encontrada");
+    if (v.getCliente() == null || !v.getCliente().getId().equals(usuario.getId())) 
+        throw new BusinessException("No autorizado");
+    return v;
+}
 }

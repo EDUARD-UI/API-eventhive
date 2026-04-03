@@ -21,8 +21,7 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Estado;
 import com.example.demo.model.Rol;
 import com.example.demo.model.Usuario;
-import com.example.demo.repository.UsuarioRepository;
-import com.example.demo.security.GlobalController;
+import com.example.demo.security.SecurityController;
 import com.example.demo.service.ServiceEstado;
 import com.example.demo.service.ServiceRoles;
 import com.example.demo.service.ServiceUsuario;
@@ -37,8 +36,8 @@ public class UsuariosApiController {
     private final ServiceUsuario serviceUsuario;
     private final ServiceRoles serviceRol;
     private final ServiceEstado serviceEstado;
-    private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SecurityController securityController;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<Usuario>>> listarUsuarios() {
@@ -62,7 +61,7 @@ public class UsuariosApiController {
             @RequestParam Long rol,
             @RequestParam Long estado) {
 
-        if (usuarioRepository.findByCorreo(correo) != null) {
+        if (serviceUsuario.obtenerUsuarioPorCorreo(correo) != null) {
             throw new BusinessException("El correo ya está registrado");
         }
 
@@ -100,7 +99,7 @@ public class UsuariosApiController {
         Usuario usuarioExistente = serviceUsuario.obtenerUsuarioPorId(id);
         if (usuarioExistente == null) throw new ResourceNotFoundException("El usuario no existe");
 
-        Usuario usuarioConCorreo = usuarioRepository.findByCorreo(correo);
+        Usuario usuarioConCorreo = serviceUsuario.obtenerUsuarioPorCorreo(correo);
         if (usuarioConCorreo != null && !usuarioConCorreo.getId().equals(id)) {
             throw new BusinessException("El correo ya está registrado por otro usuario");
         }
@@ -129,12 +128,7 @@ public class UsuariosApiController {
     // Obtener perfil del usuario logueado
     @GetMapping("/perfil")
     public ResponseEntity<ApiResponse<Map<String, Object>>> obtenerPerfil() {
-        String correo = GlobalController.getCorreoAutenticado();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
-        
-        if (usuario == null) {
-            throw new ResourceNotFoundException("Usuario no encontrado");
-        }
+        Usuario usuario = securityController.usuarioAutenticado();
 
         Map<String, Object> perfil = Map.of(
                 "id", usuario.getId(),
@@ -157,16 +151,11 @@ public class UsuariosApiController {
             @RequestParam(required = false) String telefono,
             @RequestParam(required = false) String clave) {
 
-        String correoActual = GlobalController.getCorreoAutenticado();
-        Usuario usuarioEnSesion = usuarioRepository.findByCorreo(correoActual);
-        
-        if (usuarioEnSesion == null) {
-            throw new BusinessException("Usuario no encontrado");
-        }
+        Usuario usuarioEnSesion = securityController.usuarioAutenticado();
 
         // Validar que el nuevo correo no esté en uso por otro usuario
         if (!correo.equals(usuarioEnSesion.getCorreo())) {
-            Usuario usuarioConCorreo = usuarioRepository.findByCorreo(correo);
+            Usuario usuarioConCorreo = serviceUsuario.obtenerUsuarioPorCorreo(correo);
             if (usuarioConCorreo != null) {
                 throw new BusinessException("El correo ya está registrado por otro usuario");
             }

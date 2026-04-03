@@ -20,8 +20,8 @@ function initPerfil() {
 
 async function cargarEstadisticasPerfil() {
   try {
-    // /api/eventos/organizador/estadisticas
-    const res  = await fetch('/api/eventos/organizador/estadisticas', { credentials: 'include' });
+    // /api/eventos/organizador/dashboard
+    const res  = await fetch('/api/eventos/organizador/dashboard', { credentials: 'include' });
     const json = await res.json();
     if (json.success) {
       document.getElementById('cb-ev').textContent  = json.data.totalEventos;

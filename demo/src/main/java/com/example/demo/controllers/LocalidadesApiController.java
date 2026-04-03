@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,17 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponse;
-import com.example.demo.exception.BusinessException;
-import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.model.Evento;
 import com.example.demo.model.Localidad;
 import com.example.demo.model.Usuario;
-import com.example.demo.repository.UsuarioRepository;
-import com.example.demo.security.GlobalController;
-import com.example.demo.service.ServiceEvento;
+import com.example.demo.security.SecurityController;
 import com.example.demo.service.ServiceLocalidad;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -34,8 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class LocalidadesApiController {
 
     private final ServiceLocalidad serviceLocalidad;
-    private final ServiceEvento serviceEvento;
-    private final UsuarioRepository usuarioRepository;
+    private final SecurityController securityController;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<Localidad>>> listarLocalidades() {
@@ -43,10 +37,10 @@ public class LocalidadesApiController {
     }
 
     @GetMapping("/organizador")
-    public ResponseEntity<ApiResponse<List<Localidad>>> listarPorOrganizador(HttpSession session) {
-        Usuario u = GlobalController.rolRequerido(usuarioRepository, "organizador");
-        List<Localidad> lista = serviceLocalidad.obtenerPorOrganizador(u.getId());
-        return ResponseEntity.ok(ApiResponse.ok("Localidades obtenidas", lista));
+    @PreAuthorize("hasRole('ORGANIZADOR')")
+    public ResponseEntity<ApiResponse<List<Localidad>>> listarPorOrganizador() {
+        Usuario u = usuarioAutenticado();
+        return ResponseEntity.ok(ApiResponse.ok("Localidades obtenidas", serviceLocalidad.obtenerPorOrganizador(u.getId())));
     }
 
     @GetMapping("/evento/{eventoId}")
@@ -56,6 +50,7 @@ public class LocalidadesApiController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ORGANIZADOR','ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> crearLocalidad(
             @RequestParam String nombre,
             @RequestParam BigDecimal precio,
@@ -63,24 +58,12 @@ public class LocalidadesApiController {
             @RequestParam Integer disponibles,
             @RequestParam Long eventoId) {
 
-        Evento evento = serviceEvento.obtenerEventoPorId(eventoId);
-        if (disponibles > capacidad) {
-            throw new BusinessException("Los asientos disponibles no pueden ser mayores que la capacidad");
-        }
-
-        Localidad nuevaLocalidad = new Localidad();
-        nuevaLocalidad.setNombre(nombre);
-        nuevaLocalidad.setPrecio(precio);
-        nuevaLocalidad.setCapacidad(capacidad);
-        nuevaLocalidad.setDisponibles(disponibles);
-        nuevaLocalidad.setEvento(evento);
-
-        serviceLocalidad.crearLocalidad(nuevaLocalidad);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Localidad creada exitosamente"));
+        serviceLocalidad.crearLocalidad(nombre, precio, capacidad, disponibles, eventoId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Localidad creada exitosamente"));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ORGANIZADOR','ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> actualizarLocalidad(
             @PathVariable Long id,
             @RequestParam String nombre,
@@ -89,32 +72,18 @@ public class LocalidadesApiController {
             @RequestParam Integer disponibles,
             @RequestParam Long eventoId) {
 
-        Localidad localidadExistente = serviceLocalidad.obtenerLocalidadPorId(id);
-        if (localidadExistente == null) throw new ResourceNotFoundException("La localidad no existe");
-
-        serviceEvento.obtenerEventoPorId(eventoId); // lanza excepción si no existe
-
-        if (disponibles > capacidad) {
-            throw new BusinessException("Los asientos disponibles no pueden ser mayores que la capacidad");
-        }
-
-        Evento evento = serviceEvento.obtenerEventoPorId(eventoId);
-        localidadExistente.setNombre(nombre);
-        localidadExistente.setPrecio(precio);
-        localidadExistente.setCapacidad(capacidad);
-        localidadExistente.setDisponibles(disponibles);
-        localidadExistente.setEvento(evento);
-
-        serviceLocalidad.actualizarLocalidad(localidadExistente);
+        serviceLocalidad.actualizarLocalidad(id, nombre, precio, capacidad, disponibles, eventoId);
         return ResponseEntity.ok(ApiResponse.ok("Localidad actualizada exitosamente"));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ORGANIZADOR','ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> eliminarLocalidad(@PathVariable Long id) {
-        if (serviceLocalidad.obtenerLocalidadPorId(id) == null) {
-            throw new ResourceNotFoundException("La localidad no existe");
-        }
         serviceLocalidad.eliminarLocalidad(id);
         return ResponseEntity.ok(ApiResponse.ok("Localidad eliminada exitosamente"));
+    }
+
+    private Usuario usuarioAutenticado() {
+        return securityController.usuarioAutenticado();
     }
 }

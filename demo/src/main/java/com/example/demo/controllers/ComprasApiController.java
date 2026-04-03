@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,9 +18,9 @@ import com.example.demo.dto.CompraDetalleDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.Compra;
 import com.example.demo.model.Usuario;
+import com.example.demo.security.SecurityController;
 import com.example.demo.service.ServiceCompra;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -28,45 +29,40 @@ import lombok.RequiredArgsConstructor;
 public class ComprasApiController {
 
     private final ServiceCompra serviceCompra;
+    private final SecurityController securityController;
 
     @PostMapping
+    @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<ApiResponse<Map<String, Object>>> procesarCompra(
             @RequestParam Long localidadId,
             @RequestParam Integer cantidad,
-            @RequestParam String metodoPago,
-            HttpSession session) {
+            @RequestParam String metodoPago) {
 
-        Compra compra = serviceCompra.procesarCompra(getUsuarioSesion(session), localidadId, cantidad, metodoPago);
+        Compra compra = serviceCompra.procesarCompra(usuarioAutenticado(), localidadId, cantidad, metodoPago);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Compra realizada exitosamente", Map.of("compraId", compra.getId())));
     }
 
     @GetMapping("/historial")
-    public ResponseEntity<ApiResponse<List<CompraDetalleDTO>>> historialCompras(HttpSession session) {
-        List<CompraDetalleDTO> dtos = serviceCompra.obtenerHistorialDTO(getUsuarioSesion(session).getId());
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<ApiResponse<List<CompraDetalleDTO>>> historialCompras() {
+        List<CompraDetalleDTO> dtos = serviceCompra.obtenerHistorialDTO(usuarioAutenticado().getId());
         return ResponseEntity.ok(ApiResponse.ok("Historial de compras", dtos));
     }
 
     @GetMapping("/{compraId}")
-    public ResponseEntity<ApiResponse<Compra>> obtenerCompra(
-            @PathVariable Integer compraId,
-            HttpSession session) {
-
-        Usuario usuario = getUsuarioSesion(session);
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<ApiResponse<Compra>> obtenerCompra(@PathVariable Integer compraId) {
+        Usuario usuario = usuarioAutenticado();
         Compra compra   = serviceCompra.obtenerCompraPorIdConDetalles(compraId);
 
-        if (!compra.getCliente().getId().equals(usuario.getId())) {
+        if (!compra.getCliente().getId().equals(usuario.getId()))
             throw new BusinessException("No tiene permiso para ver esta compra");
-        }
 
         return ResponseEntity.ok(ApiResponse.ok("Compra obtenida", compra));
     }
 
-    // FUNCIONES DE APOYO
-
-    private Usuario getUsuarioSesion(HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogeado");
-        if (usuario == null) throw new BusinessException("Debe iniciar sesión para realizar esta acción");
-        return usuario;
+    private Usuario usuarioAutenticado() {
+        return securityController.usuarioAutenticado();
     }
 }

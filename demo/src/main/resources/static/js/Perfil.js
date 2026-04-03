@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // GET /api/pagos
 async function cargarPerfil() {
   try {
-    const res = await fetch('/api/pagos', { credentials: 'include' });
+    const res = await fetch('/api/usuarios/perfil', { credentials: 'include' });
     if (!res.ok) { window.location.href = '/pages/login.html'; return; }
     const json = await res.json();
     if (!json.data) { window.location.href = '/pages/login.html'; return; }

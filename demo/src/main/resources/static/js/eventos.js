@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // validar sesion
 async function checkSession() {
   try {
-    const res = await fetch('/api/pagos', { credentials: 'include' });
+    const res = await fetch('/api/auth/me', { credentials: 'include' });
     if (!res.ok) { renderNavGuest(); return; }
     const json = await res.json();
     json.data ? renderNavAuth(json.data.nombre, json.data.rol?.nombre || '') : renderNavGuest();

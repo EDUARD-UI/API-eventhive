@@ -1,6 +1,7 @@
 package com.example.demo.controllers;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,9 +12,9 @@ import com.example.demo.dto.BoletosCompraDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.Compra;
 import com.example.demo.model.Usuario;
+import com.example.demo.security.SecurityController;
 import com.example.demo.service.ServiceCompra;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -22,26 +23,21 @@ import lombok.RequiredArgsConstructor;
 public class BoletosApiController {
 
     private final ServiceCompra serviceCompra;
+    private final SecurityController securityController;
 
     @GetMapping("/{compraId}")
-    public ResponseEntity<ApiResponse<BoletosCompraDTO>> verBoletos(
-            @PathVariable Integer compraId, HttpSession session) {
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<ApiResponse<BoletosCompraDTO>> verBoletos(@PathVariable Integer compraId) {
+        Usuario usuario = usuarioAutenticado();
 
-        Usuario usuario = getUsuarioSesion(session);
-
-        // Verificar que la compra pertenece al usuario antes de mapear a DTO
         Compra compra = serviceCompra.obtenerCompraPorIdConDetalles(compraId);
         if (!compra.getCliente().getId().equals(usuario.getId()))
             throw new BusinessException("No autorizado para ver esta compra");
 
-        return ResponseEntity.ok(ApiResponse.ok("Compra obtenida",
-                serviceCompra.obtenerBoletosDTO(compraId)));
+        return ResponseEntity.ok(ApiResponse.ok("Compra obtenida", serviceCompra.obtenerBoletosDTO(compraId)));
     }
 
-    // sesion logeada
-    private Usuario getUsuarioSesion(HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogeado");
-        if (usuario == null) throw new BusinessException("Usuario no autenticado");
-        return usuario;
+    private Usuario usuarioAutenticado() {
+        return securityController.usuarioAutenticado();
     }
 }

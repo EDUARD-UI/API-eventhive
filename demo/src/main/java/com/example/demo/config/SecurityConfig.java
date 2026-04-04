@@ -48,90 +48,29 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .userDetailsService(customUserDetailsService)
                 .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                .maximumSessions(1)
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .maximumSessions(1)
                 )
                 .authorizeHttpRequests(auth -> {
-                    // Archivos estáticos y home
+                    // Archivos estáticos
                     auth.requestMatchers(
-                            "/", "/index.html", "/css/**", "/js/**",
-                            "/images/**", "/pages/**", "/uploads/**"
+                        "/", "/index.html", "/css/**", "/js/**",
+                        "/images/**", "/pages/**", "/uploads/**"
                     ).permitAll();
 
-                    // Endpoints de Autenticación
+                    // Auth pública
                     auth.requestMatchers("/api/auth/login").permitAll();
                     auth.requestMatchers("/api/auth/logout").permitAll();
                     auth.requestMatchers("/api/auth/registrar-cliente").permitAll();
                     auth.requestMatchers("/api/auth/registrar-organizador").permitAll();
 
-                    // Información pública
-                    auth.requestMatchers(HttpMethod.GET, "/api/eventos").permitAll();
-                    auth.requestMatchers(HttpMethod.GET, "/api/eventos/{id}").permitAll();
-                    auth.requestMatchers(HttpMethod.GET, "/api/categorias").permitAll();
-                    auth.requestMatchers(HttpMethod.GET, "/api/categorias/{id}").permitAll();
-                    auth.requestMatchers(HttpMethod.GET, "/api/localidades").permitAll();
-                    auth.requestMatchers(HttpMethod.GET, "/api/localidades/{id}").permitAll();
+                    // Información pública de solo lectura
+                    auth.requestMatchers(HttpMethod.GET, "/api/eventos/**").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/localidades/**").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/valoraciones/**").permitAll();
 
-                    //(cualquier rol autenticado) datos de session activa 
-                    auth.requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated();
-
-                    // Perfil del usuario (cualquier usuario autenticado)
-                    auth.requestMatchers(HttpMethod.PUT, "/api/usuarios/perfil").authenticated();
-                    auth.requestMatchers(HttpMethod.GET, "/api/usuarios/perfil").authenticated();
-                    auth.requestMatchers(HttpMethod.POST, "/api/compras").hasRole("CLIENTE");
-                    auth.requestMatchers(HttpMethod.GET, "/api/compras/historial").hasRole("CLIENTE");
-                    auth.requestMatchers(HttpMethod.GET, "/api/compras/{id}").hasRole("CLIENTE");
-
-                    // Pagos
-                    auth.requestMatchers(HttpMethod.POST, "/api/pagos").hasRole("CLIENTE");
-                    auth.requestMatchers(HttpMethod.GET, "/api/pagos/**").hasRole("CLIENTE");
-
-                    // Mis boletos
-                    auth.requestMatchers(HttpMethod.GET, "/api/boletos/mis-boletos").hasRole("CLIENTE");
-
-                    // Eventos deseados
-                    auth.requestMatchers(HttpMethod.POST, "/api/evento-deseado").hasRole("CLIENTE");
-                    auth.requestMatchers(HttpMethod.GET, "/api/evento-deseado").hasRole("CLIENTE");
-                    auth.requestMatchers(HttpMethod.DELETE, "/api/evento-deseado/{id}").hasRole("CLIENTE");
-
-                    // Valoraciones
-                    auth.requestMatchers(HttpMethod.POST, "/api/valoraciones").hasRole("CLIENTE");
-                    auth.requestMatchers(HttpMethod.GET, "/api/valoraciones/**").hasRole("CLIENTE");
-
-                    // Compras
-                    auth.requestMatchers(HttpMethod.POST, "/api/eventos").hasRole("ORGANIZADOR");
-                    auth.requestMatchers(HttpMethod.PUT, "/api/eventos/{id}").hasRole("ORGANIZADOR");
-                    auth.requestMatchers(HttpMethod.DELETE, "/api/eventos/{id}").hasRole("ORGANIZADOR");
-
-                    // Dashboard del organizador
-                    auth.requestMatchers(HttpMethod.GET, "/api/eventos/organizador/dashboard").hasRole("ORGANIZADOR");
-                    auth.requestMatchers(HttpMethod.GET, "/api/eventos/organizador/mis-eventos").hasRole("ORGANIZADOR");
-
-                    // Promociones
-                    auth.requestMatchers(HttpMethod.POST, "/api/promociones").hasRole("ORGANIZADOR");
-                    auth.requestMatchers(HttpMethod.PUT, "/api/promociones/{id}").hasRole("ORGANIZADOR");
-                    auth.requestMatchers(HttpMethod.DELETE, "/api/promociones/{id}").hasRole("ORGANIZADOR");
-
-                    // Reportes del organizador
-                    auth.requestMatchers(HttpMethod.GET, "/api/reportes/organizador").hasRole("ORGANIZADOR");
-
-                    // Gestión de usuarios
-                    auth.requestMatchers(HttpMethod.GET, "/api/usuarios").hasRole("ADMINISTRADOR");
-                    auth.requestMatchers(HttpMethod.PUT, "/api/usuarios/{id}").hasRole("ADMINISTRADOR");
-                    auth.requestMatchers(HttpMethod.DELETE, "/api/usuarios/{id}").hasRole("ADMINISTRADOR");
-
-                    // Gestión de roles y estados
-                    auth.requestMatchers("/api/roles/**").hasRole("ADMINISTRADOR");
-                    auth.requestMatchers("/api/estados/**").hasRole("ADMINISTRADOR");
-
-                    // Reportes generales
-                    auth.requestMatchers(HttpMethod.GET, "/api/reportes").hasRole("ADMINISTRADOR");
-                    auth.requestMatchers(HttpMethod.GET, "/api/reportes/**").hasRole("ADMINISTRADOR");
-
-                    // Gestión de eventos (admin puede eliminar)
-                    auth.requestMatchers(HttpMethod.DELETE, "/api/eventos/**").hasRole("ADMINISTRADOR");
-
-                    //Por defecto, todo lo demás requiere autenticación
+                    // cualquier otra ruta requiere autenticación; el rol lo controla @PreAuthorize
                     auth.anyRequest().authenticated();
                 })
                 .formLogin(form -> form.disable())

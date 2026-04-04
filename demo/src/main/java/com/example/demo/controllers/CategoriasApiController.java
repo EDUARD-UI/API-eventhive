@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -57,6 +58,7 @@ public class CategoriasApiController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> crearCategoria(
             @RequestParam String nombre,
             @RequestParam(required = false) MultipartFile foto) throws IOException {
@@ -65,6 +67,7 @@ public class CategoriasApiController {
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> actualizarCategoria(
             @PathVariable Long id,
             @RequestParam String nombre,
@@ -74,6 +77,7 @@ public class CategoriasApiController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> eliminarCategoria(@PathVariable Long id) {
         serviceCategoria.eliminarCategoria(id);
         return ResponseEntity.ok(ApiResponse.ok("Categoría eliminada exitosamente"));

@@ -1,12 +1,7 @@
 package com.example.demo.service;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -20,6 +15,7 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Categoria;
 import com.example.demo.repository.CategoriasRepository;
 import com.example.demo.repository.EventoRepository;
+import com.example.demo.utils.Utilidades;
 
 import lombok.RequiredArgsConstructor;
 
@@ -72,8 +68,8 @@ public class ServiceCategoria {
         Categoria nueva = new Categoria();
         nueva.setNombre(nombre);
         if (foto != null && !foto.isEmpty()) {
-            validarFoto(foto);
-            nueva.setFoto(guardarFoto(foto));
+            Utilidades.validarFoto(foto);
+            nueva.setFoto(Utilidades.guardarFoto(foto, UPLOAD_PATH));
         }
         categoriasRepository.save(nueva);
     }
@@ -88,9 +84,9 @@ public class ServiceCategoria {
 
         existente.setNombre(nombre);
         if (foto != null && !foto.isEmpty()) {
-            validarFoto(foto);
-            eliminarFoto(existente.getFoto());
-            existente.setFoto(guardarFoto(foto));
+            Utilidades.validarFoto(foto);
+            Utilidades.eliminarFoto(existente.getFoto(), UPLOAD_PATH);
+            existente.setFoto(Utilidades.guardarFoto(foto, UPLOAD_PATH));
         }
         categoriasRepository.save(existente);
     }
@@ -100,35 +96,7 @@ public class ServiceCategoria {
         Categoria categoria = obtenerCategoriaPorId(id);
         if (tieneEventosAsociados(id))
             throw new BusinessException("No se puede eliminar la categoría porque tiene eventos asociados");
-        eliminarFoto(categoria.getFoto());
+        Utilidades.eliminarFoto(categoria.getFoto(), UPLOAD_PATH);
         categoriasRepository.deleteById(id);
-    }
-
-    //metodos de apoyo
-    private void validarFoto(MultipartFile foto) {
-        if (foto.getSize() > 5 * 1024 * 1024)
-            throw new BusinessException("La foto no puede superar los 5MB");
-        String ct = foto.getContentType();
-        if (ct == null || !ct.startsWith("image/"))
-            throw new BusinessException("Solo se permiten archivos de imagen");
-    }
-
-    private String guardarFoto(MultipartFile foto) throws IOException {
-        Path dir = Paths.get(UPLOAD_PATH);
-        if (!Files.exists(dir)) Files.createDirectories(dir);
-        String ext = "";
-        String original = foto.getOriginalFilename();
-        if (original != null && original.contains("."))
-            ext = original.substring(original.lastIndexOf("."));
-        String fileName = UUID.randomUUID() + ext;
-        Files.copy(foto.getInputStream(), dir.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-        return fileName;
-    }
-
-    private void eliminarFoto(String nombreFoto) {
-        if (nombreFoto != null && !nombreFoto.isBlank()) {
-            try { Files.deleteIfExists(Paths.get(UPLOAD_PATH).resolve(nombreFoto)); }
-            catch (IOException e) { System.err.println("Error al eliminar foto: " + e.getMessage()); }
-        }
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.BoletosCompraDTO;
 import com.example.demo.dto.CompraDetalleDTO;
+import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Compra;
 import com.example.demo.model.Localidad;
@@ -37,10 +38,10 @@ public class ServiceCompra {
     @Transactional
     public Compra procesarCompra(Usuario cliente, Long localidadId, Integer cantidad, String metodoPago) {
         Localidad localidad = localidadRepository.findById(localidadId)
-                .orElseThrow(() -> new RuntimeException("Localidad no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Localidad no encontrada"));
 
         if (localidad.getDisponibles() < cantidad) {
-            throw new RuntimeException("No hay suficientes boletos disponibles");
+            throw new BusinessException("No hay suficientes boletos disponibles");
         }
 
         BigDecimal total = localidad.getPrecio().compareTo(BigDecimal.ZERO) == 0
@@ -75,12 +76,12 @@ public class ServiceCompra {
 
     public Compra obtenerCompraPorId(Integer compraId) {
         return compraRepository.findById(compraId)
-                .orElseThrow(() -> new RuntimeException("Compra no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Compra no encontrada"));
     }
 
     public Compra obtenerCompraPorIdConDetalles(Integer compraId) {
         return compraRepository.findByIdWithDetalles(compraId)
-                .orElseThrow(() -> new RuntimeException("Compra no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Compra no encontrada"));
     }
 
     public List<Compra> obtenerComprasPorCliente(Long clienteId) {

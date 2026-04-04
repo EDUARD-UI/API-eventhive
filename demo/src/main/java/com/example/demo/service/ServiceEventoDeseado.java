@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.EventoDeseadoDTO;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.EventoDeseado;
 import com.example.demo.repository.EventoDeseadoRepository;
 
@@ -19,7 +20,7 @@ public class ServiceEventoDeseado {
 
     public EventoDeseado obtenerEventoDeseadoPorId(long id) {
         return eventoDeseadoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Evento deseado no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Evento deseado no encontrado"));
     }
 
     public EventoDeseado guardarEventoDeseado(EventoDeseado eventoDeseado) {

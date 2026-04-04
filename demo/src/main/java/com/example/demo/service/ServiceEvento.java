@@ -22,7 +22,6 @@ import com.example.demo.model.Estado;
 import com.example.demo.model.Evento;
 import com.example.demo.model.Localidad;
 import com.example.demo.model.Usuario;
-import com.example.demo.repository.CategoriasRepository;
 import com.example.demo.repository.EventoRepository;
 import com.example.demo.repository.LocalidadRepository;
 import com.example.demo.utils.Utilidades;
@@ -35,22 +34,20 @@ public class ServiceEvento {
 
     private final EventoRepository eventoRepository;
     private final LocalidadRepository localidadRepository;
-    private final CategoriasRepository categoriasRepository; // directo al repo, sin ServiceCategoria
+    private final ServiceCategoria serviceCategoria;
     private final ServiceEstado serviceEstado;
 
     @Value("${upload.path.eventos:uploads/eventos}")
     private String uploadPath;
 
-    // --- CRUD ---
-
+    //CRUD
     public Evento crearEvento(String titulo, String descripcion, String lugar,
                                LocalDate fecha, LocalTime hora,
                                Long categoriaId, Long estadoId,
                                MultipartFile foto, Usuario organizador) throws IOException {
 
-        Categoria categoria = obtenerCategoriaPorId(categoriaId); // método privado interno
+        Categoria categoria = serviceCategoria.obtenerCategoriaPorId(categoriaId);
         Estado estado = serviceEstado.obtenerEstadoPorId(estadoId);
-        if (estado == null) throw new ResourceNotFoundException("Estado no encontrado");
 
         Evento evento = new Evento();
         evento.setTitulo(titulo);
@@ -81,9 +78,8 @@ public class ServiceEvento {
         if (!ev.getUsuario().getId().equals(solicitante.getId()) && !esAdmin)
             throw new BusinessException("No tiene permisos para editar este evento");
 
-        Categoria categoria = obtenerCategoriaPorId(categoriaId); // método privado interno
+        Categoria categoria = serviceCategoria.obtenerCategoriaPorId(categoriaId);
         Estado estado = serviceEstado.obtenerEstadoPorId(estadoId);
-        if (estado == null) throw new ResourceNotFoundException("Estado no encontrado");
 
         ev.setTitulo(titulo);
         ev.setDescripcion(descripcion);
@@ -116,7 +112,15 @@ public class ServiceEvento {
         eventoRepository.deleteById(id);
     }
 
-    // --- Queries y DTOs ---
+    //Consultas y DTOs
+    public Evento obtenerEventoPorId(Long id) {
+        return eventoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + id));
+    }
+
+    public List<Evento> todosLosEventos() { return eventoRepository.findAll(); }
+    public long contarPorOrganizador(Long id) { return eventoRepository.countByUsuarioId(id); }
+    public long contarEventosPorCategoria(Long catId) { return eventoRepository.countByCategoriaId(catId); }
 
     public List<EventoBusquedaDTO> buscarPorTituloParcialDTO(String titulo) {
         return eventoRepository.findByTituloContainingIgnoreCase(titulo).stream()
@@ -149,8 +153,7 @@ public class ServiceEvento {
     }
 
     public EventoDetalleDTO obtenerEventoDetalleDTO(Long id) {
-        Evento e = eventoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + id));
+        Evento e = obtenerEventoPorId(id);
 
         EventoDetalleDTO dto = new EventoDetalleDTO();
         dto.setId(e.getId());
@@ -199,21 +202,6 @@ public class ServiceEvento {
 
     public List<NombreEventoDTO> obtenerNombresEventosPorOrganizador(Long organizadorId) {
         return eventoRepository.findNombresByOrganizadorId(organizadorId);
-    }
-
-    public Evento obtenerEventoPorId(Long id) {
-        return eventoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + id));
-    }
-
-    public List<Evento> todosLosEventos()               { return eventoRepository.findAll(); }
-    public long contarPorOrganizador(Long id)           { return eventoRepository.countByUsuarioId(id); }
-    public long contarEventosPorCategoria(Long catId)   { return eventoRepository.countByCategoriaId(catId); }
-
-    // Métodos de apoyo 
-    private Categoria obtenerCategoriaPorId(Long id) {
-        return categoriasRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
     }
 
     private EventoDTO toEventoDTO(Evento e) {

@@ -6,6 +6,10 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.ValoracionDTO;
+import com.example.demo.exception.BusinessException;
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.model.Evento;
+import com.example.demo.model.Usuario;
 import com.example.demo.model.Valoracion;
 import com.example.demo.repository.ValoracionRepository;
 
@@ -16,18 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class ServiceValoracion {
 
     private final ValoracionRepository valoracionRepository;
-
-    public void crear(Valoracion valoracion) {
-        valoracionRepository.save(valoracion);
-    }
-
-    public Valoracion actualizarValoracion(Valoracion valoracion) {
-        return valoracionRepository.save(valoracion);
-    }
-
-    public void eliminarValoracion(Long id) {
-        valoracionRepository.deleteById(id);
-    }
+    private final ServiceEvento serviceEvento;
 
     public Valoracion obtenerValoracionPorId(Long id) {
         return valoracionRepository.findById(id).orElse(null);
@@ -41,25 +34,66 @@ public class ServiceValoracion {
         return valoracionRepository.findAll();
     }
 
-    // valoraciones por usuario
+    public Long contarValoracionesPorUsuario(Long usuarioId) {
+        return valoracionRepository.countByClienteId(usuarioId);
+    }
+
     public List<ValoracionDTO> obtenerValoracionesDTOPorUsuario(Long usuarioId) {
         return valoracionRepository.findByClienteIdOrderByIdDesc(usuarioId).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
-    // Valoraciones por evento
     public List<ValoracionDTO> obtenerValoracionesDTOPorEvento(Long eventoId) {
         return valoracionRepository.findByEventoIdOrderByIdDesc(eventoId).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
-    public Long contarValoracionesPorUsuario(Long usuarioId) {
-        return valoracionRepository.countByClienteId(usuarioId);
+    //lógica que antes vivía en el controller
+    public void crearValoracion(Usuario cliente, Long eventoId, String comentario, long calificacion) {
+        validarCalificacion(calificacion);
+
+        Evento evento = serviceEvento.obtenerEventoPorId(eventoId);
+
+        Valoracion v = new Valoracion();
+        v.setCliente(cliente);
+        v.setEvento(evento);
+        v.setComentario(comentario);
+        v.setCalificacion(calificacion);
+        valoracionRepository.save(v);
     }
 
-    //convercion a DTO
+    public void actualizarValoracion(Long id, Usuario cliente, String comentario, long calificacion) {
+        validarCalificacion(calificacion);
+
+        Valoracion v = obtenerValoracionVerificada(id, cliente);
+        v.setComentario(comentario);
+        v.setCalificacion(calificacion);
+        valoracionRepository.save(v);
+    }
+
+    public void eliminarValoracion(Long id, Usuario cliente) {
+        obtenerValoracionVerificada(id, cliente);
+        valoracionRepository.deleteById(id);
+    }
+
+    //métodos privados de apoyo
+    private void validarCalificacion(long calificacion) {
+        if (calificacion < 1 || calificacion > 5)
+            throw new BusinessException("La calificación debe estar entre 1 y 5");
+    }
+
+    // verifica existencia y que el cliente sea el dueño
+    private Valoracion obtenerValoracionVerificada(Long id, Usuario cliente) {
+        Valoracion v = obtenerValoracionPorId(id);
+        if (v == null)
+            throw new ResourceNotFoundException("Valoración no encontrada");
+        if (v.getCliente() == null || !v.getCliente().getId().equals(cliente.getId()))
+            throw new BusinessException("No autorizado para modificar esta valoración");
+        return v;
+    }
+
     private ValoracionDTO toDTO(Valoracion v) {
         ValoracionDTO dto = new ValoracionDTO();
         dto.setId(v.getId());
@@ -71,5 +105,4 @@ public class ServiceValoracion {
         }
         return dto;
     }
-
 }

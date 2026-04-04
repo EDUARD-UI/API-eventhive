@@ -2,8 +2,12 @@ package com.example.demo.service;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.exception.BusinessException;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Estado;
 import com.example.demo.repository.EstadoRepository;
 import com.example.demo.repository.EventoRepository;
@@ -14,43 +18,62 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ServiceEstado {
+
     private final EstadoRepository estadoRepository;
     private final UsuarioRepository usuarioRepository;
     private final EventoRepository eventoRepository;
-
-    public Estado findById(Long id){
-        return estadoRepository.findById(id).orElse(null);
-    }
-
-    public Estado crearEstado(Estado estado){
-        return estadoRepository.save(estado);
-    }
-
-    public List<Estado> obtenerEstados(){
-        return estadoRepository.findAll();
-    }
 
     public Estado findByNombre(String nombre) {
         return estadoRepository.findByNombre(nombre);
     }
 
-    public void actualizarEstado(Estado estadoExistente) {
-        estadoRepository.save(estadoExistente);
+    public List<Estado> obtenerEstados() {
+        return estadoRepository.findAll();
     }
 
-    public boolean tieneEntidadesAsociadas(Long estadoId){
-        long usuariosConEstado = usuarioRepository.countByEstadoId(estadoId);
-        long eventosConEstado = eventoRepository.countByEstadoId(estadoId);
-        return usuariosConEstado > 0 || eventosConEstado > 0;
+    public Estado obtenerEstadoPorId(Long id) {
+        return estadoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("El estado no existe"));
     }
+
+    public boolean tieneEntidadesAsociadas(Long estadoId) {
+        return usuarioRepository.countByEstadoId(estadoId) > 0
+                || eventoRepository.countByEstadoId(estadoId) > 0;
+    }
+
+    //lógica que antes vivía en el controller
+    public void crearEstado(String nombre, String descripcion) {
+        if (findByNombre(nombre) != null) {
+            throw new BusinessException("Ya existe un estado con ese nombre");
+        }
+
+        Estado nuevo = new Estado();
+        nuevo.setNombre(nombre);
+        nuevo.setDescripcion(descripcion);
+        estadoRepository.save(nuevo);
+    }
+
+    public void actualizarEstado(Long id, String nombre, String descripcion) {
+    Estado existente = obtenerEstadoPorId(id);
+    
+    Estado conNombre = findByNombre(nombre);
+    // fix: equals en vez de != sobre Long (evita bug con valores > 127)
+    if (conNombre != null && !conNombre.getId().equals(id)) {
+        throw new BusinessException("Ya existe otro estado con ese nombre");
+    }
+
+    existente.setNombre(nombre);
+    existente.setDescripcion(descripcion);
+    estadoRepository.save(existente);
+}
 
     public void eliminarEstado(Long id) {
+        obtenerEstadoPorId(id); // Valida que exista
+        
+        if (tieneEntidadesAsociadas(id)) {
+            throw new BusinessException("No se puede eliminar el estado porque está siendo utilizado");
+        }
+
         estadoRepository.deleteById(id);
     }
-
-    public Estado obtenerEstadoPorId(Long estadoId) {
-        return estadoRepository.findById(estadoId).orElse(null);
-    }
-
-
 }

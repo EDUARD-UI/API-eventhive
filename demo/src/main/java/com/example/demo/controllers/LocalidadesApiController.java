@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.model.Localidad;
 import com.example.demo.model.Usuario;
-import com.example.demo.security.SecurityController;
+import com.example.demo.utils.AuthenticatedUserHelper;
 import com.example.demo.service.ServiceLocalidad;
 
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class LocalidadesApiController {
 
     private final ServiceLocalidad serviceLocalidad;
-    private final SecurityController securityController;
+    private final AuthenticatedUserHelper authHelper;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<Localidad>>> listarLocalidades() {
@@ -84,6 +84,6 @@ public class LocalidadesApiController {
     }
 
     private Usuario usuarioAutenticado() {
-        return securityController.usuarioAutenticado();
+        return authHelper.usuarioAutenticado();
     }
 }

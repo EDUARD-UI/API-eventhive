@@ -5,7 +5,6 @@ import java.util.Map;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.exception.BusinessException;
@@ -22,10 +21,9 @@ public class ServiceAutenticacion {
     private final ServiceUsuario serviceUsuario;
     private final ServiceRoles serviceRoles;
     private final ServiceEstado serviceEstado;
-    private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
-    //auteticar usuario
+    //autenticar usuario
     public Authentication autenticar(String correo, String clave) {
         return authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(correo, clave)
@@ -84,16 +82,7 @@ public class ServiceAutenticacion {
         Estado estadoActivo = serviceEstado.findByNombre("registro activo");
         Rol rolCliente = serviceRoles.findByNombre("cliente");
 
-        Usuario nuevoUsuario = new Usuario();
-        nuevoUsuario.setNombre(nombre);
-        nuevoUsuario.setApellido(apellido);
-        nuevoUsuario.setCorreo(correo);
-        nuevoUsuario.setTelefono(telefono);
-        nuevoUsuario.setClave(passwordEncoder.encode(clave));
-        nuevoUsuario.setEstado(estadoActivo);
-        nuevoUsuario.setRol(rolCliente);
-
-        serviceUsuario.crearUsuario(nuevoUsuario);
+        serviceUsuario.crearUsuario(nombre, apellido, correo, telefono, clave, estadoActivo.getId(), rolCliente.getId());
     }
 
     //registra un nuevo organizador
@@ -104,16 +93,7 @@ public class ServiceAutenticacion {
         Estado estadoActivo = serviceEstado.findByNombre("registro activo");
         Rol rolOrganizador = serviceRoles.findByNombre("organizador");
 
-        Usuario nuevoUsuario = new Usuario();
-        nuevoUsuario.setNombre(nombre);
-        nuevoUsuario.setApellido(apellido);
-        nuevoUsuario.setCorreo(correo);
-        nuevoUsuario.setTelefono(telefono);
-        nuevoUsuario.setClave(passwordEncoder.encode(clave));
-        nuevoUsuario.setEstado(estadoActivo);
-        nuevoUsuario.setRol(rolOrganizador);
-
-        serviceUsuario.crearUsuario(nuevoUsuario);
+        serviceUsuario.crearUsuario(nombre, apellido, correo, telefono, clave, estadoActivo.getId(), rolOrganizador.getId());
     }
 
     //validar que el correo no este registrado

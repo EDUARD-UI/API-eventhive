@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.UsuarioSesionDTO;
 import com.example.demo.model.Usuario;
-import com.example.demo.security.SecurityController;
+import com.example.demo.utils.AuthenticatedUserHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,12 +17,12 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/pagos")
 public class PagosApiController {
 
-    private final SecurityController securityController;
+    private final AuthenticatedUserHelper authHelper;
 
-    // Spring Security ya bloquea con 401 si no hay sesión (SecurityConfig: hasRole CLIENTE)
+    // Spring Security ya bloquea con 401 si no hay sesión
     @GetMapping
     public ResponseEntity<ApiResponse<UsuarioSesionDTO>> mostrarPago() {
-        Usuario usuario = securityController.usuarioAutenticado();
+        Usuario usuario = authHelper.usuarioAutenticado();
 
         UsuarioSesionDTO dto = new UsuarioSesionDTO();
         dto.setId(usuario.getId());

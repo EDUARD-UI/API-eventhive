@@ -29,10 +29,10 @@ import com.example.demo.dto.NombreEventoDTO;
 import com.example.demo.dto.OrganizadorDashboardDTO;
 import com.example.demo.model.Evento;
 import com.example.demo.model.Usuario;
-import com.example.demo.security.SecurityController;
 import com.example.demo.service.ServiceEvento;
 import com.example.demo.service.ServiceLocalidad;
 import com.example.demo.service.ServicePromocion;
+import com.example.demo.utils.AuthenticatedUserHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -44,7 +44,7 @@ public class EventosApiController {
     private final ServiceEvento serviceEventos;
     private final ServiceLocalidad serviceLocalidad;
     private final ServicePromocion servicePromocion;
-    private final SecurityController securityController;
+    private final AuthenticatedUserHelper authHelper;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<Evento>>> listarEventos() {
@@ -161,6 +161,6 @@ public class EventosApiController {
 
     // usuario autenticado via Spring Security
     private Usuario usuarioAutenticado() {
-        return securityController.usuarioAutenticado();
+        return authHelper.usuarioAutenticado();
     }
 }

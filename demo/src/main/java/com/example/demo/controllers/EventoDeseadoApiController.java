@@ -1,7 +1,7 @@
 package com.example.demo.controllers;
-
+ 
 import java.util.List;
-
+ 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,56 +19,52 @@ import com.example.demo.exception.BusinessException;
 import com.example.demo.model.Evento;
 import com.example.demo.model.EventoDeseado;
 import com.example.demo.model.Usuario;
-import com.example.demo.security.SecurityController;
 import com.example.demo.service.ServiceEvento;
 import com.example.demo.service.ServiceEventoDeseado;
+import com.example.demo.utils.AuthenticatedUserHelper; 
 
 import lombok.RequiredArgsConstructor;
-
+ 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/eventos-deseados")
 public class EventoDeseadoApiController {
-
+ 
     private final ServiceEventoDeseado serviceEventoDeseado;
     private final ServiceEvento serviceEvento;
-    private final SecurityController securityController;
-
+    private final AuthenticatedUserHelper authHelper;
+ 
     @GetMapping
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<ApiResponse<List<EventoDeseadoDTO>>> listarDeseadosDelUsuario() {
         return ResponseEntity.ok(ApiResponse.ok("Eventos deseados obtenidos",
-                serviceEventoDeseado.obtenerDeseadosDTOPorUsuario(usuarioAutenticado().getId())));
+                serviceEventoDeseado.obtenerDeseadosDTOPorUsuario(authHelper.usuarioAutenticado().getId())));
     }
-
+ 
     @PostMapping
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<ApiResponse<Void>> agregarDeseado(@RequestParam Long eventoId) {
-        Usuario usuario = usuarioAutenticado();
+        Usuario usuario = authHelper.usuarioAutenticado();
         Evento evento = serviceEvento.obtenerEventoPorId(eventoId);
-
+ 
         EventoDeseado ed = new EventoDeseado();
         ed.setUsuario(usuario);
         ed.setEvento(evento);
         serviceEventoDeseado.guardarEventoDeseado(ed);
-
+ 
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Evento agregado a deseados"));
     }
-
+ 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<ApiResponse<Void>> eliminarDeseado(@PathVariable long id) {
-        Usuario usuario = usuarioAutenticado();
+        Usuario usuario = authHelper.usuarioAutenticado();
         EventoDeseado ed = serviceEventoDeseado.obtenerEventoDeseadoPorId(id);
-
+ 
         if (!ed.getUsuario().getId().equals(usuario.getId()))
             throw new BusinessException("No autorizado para eliminar este evento deseado");
-
+ 
         serviceEventoDeseado.eliminarEventoDeseado(id);
         return ResponseEntity.ok(ApiResponse.ok("Evento eliminado de deseados"));
-    }
-
-    private Usuario usuarioAutenticado() {
-        return securityController.usuarioAutenticado();
     }
 }

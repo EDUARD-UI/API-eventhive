@@ -12,8 +12,8 @@ import com.example.demo.dto.BoletosCompraDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.Compra;
 import com.example.demo.model.Usuario;
-import com.example.demo.security.SecurityController;
 import com.example.demo.service.ServiceCompra;
+import com.example.demo.utils.AuthenticatedUserHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,21 +23,17 @@ import lombok.RequiredArgsConstructor;
 public class BoletosApiController {
 
     private final ServiceCompra serviceCompra;
-    private final SecurityController securityController;
+    private final AuthenticatedUserHelper authHelper;
 
     @GetMapping("/{compraId}")
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<ApiResponse<BoletosCompraDTO>> verBoletos(@PathVariable Integer compraId) {
-        Usuario usuario = usuarioAutenticado();
+        Usuario usuario = authHelper.usuarioAutenticado();
 
         Compra compra = serviceCompra.obtenerCompraPorIdConDetalles(compraId);
         if (!compra.getCliente().getId().equals(usuario.getId()))
             throw new BusinessException("No autorizado para ver esta compra");
 
         return ResponseEntity.ok(ApiResponse.ok("Compra obtenida", serviceCompra.obtenerBoletosDTO(compraId)));
-    }
-
-    private Usuario usuarioAutenticado() {
-        return securityController.usuarioAutenticado();
     }
 }

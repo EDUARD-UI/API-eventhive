@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,15 +15,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponse;
-import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.model.Estado;
-import com.example.demo.model.Rol;
 import com.example.demo.model.Usuario;
-import com.example.demo.security.SecurityController;
-import com.example.demo.service.ServiceEstado;
-import com.example.demo.service.ServiceRoles;
 import com.example.demo.service.ServiceUsuario;
+import com.example.demo.utils.AuthenticatedUserHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,10 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class UsuariosApiController {
 
     private final ServiceUsuario serviceUsuario;
-    private final ServiceRoles serviceRol;
-    private final ServiceEstado serviceEstado;
-    private final PasswordEncoder passwordEncoder;
-    private final SecurityController securityController;
+    private final AuthenticatedUserHelper authHelper;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<Usuario>>> listarUsuarios() {
@@ -61,28 +52,8 @@ public class UsuariosApiController {
             @RequestParam Long rol,
             @RequestParam Long estado) {
 
-        if (serviceUsuario.obtenerUsuarioPorCorreo(correo) != null) {
-            throw new BusinessException("El correo ya está registrado");
-        }
-
-        Rol rolObj = serviceRol.findById(rol);
-        if (rolObj == null) throw new ResourceNotFoundException("El rol especificado no existe");
-
-        Estado estadoObj = serviceEstado.findById(estado);
-        if (estadoObj == null) throw new ResourceNotFoundException("El estado especificado no existe");
-
-        Usuario nuevoUsuario = new Usuario();
-        nuevoUsuario.setNombre(nombre);
-        nuevoUsuario.setApellido(apellido);
-        nuevoUsuario.setCorreo(correo);
-        nuevoUsuario.setTelefono(telefono);
-        nuevoUsuario.setClave(passwordEncoder.encode(clave)); // clave encriptada
-        nuevoUsuario.setRol(rolObj);
-        nuevoUsuario.setEstado(estadoObj);
-
-        serviceUsuario.crearUsuario(nuevoUsuario);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Usuario creado exitosamente"));
+        serviceUsuario.crearUsuario(nombre, apellido, correo, telefono, clave, rol, estado);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Usuario creado exitosamente"));
     }
 
     @PutMapping("/{id}")
@@ -96,54 +67,16 @@ public class UsuariosApiController {
             @RequestParam Long rol,
             @RequestParam Long estado) {
 
-        Usuario usuarioExistente = serviceUsuario.obtenerUsuarioPorId(id);
-        if (usuarioExistente == null) throw new ResourceNotFoundException("El usuario no existe");
-
-        Usuario usuarioConCorreo = serviceUsuario.obtenerUsuarioPorCorreo(correo);
-        if (usuarioConCorreo != null && !usuarioConCorreo.getId().equals(id)) {
-            throw new BusinessException("El correo ya está registrado por otro usuario");
-        }
-
-        Rol rolObj = serviceRol.findById(rol);
-        if (rolObj == null) throw new ResourceNotFoundException("El rol especificado no existe");
-
-        Estado estadoObj = serviceEstado.findById(estado);
-        if (estadoObj == null) throw new ResourceNotFoundException("El estado especificado no existe");
-
-        usuarioExistente.setNombre(nombre);
-        usuarioExistente.setApellido(apellido);
-        usuarioExistente.setCorreo(correo);
-        usuarioExistente.setTelefono(telefono);
-        usuarioExistente.setRol(rolObj);
-        usuarioExistente.setEstado(estadoObj);
-
-        if (clave != null && !clave.isBlank()) {
-            usuarioExistente.setClave(passwordEncoder.encode(clave));
-        }
-
-        serviceUsuario.actualizarUsuario(usuarioExistente);
+        serviceUsuario.actualizarUsuario(id, nombre, apellido, correo, telefono, clave, rol, estado);
         return ResponseEntity.ok(ApiResponse.ok("Usuario actualizado exitosamente"));
     }
 
-    // Obtener perfil del usuario logueado
     @GetMapping("/perfil")
     public ResponseEntity<ApiResponse<Map<String, Object>>> obtenerPerfil() {
-        Usuario usuario = securityController.usuarioAutenticado();
-
-        Map<String, Object> perfil = Map.of(
-                "id", usuario.getId(),
-                "nombre", usuario.getNombre(),
-                "apellido", usuario.getApellido(),
-                "correo", usuario.getCorreo(),
-                "telefono", usuario.getTelefono() != null ? usuario.getTelefono() : "",
-                "rolNombre", usuario.getRol().getNombre(),
-                "estado", usuario.getEstado().getNombre()
-        );
-
-        return ResponseEntity.ok(ApiResponse.ok("Perfil obtenido", perfil));
+        Usuario usuario = authHelper.usuarioAutenticado();
+        return ResponseEntity.ok(ApiResponse.ok("Perfil obtenido", serviceUsuario.obtenerPerfil(usuario)));
     }
 
-    // Actualizar perfil del usuario logueado
     @PutMapping("/perfil")
     public ResponseEntity<ApiResponse<Map<String, Object>>> actualizarPerfil(
             @RequestParam String nombre,
@@ -151,44 +84,13 @@ public class UsuariosApiController {
             @RequestParam(required = false) String telefono,
             @RequestParam(required = false) String clave) {
 
-        Usuario usuarioEnSesion = securityController.usuarioAutenticado();
-
-        // Validar que el nuevo correo no esté en uso por otro usuario
-        if (!correo.equals(usuarioEnSesion.getCorreo())) {
-            Usuario usuarioConCorreo = serviceUsuario.obtenerUsuarioPorCorreo(correo);
-            if (usuarioConCorreo != null) {
-                throw new BusinessException("El correo ya está registrado por otro usuario");
-            }
-        }
-
-        usuarioEnSesion.setNombre(nombre);
-        usuarioEnSesion.setCorreo(correo);
-        if (telefono != null && !telefono.isBlank()) {
-            usuarioEnSesion.setTelefono(telefono);
-        }
-        if (clave != null && !clave.isBlank()) {
-            usuarioEnSesion.setClave(passwordEncoder.encode(clave));
-        }
-
-        serviceUsuario.actualizarUsuario(usuarioEnSesion);
-        
-        Map<String, Object> perfil = Map.of(
-                "id", usuarioEnSesion.getId(),
-                "nombre", usuarioEnSesion.getNombre(),
-                "apellido", usuarioEnSesion.getApellido(),
-                "correo", usuarioEnSesion.getCorreo(),
-                "telefono", usuarioEnSesion.getTelefono() != null ? usuarioEnSesion.getTelefono() : "",
-                "rolNombre", usuarioEnSesion.getRol().getNombre()
-        );
-
+        Usuario usuarioEnSesion = authHelper.usuarioAutenticado();
+        Map<String, Object> perfil = serviceUsuario.actualizarPerfil(usuarioEnSesion, nombre, correo, telefono, clave);
         return ResponseEntity.ok(ApiResponse.ok("Perfil actualizado exitosamente", perfil));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> eliminarUsuario(@PathVariable Long id) {
-        if (serviceUsuario.obtenerUsuarioPorId(id) == null) {
-            throw new ResourceNotFoundException("El usuario no existe");
-        }
         serviceUsuario.eliminarUsuario(id);
         return ResponseEntity.ok(ApiResponse.ok("Usuario eliminado exitosamente"));
     }

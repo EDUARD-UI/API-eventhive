@@ -18,8 +18,8 @@ import com.example.demo.dto.CompraDetalleDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.Compra;
 import com.example.demo.model.Usuario;
-import com.example.demo.security.SecurityController;
 import com.example.demo.service.ServiceCompra;
+import com.example.demo.utils.AuthenticatedUserHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class ComprasApiController {
 
     private final ServiceCompra serviceCompra;
-    private final SecurityController securityController;
+    private final AuthenticatedUserHelper authHelper;
 
     @PostMapping
     @PreAuthorize("hasRole('CLIENTE')")
@@ -38,7 +38,7 @@ public class ComprasApiController {
             @RequestParam Integer cantidad,
             @RequestParam String metodoPago) {
 
-        Compra compra = serviceCompra.procesarCompra(usuarioAutenticado(), localidadId, cantidad, metodoPago);
+        Compra compra = serviceCompra.procesarCompra(authHelper.usuarioAutenticado(), localidadId, cantidad, metodoPago);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Compra realizada exitosamente", Map.of("compraId", compra.getId())));
     }
@@ -46,23 +46,19 @@ public class ComprasApiController {
     @GetMapping("/historial")
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<ApiResponse<List<CompraDetalleDTO>>> historialCompras() {
-        List<CompraDetalleDTO> dtos = serviceCompra.obtenerHistorialDTO(usuarioAutenticado().getId());
+        List<CompraDetalleDTO> dtos = serviceCompra.obtenerHistorialDTO(authHelper.usuarioAutenticado().getId());
         return ResponseEntity.ok(ApiResponse.ok("Historial de compras", dtos));
     }
 
     @GetMapping("/{compraId}")
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<ApiResponse<Compra>> obtenerCompra(@PathVariable Integer compraId) {
-        Usuario usuario = usuarioAutenticado();
-        Compra compra   = serviceCompra.obtenerCompraPorIdConDetalles(compraId);
+        Usuario usuario = authHelper.usuarioAutenticado();
+        Compra compra = serviceCompra.obtenerCompraPorIdConDetalles(compraId);
 
         if (!compra.getCliente().getId().equals(usuario.getId()))
             throw new BusinessException("No tiene permiso para ver esta compra");
 
         return ResponseEntity.ok(ApiResponse.ok("Compra obtenida", compra));
-    }
-
-    private Usuario usuarioAutenticado() {
-        return securityController.usuarioAutenticado();
     }
 }

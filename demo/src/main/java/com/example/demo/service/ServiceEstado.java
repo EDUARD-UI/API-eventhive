@@ -2,8 +2,6 @@ package com.example.demo.service;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.exception.BusinessException;
@@ -41,7 +39,6 @@ public class ServiceEstado {
                 || eventoRepository.countByEstadoId(estadoId) > 0;
     }
 
-    //lógica que antes vivía en el controller
     public void crearEstado(String nombre, String descripcion) {
         if (findByNombre(nombre) != null) {
             throw new BusinessException("Ya existe un estado con ese nombre");
@@ -57,7 +54,6 @@ public class ServiceEstado {
     Estado existente = obtenerEstadoPorId(id);
     
     Estado conNombre = findByNombre(nombre);
-    // fix: equals en vez de != sobre Long (evita bug con valores > 127)
     if (conNombre != null && !conNombre.getId().equals(id)) {
         throw new BusinessException("Ya existe otro estado con ese nombre");
     }

@@ -41,7 +41,12 @@ public class ServiceCategoria {
 
     public List<CategoriaDTO> obtenerCategoriaDTO() {
         return categoriasRepository.findAll().stream()
-                .map(c -> { CategoriaDTO dto = new CategoriaDTO(); dto.setId(c.getId()); dto.setNombre(c.getNombre()); return dto; })
+                .map(c -> {
+                    CategoriaDTO dto = new CategoriaDTO();
+                    dto.setId(c.getId());
+                    dto.setNombre(c.getNombre());
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -60,7 +65,6 @@ public class ServiceCategoria {
                 .collect(Collectors.toList());
     }
 
-    // crea la categoría; valida duplicado y guarda foto si viene
     public void crearCategoria(String nombre, MultipartFile foto) throws IOException {
         if (categoriasRepository.findByNombre(nombre) != null)
             throw new BusinessException("Ya existe una categoría con ese nombre");
@@ -74,7 +78,6 @@ public class ServiceCategoria {
         categoriasRepository.save(nueva);
     }
 
-    // actualiza la categoría; valida duplicado y reemplaza foto si viene
     public void actualizarCategoria(Long id, String nombre, MultipartFile foto) throws IOException {
         Categoria existente = obtenerCategoriaPorId(id);
 
@@ -91,7 +94,6 @@ public class ServiceCategoria {
         categoriasRepository.save(existente);
     }
 
-    // elimina si no tiene eventos asociados
     public void eliminarCategoria(Long id) {
         Categoria categoria = obtenerCategoriaPorId(id);
         if (tieneEventosAsociados(id))

@@ -23,7 +23,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "evento")
+@Table(name = "Evento")
 public class Evento {
 
     @Id 

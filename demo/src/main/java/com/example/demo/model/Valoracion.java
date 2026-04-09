@@ -22,12 +22,12 @@ public class Valoracion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idValoracion")
-    private long id;
+    private Long id;
 
     @Column(length = 200)
     private String comentario;
 
-    private long calificacion;
+    private Long calificacion;
 
     @JsonIgnore
     @ManyToOne

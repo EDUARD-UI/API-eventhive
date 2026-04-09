@@ -17,13 +17,13 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name= "estados")
+@Table(name= "Estados")
 public class Estado {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idEstado")
-    private long id;
+    private Long id;
 
     @Column(length = 45)
     private String nombre;

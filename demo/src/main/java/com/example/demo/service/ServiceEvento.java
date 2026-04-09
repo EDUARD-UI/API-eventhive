@@ -22,6 +22,7 @@ import com.example.demo.model.Estado;
 import com.example.demo.model.Evento;
 import com.example.demo.model.Localidad;
 import com.example.demo.model.Usuario;
+import com.example.demo.repository.CategoriasRepository; // ← NUEVO
 import com.example.demo.repository.EventoRepository;
 import com.example.demo.repository.LocalidadRepository;
 import com.example.demo.utils.Utilidades;
@@ -34,19 +35,23 @@ public class ServiceEvento {
 
     private final EventoRepository eventoRepository;
     private final LocalidadRepository localidadRepository;
-    private final ServiceCategoria serviceCategoria;
+    private final CategoriasRepository categoriasRepository;
     private final ServiceEstado serviceEstado;
 
     @Value("${upload.path.eventos:uploads/eventos}")
     private String uploadPath;
 
-    //CRUD
+    private Categoria resolverCategoria(Long categoriaId) {
+        return categoriasRepository.findById(categoriaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con id: " + categoriaId));
+    }
+
     public Evento crearEvento(String titulo, String descripcion, String lugar,
                                LocalDate fecha, LocalTime hora,
                                Long categoriaId, Long estadoId,
                                MultipartFile foto, Usuario organizador) throws IOException {
 
-        Categoria categoria = serviceCategoria.obtenerCategoriaPorId(categoriaId);
+        Categoria categoria = resolverCategoria(categoriaId);
         Estado estado = serviceEstado.obtenerEstadoPorId(estadoId);
 
         Evento evento = new Evento();
@@ -78,7 +83,7 @@ public class ServiceEvento {
         if (!ev.getUsuario().getId().equals(solicitante.getId()) && !esAdmin)
             throw new BusinessException("No tiene permisos para editar este evento");
 
-        Categoria categoria = serviceCategoria.obtenerCategoriaPorId(categoriaId);
+        Categoria categoria = resolverCategoria(categoriaId);
         Estado estado = serviceEstado.obtenerEstadoPorId(estadoId);
 
         ev.setTitulo(titulo);
@@ -112,7 +117,7 @@ public class ServiceEvento {
         eventoRepository.deleteById(id);
     }
 
-    //Consultas y DTOs
+    // Consultas y DTOs
     public Evento obtenerEventoPorId(Long id) {
         return eventoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + id));

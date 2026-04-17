@@ -27,7 +27,7 @@ import com.example.demo.dto.EventoDestacadoDTO;
 import com.example.demo.dto.EventoDetalleDTO;
 import com.example.demo.dto.NombreEventoDTO;
 import com.example.demo.dto.OrganizadorDashboardDTO;
-import com.example.demo.model.Evento;
+import com.example.demo.dto.PagedResponse;
 import com.example.demo.model.Usuario;
 import com.example.demo.service.ServiceEvento;
 import com.example.demo.service.ServiceLocalidad;
@@ -47,8 +47,11 @@ public class EventosApiController {
     private final AuthenticatedUserHelper authHelper;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Evento>>> listarEventos() {
-        return ResponseEntity.ok(ApiResponse.ok("Eventos obtenidos", serviceEventos.todosLosEventos()));
+    public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> listarEventos(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        PagedResponse<EventoDTO> result = serviceEventos.obtenerEventosPaginado(page, size);
+        return ResponseEntity.ok(ApiResponse.ok("Eventos obtenidos", result));
     }
 
     @GetMapping("/{id}")
@@ -57,8 +60,12 @@ public class EventosApiController {
     }
 
     @GetMapping("/buscar")
-    public ResponseEntity<ApiResponse<List<EventoBusquedaDTO>>> buscarEventos(@RequestParam String titulo) {
-        return ResponseEntity.ok(ApiResponse.ok("Resultados", serviceEventos.buscarPorTituloParcialDTO(titulo)));
+    public ResponseEntity<ApiResponse<PagedResponse<EventoBusquedaDTO>>> buscarEventos(
+            @RequestParam String titulo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        PagedResponse<EventoBusquedaDTO> result = serviceEventos.buscarPorTituloPaginado(titulo, page, size);
+        return ResponseEntity.ok(ApiResponse.ok("Resultados", result));
     }
 
     @GetMapping("/destacados")
@@ -67,8 +74,12 @@ public class EventosApiController {
     }
 
     @GetMapping("/categoria/{categoriaId}")
-    public ResponseEntity<ApiResponse<List<EventoDTO>>> obtenerEventosPorCategoria(@PathVariable Long categoriaId) {
-        return ResponseEntity.ok(ApiResponse.ok("Eventos de la categoría", serviceEventos.buscarPorCategoriaDTO(categoriaId)));
+    public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> obtenerEventosPorCategoria(
+            @PathVariable Long categoriaId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        PagedResponse<EventoDTO> result = serviceEventos.buscarPorCategoriaPaginado(categoriaId, page, size);
+        return ResponseEntity.ok(ApiResponse.ok("Eventos de la categoría", result));
     }
 
     @GetMapping("/nombres-Eventos")
@@ -79,10 +90,12 @@ public class EventosApiController {
     // Endpoints de organizador
     @GetMapping("/organizador/mis-eventos")
     @PreAuthorize("hasRole('ORGANIZADOR')")
-    public ResponseEntity<ApiResponse<List<EventoDTO>>> obtenerEventosOrganizador() {
+    public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> obtenerEventosOrganizador(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
         Usuario usuario = usuarioAutenticado();
-        return ResponseEntity.ok(ApiResponse.ok("Eventos del organizador",
-                serviceEventos.obtenerEventosPorOrganizador(usuario.getId())));
+        PagedResponse<EventoDTO> result = serviceEventos.obtenerEventosPorOrganizadorPaginado(usuario.getId(), page, size);
+        return ResponseEntity.ok(ApiResponse.ok("Eventos del organizador", result));
     }
 
     @GetMapping("/organizador/nombres-Eventos")
@@ -154,12 +167,11 @@ public class EventosApiController {
     @PreAuthorize("hasAnyRole('ORGANIZADOR','ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> eliminarEvento(@PathVariable Long id) {
         Usuario usuario = usuarioAutenticado();
-        boolean tieneLocalidades = !serviceLocalidad.obtenerLocalidadesPorEvento(id).isEmpty();
+        boolean tieneLocalidades = serviceLocalidad.tieneLocalidades(id);
         serviceEventos.eliminarEvento(id, usuario, tieneLocalidades);
         return ResponseEntity.ok(ApiResponse.ok("Evento eliminado exitosamente"));
     }
 
-    // usuario autenticado via Spring Security
     private Usuario usuarioAutenticado() {
         return authHelper.usuarioAutenticado();
     }

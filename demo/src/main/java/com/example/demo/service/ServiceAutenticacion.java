@@ -48,21 +48,6 @@ public class ServiceAutenticacion {
         );
     }
 
-    //redireccion segun el rol del usuario
-    public String obtenerUrlRedireccion(String correo) {
-        Usuario usuario = serviceUsuario.obtenerUsuarioPorCorreo(correo);
-
-        if (usuario == null) {
-            throw new BusinessException("Usuario no encontrado");
-        }
-
-        return switch (usuario.getRol().getNombre()) {
-            case "administrador" -> "/administracion/dashboard";
-            case "organizador" -> "/organizador/dashboard";
-            default -> "/";
-        };
-    }
-
     //obtener el rol del usuario
     public String obtenerRolUsuario(String correo) {
         Usuario usuario = serviceUsuario.obtenerUsuarioPorCorreo(correo);

@@ -1,7 +1,6 @@
 package com.example.demo.controllers;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +15,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.PagedResponse;
 import com.example.demo.model.Localidad;
 import com.example.demo.model.Usuario;
-import com.example.demo.utils.AuthenticatedUserHelper;
 import com.example.demo.service.ServiceLocalidad;
+import com.example.demo.utils.AuthenticatedUserHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,21 +32,30 @@ public class LocalidadesApiController {
     private final AuthenticatedUserHelper authHelper;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Localidad>>> listarLocalidades() {
-        return ResponseEntity.ok(ApiResponse.ok("Localidades obtenidas", serviceLocalidad.obtenerTodasLasLocalidades()));
+    public ResponseEntity<ApiResponse<PagedResponse<Localidad>>> listarLocalidades(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        PagedResponse<Localidad> result = serviceLocalidad.obtenerLocalidadesPaginado(page, size);
+        return ResponseEntity.ok(ApiResponse.ok("Localidades obtenidas", result));
     }
 
     @GetMapping("/organizador")
     @PreAuthorize("hasRole('ORGANIZADOR')")
-    public ResponseEntity<ApiResponse<List<Localidad>>> listarPorOrganizador() {
-        Usuario u = usuarioAutenticado();
-        return ResponseEntity.ok(ApiResponse.ok("Localidades obtenidas", serviceLocalidad.obtenerPorOrganizador(u.getId())));
+    public ResponseEntity<ApiResponse<PagedResponse<Localidad>>> listarPorOrganizador(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Usuario u = authHelper.usuarioAutenticado();
+        PagedResponse<Localidad> result = serviceLocalidad.obtenerPorOrganizadorPaginado(u.getId(), page, size);
+        return ResponseEntity.ok(ApiResponse.ok("Localidades obtenidas", result));
     }
 
     @GetMapping("/evento/{eventoId}")
-    public ResponseEntity<ApiResponse<List<Localidad>>> listarPorEvento(@PathVariable Long eventoId) {
-        return ResponseEntity.ok(ApiResponse.ok("Localidades del evento",
-                serviceLocalidad.obtenerLocalidadesPorEvento(eventoId)));
+    public ResponseEntity<ApiResponse<PagedResponse<Localidad>>> listarPorEvento(
+            @PathVariable Long eventoId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        PagedResponse<Localidad> result = serviceLocalidad.obtenerPorEventoPaginado(eventoId, page, size);
+        return ResponseEntity.ok(ApiResponse.ok("Localidades del evento", result));
     }
 
     @PostMapping
@@ -81,9 +90,5 @@ public class LocalidadesApiController {
     public ResponseEntity<ApiResponse<Void>> eliminarLocalidad(@PathVariable Long id) {
         serviceLocalidad.eliminarLocalidad(id);
         return ResponseEntity.ok(ApiResponse.ok("Localidad eliminada exitosamente"));
-    }
-
-    private Usuario usuarioAutenticado() {
-        return authHelper.usuarioAutenticado();
     }
 }

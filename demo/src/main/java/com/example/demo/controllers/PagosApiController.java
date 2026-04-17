@@ -19,7 +19,6 @@ public class PagosApiController {
 
     private final AuthenticatedUserHelper authHelper;
 
-    // Spring Security ya bloquea con 401 si no hay sesión
     @GetMapping
     public ResponseEntity<ApiResponse<UsuarioSesionDTO>> mostrarPago() {
         Usuario usuario = authHelper.usuarioAutenticado();

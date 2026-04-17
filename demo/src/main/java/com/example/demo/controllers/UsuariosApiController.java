@@ -1,10 +1,10 @@
 package com.example.demo.controllers;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,6 +43,7 @@ public class UsuariosApiController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> crearUsuario(
             @RequestParam String nombre,
             @RequestParam String apellido,
@@ -57,6 +58,7 @@ public class UsuariosApiController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> actualizarUsuario(
             @PathVariable Long id,
             @RequestParam String nombre,
@@ -72,24 +74,25 @@ public class UsuariosApiController {
     }
 
     @GetMapping("/perfil")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> obtenerPerfil() {
+    public ResponseEntity<ApiResponse<Usuario>> obtenerPerfil() {
         Usuario usuario = authHelper.usuarioAutenticado();
-        return ResponseEntity.ok(ApiResponse.ok("Perfil obtenido", serviceUsuario.obtenerPerfil(usuario)));
+        return ResponseEntity.ok(ApiResponse.ok("Perfil obtenido", usuario));
     }
 
     @PutMapping("/perfil")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> actualizarPerfil(
+    public ResponseEntity<ApiResponse<Usuario>> actualizarPerfil(
             @RequestParam String nombre,
             @RequestParam String correo,
             @RequestParam(required = false) String telefono,
             @RequestParam(required = false) String clave) {
 
         Usuario usuarioEnSesion = authHelper.usuarioAutenticado();
-        Map<String, Object> perfil = serviceUsuario.actualizarPerfil(usuarioEnSesion, nombre, correo, telefono, clave);
-        return ResponseEntity.ok(ApiResponse.ok("Perfil actualizado exitosamente", perfil));
+        Usuario usuarioActualizado = serviceUsuario.actualizarPerfil(usuarioEnSesion, nombre, correo, telefono, clave);
+        return ResponseEntity.ok(ApiResponse.ok("Perfil actualizado exitosamente", usuarioActualizado));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> eliminarUsuario(@PathVariable Long id) {
         serviceUsuario.eliminarUsuario(id);
         return ResponseEntity.ok(ApiResponse.ok("Usuario eliminado exitosamente"));

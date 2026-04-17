@@ -1,7 +1,6 @@
 package com.example.demo.service;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,7 +44,7 @@ public class ServiceUsuario {
         Rol rol = serviceRoles.findById(rolId);
         if (rol == null) throw new ResourceNotFoundException("El rol especificado no existe");
 
-        Estado estado = serviceEstado.obtenerEstadoPorId(rolId);
+        Estado estado = serviceEstado.obtenerEstadoPorId(estadoId);
         if (estado == null) throw new ResourceNotFoundException("El estado especificado no existe");
 
         Usuario nuevo = new Usuario();
@@ -95,21 +94,9 @@ public class ServiceUsuario {
         usuarioRepository.deleteById(id);
     }
 
-    //perfil del usuario en sesión (sin tocar rol ni estado)
-    public Map<String, Object> obtenerPerfil(Usuario usuario) {
-        return Map.of(
-                "id",        usuario.getId(),
-                "nombre",    usuario.getNombre(),
-                "apellido",  usuario.getApellido(),
-                "correo",    usuario.getCorreo(),
-                "telefono",  usuario.getTelefono() != null ? usuario.getTelefono() : "",
-                "rolNombre", usuario.getRol().getNombre(),
-                "estado",    usuario.getEstado().getNombre()
-        );
-    }
-
-    public Map<String, Object> actualizarPerfil(Usuario usuarioEnSesion, String nombre,
-                                                  String correo, String telefono, String clave) {
+    //actualizar perfil del usuario en sesión (sin tocar rol ni estado)
+    public Usuario actualizarPerfil(Usuario usuarioEnSesion, String nombre,
+                                     String correo, String telefono, String clave) {
         if (!correo.equals(usuarioEnSesion.getCorreo())) {
             Usuario conCorreo = obtenerUsuarioPorCorreo(correo);
             if (conCorreo != null)
@@ -125,15 +112,6 @@ public class ServiceUsuario {
         if (clave != null && !clave.isBlank())
             usuarioEnSesion.setClave(passwordEncoder.encode(clave));
 
-        usuarioRepository.save(usuarioEnSesion);
-
-        return Map.of(
-                "id",        usuarioEnSesion.getId(),
-                "nombre",    usuarioEnSesion.getNombre(),
-                "apellido",  usuarioEnSesion.getApellido(),
-                "correo",    usuarioEnSesion.getCorreo(),
-                "telefono",  usuarioEnSesion.getTelefono() != null ? usuarioEnSesion.getTelefono() : "",
-                "rolNombre", usuarioEnSesion.getRol().getNombre()
-        );
+        return usuarioRepository.save(usuarioEnSesion);
     }
 }

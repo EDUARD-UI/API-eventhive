@@ -52,17 +52,16 @@ public class AuthApiController {
 
         Authentication authentication = serviceAutenticacion.autenticar(correo, clave);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        
+
         session.setAttribute(
                 HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                 SecurityContextHolder.getContext()
         );
 
-        String redirectUrl = serviceAutenticacion.obtenerUrlRedireccion(correo);
         String rol = serviceAutenticacion.obtenerRolUsuario(correo);
 
         return ResponseEntity.ok(ApiResponse.ok("Inicio de sesión exitoso",
-                Map.of("redirectUrl", redirectUrl, "rol", rol)));
+                Map.of("rol", rol)));
     }
 
     @PostMapping("/logout")

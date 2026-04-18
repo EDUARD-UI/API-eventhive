@@ -1,7 +1,7 @@
 package com.example.demo.controllers;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,8 +31,8 @@ public class UsuariosApiController {
     private final AuthenticatedUserHelper authHelper;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Usuario>>> listarUsuarios() {
-        return ResponseEntity.ok(ApiResponse.ok("Usuarios obtenidos", serviceUsuario.obtenerTodosLosUsuarios()));
+    public ResponseEntity<ApiResponse<Page<Usuario>>> listarUsuarios(Pageable pageable) {
+        return ResponseEntity.ok(ApiResponse.ok("Usuarios obtenidos", serviceUsuario.obtenerTodosLosUsuarios(pageable)));
     }
 
     @GetMapping("/{id}")

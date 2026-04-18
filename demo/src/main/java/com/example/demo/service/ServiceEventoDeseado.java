@@ -3,6 +3,8 @@ package com.example.demo.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.EventoDeseadoDTO;
@@ -31,6 +33,12 @@ public class ServiceEventoDeseado {
         eventoDeseadoRepository.deleteById(id);
     }
 
+    //consultas paginadas
+    public Page<EventoDeseadoDTO> obtenerDeseadosDTOPorUsuario(Long usuarioId, Pageable pageable) {
+        return eventoDeseadoRepository.findByUsuarioId(usuarioId, pageable)
+                .map(this::toDTO);
+    }
+
     // Eventos deseados del usuario logueado
     public List<EventoDeseadoDTO> obtenerDeseadosDTOPorUsuario(Long usuarioId) {
         return eventoDeseadoRepository.findByUsuarioId(usuarioId).stream()
@@ -51,4 +59,3 @@ public class ServiceEventoDeseado {
         return dto;
     }
 }
-

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,6 +35,10 @@ public class ServiceCategoria {
     public List<Categoria> obtenerTop4Categorias()         { return categoriasRepository.findTop4ByOrderByNombreAsc(); }
     public Categoria findByNombre(String nombre)           { return categoriasRepository.findByNombre(nombre); }
     public boolean tieneEventosAsociados(Long id)          { return eventoRepository.countByCategoriaId(id) > 0; }
+
+    public Page<Categoria> obtenerTodasCategorias(Pageable pageable) {
+        return categoriasRepository.findAll(pageable);
+    }
 
     public Categoria obtenerCategoriaPorId(Long id) {
         return categoriasRepository.findById(id)

@@ -60,12 +60,9 @@ public class EventosApiController {
     }
 
     @GetMapping("/buscar")
-    public ResponseEntity<ApiResponse<PagedResponse<EventoBusquedaDTO>>> buscarEventos(
-            @RequestParam String titulo,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        PagedResponse<EventoBusquedaDTO> result = serviceEventos.buscarPorTituloPaginado(titulo, page, size);
-        return ResponseEntity.ok(ApiResponse.ok("Resultados", result));
+    public ResponseEntity<ApiResponse<List<EventoBusquedaDTO>>> buscarEventos(
+            @RequestParam String titulo) {
+        return ResponseEntity.ok(ApiResponse.ok("Resultados", serviceEventos.buscarPorTituloParcialDTO(titulo)));
     }
 
     @GetMapping("/destacados")

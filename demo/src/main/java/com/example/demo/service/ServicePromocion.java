@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.PromocionDTO;
@@ -24,28 +26,46 @@ public class ServicePromocion {
     private final PromocionRepository promocionRepository;
     private final ServiceEvento serviceEvento;
 
-    public List<Promocion> obtenerPromociones()                    { return promocionRepository.findAll(); }
-    public List<Promocion> obtenerPorOrganizador(Long orgId)       { return promocionRepository.findByEventoUsuarioId(orgId); }
-    public long contarPorOrganizador(Long orgId)                   { return promocionRepository.countByEventoUsuarioId(orgId); }
-    public List<Promocion> obtenerPorEvento(Long eventoId)         { return promocionRepository.findByEventoId(eventoId); }
+    public List<Promocion> obtenerPromociones() {
+        return promocionRepository.findAll();
+    }
+
+    public List<Promocion> obtenerPorOrganizador(Long orgId) {
+        return promocionRepository.findByEventoUsuarioId(orgId);
+    }
+
+    public long contarPorOrganizador(Long orgId) {
+        return promocionRepository.countByEventoUsuarioId(orgId);
+    }
+
+    public List<Promocion> obtenerPorEvento(Long eventoId) {
+        return promocionRepository.findByEventoId(eventoId);
+    }
 
     public Promocion obtenerPromocionPorId(Long id) {
         return promocionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Promoción no encontrada con id: " + id));
     }
 
+    public Page<PromocionDTO> obtenerDTOPorOrganizador(Long orgId, Pageable pageable) {
+        return promocionRepository.findByEventoUsuarioId(orgId, pageable)
+                .map(this::toDTO);
+    }
+
     // valida, construye y guarda la promoción
     public void crearPromocion(Long eventoId, String descripcion, BigDecimal descuento,
-                                String fechaInicio, String fechaFin, Usuario organizador) {
+            String fechaInicio, String fechaFin, Usuario organizador) {
         validarDescuento(descuento);
         LocalDate inicio = LocalDate.parse(fechaInicio);
-        LocalDate fin    = LocalDate.parse(fechaFin);
-        if (fin.isBefore(inicio))
+        LocalDate fin = LocalDate.parse(fechaFin);
+        if (fin.isBefore(inicio)) {
             throw new BusinessException("La fecha de fin no puede ser anterior a la de inicio");
+        }
 
         Evento evento = serviceEvento.obtenerEventoPorId(eventoId);
-        if (!evento.getUsuario().getId().equals(organizador.getId()))
+        if (!evento.getUsuario().getId().equals(organizador.getId())) {
             throw new BusinessException("No puede crear promociones para eventos de otro organizador");
+        }
 
         Promocion p = new Promocion();
         p.setEvento(evento);
@@ -58,16 +78,18 @@ public class ServicePromocion {
 
     // valida permisos, actualiza y guarda
     public void actualizarPromocion(Long id, Long eventoId, String descripcion, BigDecimal descuento,
-                                     String fechaInicio, String fechaFin, Usuario organizador) {
+            String fechaInicio, String fechaFin, Usuario organizador) {
         Promocion p = obtenerPromocionPorId(id);
-        if (!p.getEvento().getUsuario().getId().equals(organizador.getId()))
+        if (!p.getEvento().getUsuario().getId().equals(organizador.getId())) {
             throw new BusinessException("No autorizado");
+        }
 
         validarDescuento(descuento);
         LocalDate inicio = LocalDate.parse(fechaInicio);
-        LocalDate fin    = LocalDate.parse(fechaFin);
-        if (fin.isBefore(inicio))
+        LocalDate fin = LocalDate.parse(fechaFin);
+        if (fin.isBefore(inicio)) {
             throw new BusinessException("La fecha de fin no puede ser anterior a la de inicio");
+        }
 
         p.setEvento(serviceEvento.obtenerEventoPorId(eventoId));
         p.setDescripcion(descripcion);
@@ -80,8 +102,9 @@ public class ServicePromocion {
     // valida permisos y elimina
     public void eliminarPromocion(Long id, Usuario organizador) {
         Promocion p = obtenerPromocionPorId(id);
-        if (!p.getEvento().getUsuario().getId().equals(organizador.getId()))
+        if (!p.getEvento().getUsuario().getId().equals(organizador.getId())) {
             throw new BusinessException("No autorizado");
+        }
         promocionRepository.deleteById(id);
     }
 
@@ -107,7 +130,8 @@ public class ServicePromocion {
     }
 
     private void validarDescuento(BigDecimal d) {
-        if (d.compareTo(BigDecimal.ONE) < 0 || d.compareTo(new BigDecimal("75")) > 0)
+        if (d.compareTo(BigDecimal.ONE) < 0 || d.compareTo(new BigDecimal("75")) > 0) {
             throw new BusinessException("El descuento debe estar entre 1 y 75");
+        }
     }
 }

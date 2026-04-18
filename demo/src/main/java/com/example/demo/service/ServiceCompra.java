@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,6 +92,11 @@ public class ServiceCompra {
 
     public List<Compra> obtenerComprasConDetallesPorCliente(Long clienteId) {
         return compraRepository.findComprasConDetallesPorClienteId(clienteId);
+    }
+
+    public Page<CompraDetalleDTO> obtenerHistorialDTO(Long clienteId, Pageable pageable) {
+        return compraRepository.findComprasConDetallesPorClienteId(clienteId, pageable)
+                .map(this::toDetalleDTO);
     }
 
     // Historial por cliente

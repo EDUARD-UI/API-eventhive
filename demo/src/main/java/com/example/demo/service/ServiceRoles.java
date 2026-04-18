@@ -2,6 +2,8 @@ package com.example.demo.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.exception.BusinessException;
@@ -22,7 +24,8 @@ public class ServiceRoles {
     private final ServiceEstado serviceEstado;
 
     public Rol findById(long id) {
-        return rolesRepository.findById(id).orElse(null);
+        return rolesRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con id: " + id));
     }
 
     public Rol findByNombre(String nombre) {
@@ -31,6 +34,10 @@ public class ServiceRoles {
 
     public List<Rol> obtenerTodosRoles() {
         return rolesRepository.findAll();
+    }
+
+    public Page<Rol> obtenerTodosRoles(Pageable pageable) {
+        return rolesRepository.findAll(pageable);
     }
 
     public boolean tieneUsuariosAsociados(Long rolId) {

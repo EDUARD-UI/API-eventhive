@@ -50,10 +50,22 @@ public class ServiceEvento {
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con id: " + categoriaId));
     }
 
+    public List<Evento> todosLosEventos() {
+        return eventoRepository.findAll();
+    }
+
+    public long contarPorOrganizador(Long id) {
+        return eventoRepository.countByUsuarioId(id);
+    }
+
+    public long contarEventosPorCategoria(Long catId) {
+        return eventoRepository.countByCategoriaId(catId);
+    }
+
     public Evento crearEvento(String titulo, String descripcion, String lugar,
-                               LocalDate fecha, LocalTime hora,
-                               Long categoriaId, Long estadoId,
-                               MultipartFile foto, Usuario organizador) throws IOException {
+            LocalDate fecha, LocalTime hora,
+            Long categoriaId, Long estadoId,
+            MultipartFile foto, Usuario organizador) throws IOException {
 
         Categoria categoria = resolverCategoria(categoriaId);
         Estado estado = serviceEstado.obtenerEstadoPorId(estadoId);
@@ -77,15 +89,16 @@ public class ServiceEvento {
     }
 
     public Evento actualizarEvento(Long id, String titulo, String descripcion, String lugar,
-                                    LocalDate fecha, LocalTime hora,
-                                    Long categoriaId, Long estadoId,
-                                    MultipartFile foto, Usuario solicitante) throws IOException {
+            LocalDate fecha, LocalTime hora,
+            Long categoriaId, Long estadoId,
+            MultipartFile foto, Usuario solicitante) throws IOException {
 
         Evento ev = obtenerEventoPorId(id);
 
         boolean esAdmin = solicitante.getRol().getNombre().equalsIgnoreCase("administrador");
-        if (!ev.getUsuario().getId().equals(solicitante.getId()) && !esAdmin)
+        if (!ev.getUsuario().getId().equals(solicitante.getId()) && !esAdmin) {
             throw new BusinessException("No tiene permisos para editar este evento");
+        }
 
         Categoria categoria = resolverCategoria(categoriaId);
         Estado estado = serviceEstado.obtenerEstadoPorId(estadoId);
@@ -131,47 +144,14 @@ public class ServiceEvento {
                 .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + id));
     }
 
-    public List<Evento> todosLosEventos() {
-        return eventoRepository.findAll();
-    }
-
-    public long contarPorOrganizador(Long id) {
-        return eventoRepository.countByUsuarioId(id);
-    }
-
-    public long contarEventosPorCategoria(Long catId) {
-        return eventoRepository.countByCategoriaId(catId);
-    }
-
     // Métodos paginados
     public PagedResponse<EventoDTO> obtenerEventosPaginado(int page, int size) {
-    Pageable pageable = PageRequest.of(page, size);
-    Page<Evento> pageResult = eventoRepository.findAll(pageable);
-
-    List<EventoDTO> dtos = pageResult.getContent()
-            .stream()
-            .map(this::toEventoDTO)
-            .collect(Collectors.toList());
-
-    return new PagedResponse<>(
-            dtos,
-            pageResult.getNumber(),
-            pageResult.getSize(),
-            pageResult.getTotalElements(),
-            pageResult.getTotalPages()
-    );
-}
-
-    public PagedResponse<EventoBusquedaDTO> buscarPorTituloPaginado(String titulo, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Evento> pageResult = eventoRepository.findByTituloContainingIgnoreCase(titulo, pageable);
+        Page<Evento> pageResult = eventoRepository.findAll(pageable);
 
-        List<EventoBusquedaDTO> dtos = pageResult.getContent()
+        List<EventoDTO> dtos = pageResult.getContent()
                 .stream()
-                .map(e -> new EventoBusquedaDTO(
-                        e.getId(),
-                        e.getTitulo(),
-                        e.getCategoria() != null ? e.getCategoria().getNombre() : "General"))
+                .map(this::toEventoDTO)
                 .collect(Collectors.toList());
 
         return new PagedResponse<>(
@@ -210,10 +190,12 @@ public class ServiceEvento {
                 .map(e -> {
                     EventoDTO dto = toEventoDTO(e);
                     dto.setHora(e.getHora());
-                    if (e.getCategoria() != null)
+                    if (e.getCategoria() != null) {
                         dto.setCategoria(new EventoDTO.Categoria(e.getCategoria().getId(), e.getCategoria().getNombre()));
-                    if (e.getEstado() != null)
+                    }
+                    if (e.getEstado() != null) {
                         dto.setEstado(new EventoDTO.Estado(e.getEstado().getId(), e.getEstado().getNombre()));
+                    }
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -231,9 +213,9 @@ public class ServiceEvento {
     public List<EventoBusquedaDTO> buscarPorTituloParcialDTO(String titulo) {
         return eventoRepository.findByTituloContainingIgnoreCase(titulo).stream()
                 .map(e -> new EventoBusquedaDTO(
-                        e.getId(),
-                        e.getTitulo(),
-                        e.getCategoria() != null ? e.getCategoria().getNombre() : "General"))
+                e.getId(),
+                e.getTitulo(),
+                e.getCategoria() != null ? e.getCategoria().getNombre() : "General"))
                 .collect(Collectors.toList());
     }
 
@@ -253,7 +235,9 @@ public class ServiceEvento {
                     dto.setLugar(e.getLugar());
                     dto.setFoto(e.getFoto());
                     dto.setFecha(e.getFecha());
-                    if (e.getCategoria() != null) dto.setCategoriaNombre(e.getCategoria().getNombre());
+                    if (e.getCategoria() != null) {
+                        dto.setCategoriaNombre(e.getCategoria().getNombre());
+                    }
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -270,8 +254,12 @@ public class ServiceEvento {
         dto.setFecha(e.getFecha());
         dto.setHora(e.getHora());
         dto.setLugar(e.getLugar());
-        if (e.getCategoria() != null) dto.setCategoriaNombre(e.getCategoria().getNombre());
-        if (e.getEstado() != null) dto.setEstadoNombre(e.getEstado().getNombre());
+        if (e.getCategoria() != null) {
+            dto.setCategoriaNombre(e.getCategoria().getNombre());
+        }
+        if (e.getEstado() != null) {
+            dto.setEstadoNombre(e.getEstado().getNombre());
+        }
 
         List<Localidad> localidades = localidadRepository.findByEventoId(id);
         dto.setLocalidades(localidades.stream().map(l -> {
@@ -292,10 +280,12 @@ public class ServiceEvento {
                 .map(e -> {
                     EventoDTO dto = toEventoDTO(e);
                     dto.setHora(e.getHora());
-                    if (e.getCategoria() != null)
+                    if (e.getCategoria() != null) {
                         dto.setCategoria(new EventoDTO.Categoria(e.getCategoria().getId(), e.getCategoria().getNombre()));
-                    if (e.getEstado() != null)
+                    }
+                    if (e.getEstado() != null) {
                         dto.setEstado(new EventoDTO.Estado(e.getEstado().getId(), e.getEstado().getNombre()));
+                    }
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -312,25 +302,25 @@ public class ServiceEvento {
     }
 
     private EventoDTO toEventoDTO(Evento e) {
-    EventoDTO dto = new EventoDTO();
-    dto.setId(e.getId());
-    dto.setTitulo(e.getTitulo());
-    dto.setDescripcion(e.getDescripcion());
-    dto.setLugar(e.getLugar());
-    dto.setFoto(e.getFoto());
-    dto.setFecha(e.getFecha());
-    dto.setHora(e.getHora());
-    
-    //Agregar categoría
-    if (e.getCategoria() != null) {
-        dto.setCategoria(new EventoDTO.Categoria(e.getCategoria().getId(), e.getCategoria().getNombre()));
-    }
+        EventoDTO dto = new EventoDTO();
+        dto.setId(e.getId());
+        dto.setTitulo(e.getTitulo());
+        dto.setDescripcion(e.getDescripcion());
+        dto.setLugar(e.getLugar());
+        dto.setFoto(e.getFoto());
+        dto.setFecha(e.getFecha());
+        dto.setHora(e.getHora());
 
-    //Agregar estado
-    if (e.getEstado() != null) {
-        dto.setEstado(new EventoDTO.Estado(e.getEstado().getId(), e.getEstado().getNombre()));
+        //Agregar categoría
+        if (e.getCategoria() != null) {
+            dto.setCategoria(new EventoDTO.Categoria(e.getCategoria().getId(), e.getCategoria().getNombre()));
+        }
+
+        //Agregar estado
+        if (e.getEstado() != null) {
+            dto.setEstado(new EventoDTO.Estado(e.getEstado().getId(), e.getEstado().getNombre()));
+        }
+
+        return dto;
     }
-    
-    return dto;
-}
 }

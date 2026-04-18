@@ -3,6 +3,8 @@ package com.example.demo.controllers;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +35,8 @@ public class CategoriasApiController {
     private final ServiceCategoria serviceCategoria;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Categoria>>> obtenerNombresCategorias() {
-        return ResponseEntity.ok(ApiResponse.ok("Categorías obtenidas", serviceCategoria.obtenerTodasCategorias()));
+    public ResponseEntity<ApiResponse<Page<Categoria>>> obtenerNombresCategorias(Pageable pageable) {
+        return ResponseEntity.ok(ApiResponse.ok("Categorías obtenidas", serviceCategoria.obtenerTodasCategorias(pageable)));
     }
 
     @GetMapping("/nombres")

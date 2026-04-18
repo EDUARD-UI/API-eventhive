@@ -29,7 +29,7 @@ public class ServiceLocalidad {
 
     public Localidad obtenerLocalidadPorId(Long id) {
         return localidadRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("La localidad no existe"));
+                .orElseThrow(() -> new ResourceNotFoundException("La localidad no encontrada"));
     }
 
     public void crearLocalidad(String nombre, BigDecimal precio,

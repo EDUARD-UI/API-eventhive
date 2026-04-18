@@ -2,6 +2,8 @@ package com.example.demo.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.exception.BusinessException;
@@ -29,9 +31,13 @@ public class ServiceEstado {
         return estadoRepository.findAll();
     }
 
+    public Page<Estado> obtenerEstados(Pageable pageable) {
+        return estadoRepository.findAll(pageable);
+    }
+
     public Estado obtenerEstadoPorId(Long id) {
         return estadoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("El estado no existe"));
+                .orElseThrow(() -> new ResourceNotFoundException("Estado no encontrado"));
     }
 
     public boolean tieneEntidadesAsociadas(Long estadoId) {

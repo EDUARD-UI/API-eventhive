@@ -1,7 +1,7 @@
 package com.example.demo.controllers;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,8 +28,8 @@ public class RolesApiController {
     private final ServiceRoles serviceRoles;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Rol>>> listarRoles() {
-        return ResponseEntity.ok(ApiResponse.ok("Roles obtenidos", serviceRoles.obtenerTodosRoles()));
+    public ResponseEntity<ApiResponse<Page<Rol>>> listarRoles(Pageable pageable) {
+        return ResponseEntity.ok(ApiResponse.ok("Roles obtenidos", serviceRoles.obtenerTodosRoles(pageable)));
     }
 
     @PostMapping

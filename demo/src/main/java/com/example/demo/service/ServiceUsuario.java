@@ -2,6 +2,8 @@ package com.example.demo.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,8 +29,13 @@ public class ServiceUsuario {
         return usuarioRepository.findAll();
     }
 
+    public Page<Usuario> obtenerTodosLosUsuarios(Pageable pageable) {
+        return usuarioRepository.findAll(pageable);
+    }
+
     public Usuario obtenerUsuarioPorId(Long id) {
-        return usuarioRepository.findById(id).orElse(null);
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + id));
     }
 
     public Usuario obtenerUsuarioPorCorreo(String correo) {

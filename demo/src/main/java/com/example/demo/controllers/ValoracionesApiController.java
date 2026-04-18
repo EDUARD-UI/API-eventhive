@@ -1,7 +1,7 @@
 package com.example.demo.controllers;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,15 +31,15 @@ public class ValoracionesApiController {
 
     @GetMapping("/usuario")
     @PreAuthorize("hasRole('CLIENTE')")
-    public ResponseEntity<ApiResponse<List<ValoracionDTO>>> valoracionesDelUsuario() {
+    public ResponseEntity<ApiResponse<Page<ValoracionDTO>>> valoracionesDelUsuario(Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.ok("Valoraciones obtenidas",
-                serviceValoracion.obtenerValoracionesDTOPorUsuario(authHelper.usuarioAutenticado().getId())));
+                serviceValoracion.obtenerValoracionesDTOPorUsuario(authHelper.usuarioAutenticado().getId(), pageable)));
     }
 
     @GetMapping("/evento/{eventoId}")
-    public ResponseEntity<ApiResponse<List<ValoracionDTO>>> valoracionesPorEvento(@PathVariable Long eventoId) {
+    public ResponseEntity<ApiResponse<Page<ValoracionDTO>>> valoracionesPorEvento(@PathVariable Long eventoId, Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.ok("Valoraciones del evento",
-                serviceValoracion.obtenerValoracionesDTOPorEvento(eventoId)));
+                serviceValoracion.obtenerValoracionesDTOPorEvento(eventoId, pageable)));
     }
 
     @PostMapping

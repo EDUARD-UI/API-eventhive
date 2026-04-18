@@ -3,6 +3,8 @@ package com.example.demo.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.ValoracionDTO;
@@ -23,7 +25,8 @@ public class ServiceValoracion {
     private final ServiceEvento serviceEvento;
 
     public Valoracion obtenerValoracionPorId(Long id) {
-        return valoracionRepository.findById(id).orElse(null);
+        return valoracionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Valoracion no encontrada con id: " + id));
     }
 
     public List<Valoracion> obtenerTop3Valoraciones() {
@@ -38,6 +41,17 @@ public class ServiceValoracion {
         return valoracionRepository.countByClienteId(usuarioId);
     }
 
+    //consultas pagindas
+    public Page<ValoracionDTO> obtenerValoracionesDTOPorUsuario(Long usuarioId, Pageable pageable) {
+        return valoracionRepository.findByClienteIdOrderByIdDesc(usuarioId, pageable)
+                .map(this::toDTO);
+    }
+
+    public Page<ValoracionDTO> obtenerValoracionesDTOPorEvento(Long eventoId, Pageable pageable) {
+        return valoracionRepository.findByEventoIdOrderByIdDesc(eventoId, pageable)
+                .map(this::toDTO);
+    }
+
     public List<ValoracionDTO> obtenerValoracionesDTOPorUsuario(Long usuarioId) {
         return valoracionRepository.findByClienteIdOrderByIdDesc(usuarioId).stream()
                 .map(this::toDTO)
@@ -50,7 +64,6 @@ public class ServiceValoracion {
                 .collect(Collectors.toList());
     }
 
-    //lógica que antes vivía en el controller
     public void crearValoracion(Usuario cliente, Long eventoId, String comentario, long calificacion) {
         validarCalificacion(calificacion);
 
@@ -80,17 +93,20 @@ public class ServiceValoracion {
 
     //métodos privados de apoyo
     private void validarCalificacion(long calificacion) {
-        if (calificacion < 1 || calificacion > 5)
+        if (calificacion < 1 || calificacion > 5) {
             throw new BusinessException("La calificación debe estar entre 1 y 5");
+        }
     }
 
     // verifica existencia y que el cliente sea el dueño
     private Valoracion obtenerValoracionVerificada(Long id, Usuario cliente) {
         Valoracion v = obtenerValoracionPorId(id);
-        if (v == null)
+        if (v == null) {
             throw new ResourceNotFoundException("Valoración no encontrada");
-        if (v.getCliente() == null || !v.getCliente().getId().equals(cliente.getId()))
+        }
+        if (v.getCliente() == null || !v.getCliente().getId().equals(cliente.getId())) {
             throw new BusinessException("No autorizado para modificar esta valoración");
+        }
         return v;
     }
 

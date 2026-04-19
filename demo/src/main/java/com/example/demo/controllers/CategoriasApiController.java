@@ -36,36 +36,43 @@ public class CategoriasApiController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<Categoria>>> obtenerNombresCategorias(Pageable pageable) {
-        return ResponseEntity.ok(ApiResponse.ok("Categorías obtenidas", serviceCategoria.obtenerTodasCategorias(pageable)));
+        return ResponseEntity.ok(ApiResponse.ok("Categorías obtenidas", 
+            serviceCategoria.obtenerTodasCategorias(pageable)));
     }
 
     @GetMapping("/nombres")
     public ResponseEntity<ApiResponse<List<CategoriaDTO>>> listarCategorias() {
-        return ResponseEntity.ok(ApiResponse.ok("Nombres de categorías obtenidos", serviceCategoria.obtenerCategoriaDTO()));
+        return ResponseEntity.ok(ApiResponse.ok("Nombres de categorías obtenidos", 
+            serviceCategoria.obtenerCategoriaDTO()));
     }
 
     @GetMapping("/destacadas")
     public ResponseEntity<ApiResponse<List<Categoria>>> obtenerCategoriasDestacadas() {
-        return ResponseEntity.ok(ApiResponse.ok("Categorías destacadas", serviceCategoria.obtenerTop4Categorias()));
+        return ResponseEntity.ok(ApiResponse.ok("Categorías destacadas", 
+            serviceCategoria.obtenerTop4Categorias()));
     }
 
     @GetMapping("/con-eventos")
     public ResponseEntity<ApiResponse<List<CategoriaEventosDTO>>> listarCategoriasConEventos() {
-        return ResponseEntity.ok(ApiResponse.ok("Categorías con eventos", serviceCategoria.obtenerCategoriasConEventos()));
+        return ResponseEntity.ok(ApiResponse.ok("Categorías con eventos", 
+            serviceCategoria.obtenerCategoriasConEventos()));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Categoria>> obtenerCategoria(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.ok("Categoría obtenida", serviceCategoria.obtenerCategoriaPorId(id)));
+        return ResponseEntity.ok(ApiResponse.ok("Categoría obtenida", 
+            serviceCategoria.obtenerCategoriaPorId(id)));
     }
 
+    //CRUD
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> crearCategoria(
             @RequestParam String nombre,
             @RequestParam(required = false) MultipartFile foto) throws IOException {
         serviceCategoria.crearCategoria(nombre, foto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Categoría creada exitosamente"));
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(ApiResponse.ok("Categoría creada exitosamente"));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

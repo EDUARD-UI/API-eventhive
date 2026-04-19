@@ -31,10 +31,21 @@ public class ServiceCategoria {
 
     private static final String UPLOAD_PATH = "uploads/categorias";
 
-    public List<Categoria> obtenerTodasCategorias()        { return categoriasRepository.findAll(); }
-    public List<Categoria> obtenerTop4Categorias()         { return categoriasRepository.findTop4ByOrderByNombreAsc(); }
-    public Categoria findByNombre(String nombre)           { return categoriasRepository.findByNombre(nombre); }
-    public boolean tieneEventosAsociados(Long id)          { return eventoRepository.countByCategoriaId(id) > 0; }
+    public List<Categoria> obtenerTodasCategorias() {
+        return categoriasRepository.findAll();
+    }
+
+    public List<Categoria> obtenerTop4Categorias() {
+        return categoriasRepository.findTop4ByOrderByNombreAsc();
+    }
+
+    public Categoria findByNombre(String nombre) {
+        return categoriasRepository.findByNombre(nombre);
+    }
+
+    public boolean tieneEventosAsociados(Long id) {
+        return eventoRepository.countByCategoriaId(id) > 0;
+    }
 
     public Page<Categoria> obtenerTodasCategorias(Pageable pageable) {
         return categoriasRepository.findAll(pageable);
@@ -45,6 +56,7 @@ public class ServiceCategoria {
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
     }
 
+    // Retorna nombres simples (sin eventos)
     public List<CategoriaDTO> obtenerCategoriaDTO() {
         return categoriasRepository.findAll().stream()
                 .map(c -> {
@@ -56,21 +68,14 @@ public class ServiceCategoria {
                 .collect(Collectors.toList());
     }
 
+    // Retorna categorías con sus eventos (máximo 8 por categoría)
     public List<CategoriaEventosDTO> obtenerCategoriasConEventos() {
         return categoriasRepository.findAll().stream()
-                .map(c -> {
-                    CategoriaEventosDTO dto = new CategoriaEventosDTO();
-                    dto.setId(c.getId());
-                    dto.setNombre(c.getNombre());
-                    List<EventoDTO> eventos = serviceEvento.buscarPorCategoriaDTO(c.getId())
-                            .stream().limit(8).collect(Collectors.toList());
-                    dto.setEventos(eventos);
-                    dto.setTotalEventos(serviceEvento.contarEventosPorCategoria(c.getId()));
-                    return dto;
-                })
+                .map(this::mapearCategoriaConEventos)
                 .collect(Collectors.toList());
     }
 
+    //crud
     public void crearCategoria(String nombre, MultipartFile foto) throws IOException {
         if (categoriasRepository.findByNombre(nombre) != null)
             throw new BusinessException("Ya existe una categoría con ese nombre");
@@ -106,5 +111,23 @@ public class ServiceCategoria {
             throw new BusinessException("No se puede eliminar la categoría porque tiene eventos asociados");
         Utilidades.eliminarFoto(categoria.getFoto(), UPLOAD_PATH);
         categoriasRepository.deleteById(id);
+    }
+
+    // MÉTODO AUXILIAR
+    private CategoriaEventosDTO mapearCategoriaConEventos(Categoria c) {
+        CategoriaEventosDTO dto = new CategoriaEventosDTO();
+        dto.setId(c.getId());
+        dto.setNombre(c.getNombre());
+        
+        // Obtener eventos de la categoría (limitado a 8)
+        List<EventoDTO> eventos = serviceEvento.buscarPorCategoriaDTO(c.getId())
+                .stream()
+                .limit(8)
+                .collect(Collectors.toList());
+        
+        dto.setEventos(eventos);
+        dto.setTotalEventos(serviceEvento.contarEventosPorCategoria(c.getId()));
+        
+        return dto;
     }
 }

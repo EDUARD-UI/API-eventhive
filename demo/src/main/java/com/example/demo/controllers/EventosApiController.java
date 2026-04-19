@@ -54,22 +54,6 @@ public class EventosApiController {
         return ResponseEntity.ok(ApiResponse.ok("Eventos obtenidos", result));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<EventoDetalleDTO>> obtenerEvento(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.ok("Evento obtenido", serviceEventos.obtenerEventoDetalleDTO(id)));
-    }
-
-    @GetMapping("/buscar")
-    public ResponseEntity<ApiResponse<List<EventoBusquedaDTO>>> buscarEventos(
-            @RequestParam String titulo) {
-        return ResponseEntity.ok(ApiResponse.ok("Resultados", serviceEventos.buscarPorTituloParcialDTO(titulo)));
-    }
-
-    @GetMapping("/destacados")
-    public ResponseEntity<ApiResponse<List<EventoDestacadoDTO>>> obtenerEventosDestacados() {
-        return ResponseEntity.ok(ApiResponse.ok("Eventos destacados", serviceEventos.obtenerTop3EventosDTO()));
-    }
-
     @GetMapping("/categoria/{categoriaId}")
     public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> obtenerEventosPorCategoria(
             @PathVariable Long categoriaId,
@@ -79,12 +63,29 @@ public class EventosApiController {
         return ResponseEntity.ok(ApiResponse.ok("Eventos de la categoría", result));
     }
 
+    @GetMapping("/buscar")
+    public ResponseEntity<ApiResponse<List<EventoBusquedaDTO>>> buscarEventos(
+            @RequestParam String titulo) {
+        List<EventoBusquedaDTO> resultados = serviceEventos.buscarPorTituloParcial(titulo);
+        return ResponseEntity.ok(ApiResponse.ok("Resultados de búsqueda", resultados));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<EventoDetalleDTO>> obtenerEvento(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.ok("Evento obtenido", serviceEventos.obtenerEventoDetalleDTO(id)));
+    }
+
+    @GetMapping("/destacados")
+    public ResponseEntity<ApiResponse<List<EventoDestacadoDTO>>> obtenerEventosDestacados() {
+        return ResponseEntity.ok(ApiResponse.ok("Eventos destacados", serviceEventos.obtenerTop3EventosDTO()));
+    }
+
     @GetMapping("/nombres-Eventos")
     public ResponseEntity<ApiResponse<List<NombreEventoDTO>>> nombresEventos() {
         return ResponseEntity.ok(ApiResponse.ok("Nombres de eventos", serviceEventos.obtenerNombresEventos()));
     }
 
-    // Endpoints de organizador
+    //endpoints para organizadores
     @GetMapping("/organizador/mis-eventos")
     @PreAuthorize("hasRole('ORGANIZADOR')")
     public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> obtenerEventosOrganizador(
@@ -116,7 +117,7 @@ public class EventosApiController {
         return ResponseEntity.ok(ApiResponse.ok("Dashboard cargado", dto));
     }
 
-    //CRUD
+    //crud
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ORGANIZADOR','ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> crearEvento(
@@ -169,6 +170,7 @@ public class EventosApiController {
         return ResponseEntity.ok(ApiResponse.ok("Evento eliminado exitosamente"));
     }
 
+    // MÉTODO AUXILIAR
     private Usuario usuarioAutenticado() {
         return authHelper.usuarioAutenticado();
     }

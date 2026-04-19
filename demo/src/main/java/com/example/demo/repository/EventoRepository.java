@@ -27,7 +27,14 @@ public interface EventoRepository extends JpaRepository<Evento, Long> {
     @Query("SELECT new com.example.demo.dto.NombreEventoDTO(e.id, e.titulo) FROM Evento e WHERE e.usuario.id = :organizadorId")
     List<NombreEventoDTO> findNombresByOrganizadorId(@Param("organizadorId") Long organizadorId);
     
+    // Búsqueda por título limitada a 5 registros
+    @Query(value = "SELECT e FROM Evento e WHERE LOWER(e.titulo) LIKE LOWER(CONCAT('%', :titulo, '%')) " +
+                   "ORDER BY e.titulo ASC",
+           nativeQuery = false)
+    List<Evento> findByTituloLimitado(@Param("titulo") String titulo, Pageable pageable);
+    
     // Métodos paginados
+    @Override
     Page<Evento> findAll(Pageable pageable);
     Page<Evento> findByCategoriaId(Long categoriaId, Pageable pageable);
     Page<Evento> findByTituloContainingIgnoreCase(String titulo, Pageable pageable);

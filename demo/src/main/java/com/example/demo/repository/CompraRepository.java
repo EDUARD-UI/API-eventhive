@@ -35,7 +35,7 @@ public interface CompraRepository extends JpaRepository<Compra, Integer> {
             + "ORDER BY c.fechaCompra DESC")
     List<Compra> findComprasConDetallesPorClienteId(@Param("clienteId") Long clienteId);
     
-    // Nueva query para obtener una compra específica con todos sus detalles
+    //query para obtener una compra específica con todos sus detalles
     @Query("SELECT c FROM Compra c "
             + "LEFT JOIN FETCH c.tiqueteCompras tc "
             + "LEFT JOIN FETCH tc.tiquete t "

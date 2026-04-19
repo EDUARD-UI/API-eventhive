@@ -6,7 +6,6 @@ target/
 
 # Credenciales locales
 src/main/resources/application-local.properties
-demo\src\main\resources\application.properties
 
 
 ### STS ###

@@ -138,13 +138,21 @@ public class ServiceEvento {
         eventoRepository.deleteById(id);
     }
 
-    // Consultas y DTOs
     public Evento obtenerEventoPorId(Long id) {
         return eventoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + id));
     }
 
-    // Métodos paginados
+    public List<EventoBusquedaDTO> buscarPorTituloParcial(String titulo) {
+        Pageable limite = PageRequest.of(0, 5);
+        return eventoRepository.findByTituloLimitado(titulo, limite).stream()
+                .map(e -> new EventoBusquedaDTO(
+                    e.getId(),
+                    e.getTitulo(),
+                    e.getCategoria() != null ? e.getCategoria().getNombre() : "General"))
+                .collect(Collectors.toList());
+    }
+
     public PagedResponse<EventoDTO> obtenerEventosPaginado(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Evento> pageResult = eventoRepository.findAll(pageable);
@@ -207,16 +215,6 @@ public class ServiceEvento {
                 pageResult.getTotalElements(),
                 pageResult.getTotalPages()
         );
-    }
-
-    // Métodos sin paginación (retornan pocas filas)
-    public List<EventoBusquedaDTO> buscarPorTituloParcialDTO(String titulo) {
-        return eventoRepository.findByTituloContainingIgnoreCase(titulo).stream()
-                .map(e -> new EventoBusquedaDTO(
-                e.getId(),
-                e.getTitulo(),
-                e.getCategoria() != null ? e.getCategoria().getNombre() : "General"))
-                .collect(Collectors.toList());
     }
 
     public List<EventoDTO> buscarPorCategoriaDTO(Long categoriaId) {
@@ -301,6 +299,7 @@ public class ServiceEvento {
         return eventoRepository.findNombresByOrganizadorId(organizadorId);
     }
 
+    //metodo auxiliar
     private EventoDTO toEventoDTO(Evento e) {
         EventoDTO dto = new EventoDTO();
         dto.setId(e.getId());
@@ -311,12 +310,10 @@ public class ServiceEvento {
         dto.setFecha(e.getFecha());
         dto.setHora(e.getHora());
 
-        //Agregar categoría
         if (e.getCategoria() != null) {
             dto.setCategoria(new EventoDTO.Categoria(e.getCategoria().getId(), e.getCategoria().getNombre()));
         }
 
-        //Agregar estado
         if (e.getEstado() != null) {
             dto.setEstado(new EventoDTO.Estado(e.getEstado().getId(), e.getEstado().getNombre()));
         }

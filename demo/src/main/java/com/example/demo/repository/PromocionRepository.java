@@ -4,24 +4,23 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.example.demo.model.Promocion;
 
 @Repository
-public interface PromocionRepository extends JpaRepository<Promocion, Long> {
+public interface PromocionRepository extends MongoRepository<Promocion, String> {
 
-    List<Promocion> findByEventoId(Long eventoId);
+    List<Promocion> findByEventoId(String eventoId);
 
-    @Query("SELECT p FROM Promocion p WHERE p.evento.usuario.id = :organizadorId")
-    List<Promocion> findByEventoUsuarioId(@Param("organizadorId") Long organizadorId);
+    @Query("{ 'evento.usuario._id': ?0 }")
+    List<Promocion> findByEventoUsuarioId(String organizadorId);
 
-    @Query("SELECT COUNT(p) FROM Promocion p WHERE p.evento.usuario.id = :organizadorId")
-    long countByEventoUsuarioId(@Param("organizadorId") Long organizadorId);
+    @Query("{ 'evento.usuario._id': ?0 }")
+    long countByEventoUsuarioId(String organizadorId);
 
-    @Query("SELECT p FROM Promocion p WHERE p.evento.usuario.id = :organizadorId")
-    Page<Promocion> findByEventoUsuarioId(@Param("organizadorId") Long organizadorId, Pageable pageable);
+    @Query("{ 'evento.usuario._id': ?0 }")
+    Page<Promocion> findByEventoUsuarioIdPageable(String organizadorId, Pageable pageable);
 }

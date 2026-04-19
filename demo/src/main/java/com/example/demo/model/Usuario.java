@@ -2,69 +2,52 @@ package com.example.demo.model;
 
 import java.util.List;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
+@Document(collection = "usuarios")
 @Getter
 @Setter
-@Table(name = "Usuario")
 public class Usuario {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idUsuario")
-    private Long id;
+    private String id;
 
-    @Column(length = 45)
     private String nombre;
 
-    @Column(length = 45)
     private String apellido;
 
-    @Column(length = 45, unique = true)
+    @Indexed(unique = true)
     private String correo;
 
-    @Column(length = 45)
     private String telefono;
 
     @JsonIgnore
-    @Column(length = 60)
     private String clave;
 
-    @ManyToOne
-    @JoinColumn(name = "idEstado", nullable = false)
-    private Estado estado;
-
-    @ManyToOne
-    @JoinColumn(name = "idRoles", nullable = false)
+    @DBRef
     private Rol rol;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    @DBRef
     private List<Evento> eventosOrganizados;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    @DBRef
     private List<EventoDeseado> eventosDeseados;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    @DBRef
     private List<Valoracion> valoraciones;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    @DBRef
     private List<Compra> compras;
 }

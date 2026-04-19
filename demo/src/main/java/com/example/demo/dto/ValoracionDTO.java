@@ -7,9 +7,9 @@ import lombok.Setter;
 @Setter
 public class ValoracionDTO {
 
-    private long id;
+    private String id;
     private String comentario;
     private long calificacion;
-    private Long eventoId;
+    private String eventoId;
     private String eventoTitulo;
 }

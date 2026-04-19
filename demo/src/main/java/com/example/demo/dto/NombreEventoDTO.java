@@ -6,10 +6,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class NombreEventoDTO {
-    private long id;
+    private String id;
     private String titulo;
 
-    public NombreEventoDTO(Long id, String titulo) {
+    public NombreEventoDTO(String id, String titulo) {
         this.id = id;
         this.titulo = titulo;
     }

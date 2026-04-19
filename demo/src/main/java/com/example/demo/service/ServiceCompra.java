@@ -38,7 +38,7 @@ public class ServiceCompra {
 
     // funcion para procesar la compra, crear tiquetes y actualizar disponibilidad
     @Transactional
-    public Compra procesarCompra(Usuario cliente, Long localidadId, Integer cantidad, String metodoPago) {
+    public Compra procesarCompra(Usuario cliente, String localidadId, String cantidad, String metodoPago) {
         Localidad localidad = localidadRepository.findById(localidadId)
                 .orElseThrow(() -> new ResourceNotFoundException("Localidad no encontrada"));
 
@@ -76,38 +76,38 @@ public class ServiceCompra {
         return compra;
     }
 
-    public Compra obtenerCompraPorId(Integer compraId) {
+    public Compra obtenerCompraPorId(String compraId) {
         return compraRepository.findById(compraId)
                 .orElseThrow(() -> new ResourceNotFoundException("Compra no encontrada"));
     }
 
-    public Compra obtenerCompraPorIdConDetalles(Integer compraId) {
+    public Compra obtenerCompraPorIdConDetalles(String compraId) {
         return compraRepository.findByIdWithDetalles(compraId)
                 .orElseThrow(() -> new ResourceNotFoundException("Compra no encontrada"));
     }
 
-    public List<Compra> obtenerComprasPorCliente(Long clienteId) {
+    public List<Compra> obtenerComprasPorCliente(String clienteId) {
         return compraRepository.findByClienteIdOrderByFechaCompraDesc(clienteId);
     }
 
-    public List<Compra> obtenerComprasConDetallesPorCliente(Long clienteId) {
+    public List<Compra> obtenerComprasConDetallesPorCliente(String clienteId) {
         return compraRepository.findComprasConDetallesPorClienteId(clienteId);
     }
 
-    public Page<CompraDetalleDTO> obtenerHistorialDTO(Long clienteId, Pageable pageable) {
+    public Page<CompraDetalleDTO> obtenerHistorialDTO(String clienteId, Pageable pageable) {
         return compraRepository.findComprasConDetallesPorClienteId(clienteId, pageable)
                 .map(this::toDetalleDTO);
     }
 
     // Historial por cliente
-    public List<CompraDetalleDTO> obtenerHistorialDTO(Long clienteId) {
+    public List<CompraDetalleDTO> obtenerHistorialDTO(String clienteId) {
         return obtenerComprasConDetallesPorCliente(clienteId).stream()
                 .map(this::toDetalleDTO)
                 .collect(Collectors.toList());
     }
 
     // boletos por compra
-    public BoletosCompraDTO obtenerBoletosDTO(Integer compraId) {
+    public BoletosCompraDTO obtenerBoletosDTO(String compraId) {
         Compra compra = obtenerCompraPorIdConDetalles(compraId);
         if (compra == null) throw new ResourceNotFoundException("La compra no existe");
         return toBoletosDTO(compra);

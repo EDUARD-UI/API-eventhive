@@ -43,7 +43,7 @@ public class ServiceCategoria {
         return categoriasRepository.findByNombre(nombre);
     }
 
-    public boolean tieneEventosAsociados(Long id) {
+    public boolean tieneEventosAsociados(String id) {
         return eventoRepository.countByCategoriaId(id) > 0;
     }
 
@@ -51,7 +51,7 @@ public class ServiceCategoria {
         return categoriasRepository.findAll(pageable);
     }
 
-    public Categoria obtenerCategoriaPorId(Long id) {
+    public Categoria obtenerCategoriaPorId(String id) {
         return categoriasRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
     }
@@ -89,7 +89,7 @@ public class ServiceCategoria {
         categoriasRepository.save(nueva);
     }
 
-    public void actualizarCategoria(Long id, String nombre, MultipartFile foto) throws IOException {
+    public void actualizarCategoria(String id, String nombre, MultipartFile foto) throws IOException {
         Categoria existente = obtenerCategoriaPorId(id);
 
         Categoria conNombre = categoriasRepository.findByNombre(nombre);
@@ -105,7 +105,7 @@ public class ServiceCategoria {
         categoriasRepository.save(existente);
     }
 
-    public void eliminarCategoria(Long id) {
+    public void eliminarCategoria(String id) {
         Categoria categoria = obtenerCategoriaPorId(id);
         if (tieneEventosAsociados(id))
             throw new BusinessException("No se puede eliminar la categoría porque tiene eventos asociados");

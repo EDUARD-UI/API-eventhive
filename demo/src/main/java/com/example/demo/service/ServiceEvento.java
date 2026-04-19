@@ -45,7 +45,7 @@ public class ServiceEvento {
     @Value("${upload.path.eventos:uploads/eventos}")
     private String uploadPath;
 
-    private Categoria resolverCategoria(Long categoriaId) {
+    private Categoria resolverCategoria(String categoriaId) {
         return categoriasRepository.findById(categoriaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con id: " + categoriaId));
     }
@@ -54,17 +54,17 @@ public class ServiceEvento {
         return eventoRepository.findAll();
     }
 
-    public long contarPorOrganizador(Long id) {
+    public long contarPorOrganizador(String id) {
         return eventoRepository.countByUsuarioId(id);
     }
 
-    public long contarEventosPorCategoria(Long catId) {
+    public long contarEventosPorCategoria(String catId) {
         return eventoRepository.countByCategoriaId(catId);
     }
 
     public Evento crearEvento(String titulo, String descripcion, String lugar,
             LocalDate fecha, LocalTime hora,
-            Long categoriaId, Long estadoId,
+            String categoriaId, String estadoId,
             MultipartFile foto, Usuario organizador) throws IOException {
 
         Categoria categoria = resolverCategoria(categoriaId);
@@ -88,9 +88,9 @@ public class ServiceEvento {
         return eventoRepository.save(evento);
     }
 
-    public Evento actualizarEvento(Long id, String titulo, String descripcion, String lugar,
+    public Evento actualizarEvento(String id, String titulo, String descripcion, String lugar,
             LocalDate fecha, LocalTime hora,
-            Long categoriaId, Long estadoId,
+            String categoriaId, String estadoId,
             MultipartFile foto, Usuario solicitante) throws IOException {
 
         Evento ev = obtenerEventoPorId(id);
@@ -120,7 +120,7 @@ public class ServiceEvento {
         return eventoRepository.save(ev);
     }
 
-    public void eliminarEvento(Long id, Usuario solicitante, boolean tieneLocalidades) {
+    public void eliminarEvento(String id, Usuario solicitante, boolean tieneLocalidades) {
         Evento ev = obtenerEventoPorId(id);
 
         // Validar que sea el dueño o administrador
@@ -138,7 +138,7 @@ public class ServiceEvento {
         eventoRepository.deleteById(id);
     }
 
-    public Evento obtenerEventoPorId(Long id) {
+    public Evento obtenerEventoPorId(String id) {
         return eventoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + id));
     }
@@ -171,7 +171,7 @@ public class ServiceEvento {
         );
     }
 
-    public PagedResponse<EventoDTO> buscarPorCategoriaPaginado(Long categoriaId, int page, int size) {
+    public PagedResponse<EventoDTO> buscarPorCategoriaPaginado(String categoriaId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Evento> pageResult = eventoRepository.findByCategoriaId(categoriaId, pageable);
 
@@ -189,7 +189,7 @@ public class ServiceEvento {
         );
     }
 
-    public PagedResponse<EventoDTO> obtenerEventosPorOrganizadorPaginado(Long organizadorId, int page, int size) {
+    public PagedResponse<EventoDTO> obtenerEventosPorOrganizadorPaginado(String organizadorId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Evento> pageResult = eventoRepository.findByUsuarioId(organizadorId, pageable);
 
@@ -217,7 +217,7 @@ public class ServiceEvento {
         );
     }
 
-    public List<EventoDTO> buscarPorCategoriaDTO(Long categoriaId) {
+    public List<EventoDTO> buscarPorCategoriaDTO(String categoriaId) {
         return eventoRepository.findByCategoriaId(categoriaId).stream()
                 .map(this::toEventoDTO)
                 .collect(Collectors.toList());
@@ -241,7 +241,7 @@ public class ServiceEvento {
                 .collect(Collectors.toList());
     }
 
-    public EventoDetalleDTO obtenerEventoDetalleDTO(Long id) {
+    public EventoDetalleDTO obtenerEventoDetalleDTO(String id) {
         Evento e = obtenerEventoPorId(id);
 
         EventoDetalleDTO dto = new EventoDetalleDTO();
@@ -273,7 +273,7 @@ public class ServiceEvento {
         return dto;
     }
 
-    public List<EventoDTO> obtenerEventosPorOrganizador(Long organizadorId) {
+    public List<EventoDTO> obtenerEventosPorOrganizador(String organizadorId) {
         return eventoRepository.findByUsuarioId(organizadorId).stream()
                 .map(e -> {
                     EventoDTO dto = toEventoDTO(e);
@@ -295,7 +295,7 @@ public class ServiceEvento {
                 .collect(Collectors.toList());
     }
 
-    public List<NombreEventoDTO> obtenerNombresEventosPorOrganizador(Long organizadorId) {
+    public List<NombreEventoDTO> obtenerNombresEventosPorOrganizador(String organizadorId) {
         return eventoRepository.findNombresByOrganizadorId(organizadorId);
     }
 

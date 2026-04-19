@@ -34,7 +34,7 @@ public class EstadosApiController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Estado>> obtenerEstado(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Estado>> obtenerEstado(@PathVariable String id) {
         Estado estado = serviceEstado.obtenerEstadoPorId(id);
         if (estado == null) throw new ResourceNotFoundException("Estado no encontrado");
         return ResponseEntity.ok(ApiResponse.ok("Estado obtenido", estado));
@@ -53,7 +53,7 @@ public class EstadosApiController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> actualizarEstado(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestParam String nombre,
             @RequestParam(required = false) String descripcion) {
 
@@ -63,7 +63,7 @@ public class EstadosApiController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public ResponseEntity<ApiResponse<Void>> eliminarEstado(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> eliminarEstado(@PathVariable String id) {
         serviceEstado.eliminarEstado(id);
         return ResponseEntity.ok(ApiResponse.ok("Estado eliminado exitosamente"));
     }

@@ -35,12 +35,12 @@ public class ServiceEstado {
         return estadoRepository.findAll(pageable);
     }
 
-    public Estado obtenerEstadoPorId(Long id) {
+    public Estado obtenerEstadoPorId(String id) {
         return estadoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Estado no encontrado"));
     }
 
-    public boolean tieneEntidadesAsociadas(Long estadoId) {
+    public boolean tieneEntidadesAsociadas(String estadoId) {
         return usuarioRepository.countByEstadoId(estadoId) > 0
                 || eventoRepository.countByEstadoId(estadoId) > 0;
     }
@@ -56,7 +56,7 @@ public class ServiceEstado {
         estadoRepository.save(nuevo);
     }
 
-    public void actualizarEstado(Long id, String nombre, String descripcion) {
+    public void actualizarEstado(String id, String nombre, String descripcion) {
     Estado existente = obtenerEstadoPorId(id);
     
     Estado conNombre = findByNombre(nombre);
@@ -69,7 +69,7 @@ public class ServiceEstado {
     estadoRepository.save(existente);
 }
 
-    public void eliminarEstado(Long id) {
+    public void eliminarEstado(String id) {
         obtenerEstadoPorId(id); // Valida que exista
         
         if (tieneEntidadesAsociadas(id)) {

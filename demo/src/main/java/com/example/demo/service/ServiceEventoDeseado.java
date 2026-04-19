@@ -20,7 +20,7 @@ public class ServiceEventoDeseado {
 
     private final EventoDeseadoRepository eventoDeseadoRepository;
 
-    public EventoDeseado obtenerEventoDeseadoPorId(long id) {
+    public EventoDeseado obtenerEventoDeseadoPorId(String id) {
         return eventoDeseadoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Evento deseado no encontrado"));
     }
@@ -29,8 +29,8 @@ public class ServiceEventoDeseado {
         return eventoDeseadoRepository.save(eventoDeseado);
     }
 
-    public void eliminarEventoDeseado(long id) {
-        eventoDeseadoRepository.deleteById(id);
+    public void eliminarEventoDeseado(String id) {
+        return eventoDeseadoRepository.deleteById(id);
     }
 
     //consultas paginadas

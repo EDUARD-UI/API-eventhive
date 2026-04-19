@@ -4,45 +4,33 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
+@Document(collection = "compras")
 @Getter
 @Setter
-@Table(name = "Compra")
 public class Compra {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idCompra")
-    private Integer id;
+    private String id;
 
     private LocalDateTime fechaCompra;
 
-    @Column(precision = 10, scale = 2)
     private BigDecimal total;
 
-    @Column(length = 45)
     private String metodoPago;
 
     @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "idCliente", nullable = false)
+    @DBRef
     private Usuario cliente;
 
-    @OneToMany(mappedBy = "compra", cascade = CascadeType.ALL)
+    @DBRef
     private List<TiqueteCompra> tiqueteCompras;
 }

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.model.Estado;
 import com.example.demo.model.Rol;
 import com.example.demo.repository.RolesRepository;
 import com.example.demo.repository.UsuarioRepository;
@@ -21,9 +20,8 @@ public class ServiceRoles {
 
     private final RolesRepository rolesRepository;
     private final UsuarioRepository usuarioRepository;
-    private final ServiceEstado serviceEstado;
 
-    public Rol findById(long id) {
+    public Rol findById(String id) {
         return rolesRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con id: " + id));
     }
@@ -40,26 +38,22 @@ public class ServiceRoles {
         return rolesRepository.findAll(pageable);
     }
 
-    public boolean tieneUsuariosAsociados(Long rolId) {
+    public boolean tieneUsuariosAsociados(String rolId) {
         return usuarioRepository.countByRolId(rolId) > 0;
     }
 
     //lógica que antes vivía en el controller
-    public void crearRol(String nombre, String descripcion, Long estadoId) {
+    public void crearRol(String nombre, String descripcion, String estadoId) {
         if (findByNombre(nombre) != null)
             throw new BusinessException("Ya existe un rol con ese nombre");
-
-        Estado estado = serviceEstado.obtenerEstadoPorId(estadoId);
-        if (estado == null) throw new ResourceNotFoundException("El estado especificado no existe");
 
         Rol nuevo = new Rol();
         nuevo.setNombre(nombre);
         nuevo.setDescripcion(descripcion);
-        nuevo.setEstado(estado);
         rolesRepository.save(nuevo);
     }
 
-    public void actualizarRol(Long id, String nombre, String descripcion, Long estadoId) {
+    public void actualizarRol (String id, String nombre, String descripcion) {
         Rol existente = findById(id);
         if (existente == null) throw new ResourceNotFoundException("El rol no existe");
 
@@ -67,16 +61,12 @@ public class ServiceRoles {
         if (conNombre != null && !conNombre.getId().equals(id))
             throw new BusinessException("Ya existe otro rol con ese nombre");
 
-        Estado estado = serviceEstado.obtenerEstadoPorId(estadoId);
-        if (estado == null) throw new ResourceNotFoundException("El estado especificado no existe");
-
         existente.setNombre(nombre);
         existente.setDescripcion(descripcion);
-        existente.setEstado(estado);
         rolesRepository.save(existente);
     }
 
-    public void eliminarRol(Long id) {
+    public void eliminarRol (String id) {
         if (findById(id) == null) throw new ResourceNotFoundException("El rol no existe");
 
         if (tieneUsuariosAsociados(id))

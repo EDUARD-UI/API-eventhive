@@ -27,7 +27,7 @@ public class BoletosApiController {
 
     @GetMapping("/{compraId}")
     @PreAuthorize("hasRole('CLIENTE')")
-    public ResponseEntity<ApiResponse<BoletosCompraDTO>> verBoletos(@PathVariable Integer compraId) {
+    public ResponseEntity<ApiResponse<BoletosCompraDTO>> verBoletos(@PathVariable String compraId) {
         Usuario usuario = authHelper.usuarioAutenticado();
 
         Compra compra = serviceCompra.obtenerCompraPorIdConDetalles(compraId);

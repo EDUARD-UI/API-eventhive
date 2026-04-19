@@ -7,8 +7,8 @@ import lombok.Setter;
 @Setter
 public class EventoDeseadoDTO {
 
-    private Long id;
-    private Long eventoId;
+    private String id;
+    private String eventoId;
     private String eventoTitulo;
     private String eventoLugar;
     private String eventoFoto;

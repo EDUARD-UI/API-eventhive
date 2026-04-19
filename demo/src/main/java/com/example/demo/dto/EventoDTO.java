@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class EventoDTO {
-    Long id;
+    String id;
     String titulo, descripcion, lugar, foto;
     LocalDate fecha;
     LocalTime hora;
@@ -19,10 +19,10 @@ public class EventoDTO {
     @Getter
     @Setter
     public static class Categoria {
-        Long id;
+        String id;
         String nombre;
 
-        public Categoria(Long id, String nombre) {
+        public Categoria(String id, String nombre) {
             this.id = id;
             this.nombre = nombre;
         }
@@ -31,10 +31,10 @@ public class EventoDTO {
     @Getter
     @Setter
     public static class Estado {
-        Long id;
+        String id;
         String nombre;
 
-        public Estado(Long id, String nombre) {
+        public Estado(String id, String nombre) {
             this.id = id;
             this.nombre = nombre;
         }
@@ -43,7 +43,7 @@ public class EventoDTO {
     public EventoDTO() {
     }
 
-    public EventoDTO(Long id, String titulo, String descripcion, String lugar, String foto, LocalDate fecha, LocalTime hora, 
+    public EventoDTO(String id, String titulo, String descripcion, String lugar, String foto, LocalDate fecha, LocalTime hora, 
                      Categoria categoria, Estado estado) {
         this.id = id;
         this.titulo = titulo;

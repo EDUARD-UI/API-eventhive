@@ -8,8 +8,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.exception.BusinessException;
-import com.example.demo.model.Estado;
-import com.example.demo.model.Rol;
 import com.example.demo.model.Usuario;
 
 import lombok.RequiredArgsConstructor;
@@ -20,7 +18,6 @@ public class ServiceAutenticacion {
 
     private final ServiceUsuario serviceUsuario;
     private final ServiceRoles serviceRoles;
-    private final ServiceEstado serviceEstado;
     private final AuthenticationManager authenticationManager;
 
     //autenticar usuario
@@ -64,10 +61,12 @@ public class ServiceAutenticacion {
                                   String telefono, String clave) {
         validarRegistro(correo);
 
-        Estado estadoActivo = serviceEstado.findByNombre("registro activo");
-        Rol rolCliente = serviceRoles.findByNombre("cliente");
+        String rolCliente = serviceRoles.findByNombre("cliente").getId();
+        if (rolCliente == null) {
+            throw new BusinessException("Rol 'cliente' no encontrado");
+        }
 
-        serviceUsuario.crearUsuario(nombre, apellido, correo, telefono, clave, estadoActivo.getId(), rolCliente.getId());
+        serviceUsuario.crearUsuario(nombre, apellido, correo, telefono, clave, rolCliente);
     }
 
     //registra un nuevo organizador
@@ -75,10 +74,12 @@ public class ServiceAutenticacion {
                                       String telefono, String clave) {
         validarRegistro(correo);
 
-        Estado estadoActivo = serviceEstado.findByNombre("registro activo");
-        Rol rolOrganizador = serviceRoles.findByNombre("organizador");
+        String rolOrganizador = serviceRoles.findByNombre("organizador").getId();
+        if (rolOrganizador == null) {
+            throw new BusinessException("Rol 'organizador' no encontrado");
+        }
 
-        serviceUsuario.crearUsuario(nombre, apellido, correo, telefono, clave, estadoActivo.getId(), rolOrganizador.getId());
+        serviceUsuario.crearUsuario(nombre, apellido, correo, telefono, clave, rolOrganizador);
     }
 
     //validar que el correo no este registrado

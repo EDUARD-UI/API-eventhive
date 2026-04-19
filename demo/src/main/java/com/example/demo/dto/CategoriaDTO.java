@@ -7,13 +7,13 @@ import lombok.Setter;
 @Setter
 public class CategoriaDTO{
 
-    private Long id;
+    private String id;
     private String nombre;
 
     public CategoriaDTO() {
     }
 
-    public CategoriaDTO(Long id, String nombre) {
+    public CategoriaDTO(String id, String nombre) {
         this.id = id;
         this.nombre = nombre;
     }

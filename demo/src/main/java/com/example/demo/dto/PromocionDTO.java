@@ -8,11 +8,11 @@ import lombok.Setter;
 
 @Getter @Setter
 public class PromocionDTO {
-    private Long id;
+    private String id;
     private String descripcion;
     private BigDecimal descuento;
     private LocalDate fechaInicio;
     private LocalDate fechaFinal;
-    private Long eventoId;
+    private String eventoId;
     private String eventoTitulo;
 }

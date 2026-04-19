@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 public class EventoDetalleDTO {
 
-    private Long id;
+    private String id;
     private String titulo;
     private String descripcion;
     private String foto;
@@ -25,7 +25,7 @@ public class EventoDetalleDTO {
 
     @Getter @Setter
     public static class LocalidadInfo {
-        private Long id;
+        private String id;
         private String nombre;
         private BigDecimal precio;
         private Integer capacidad;

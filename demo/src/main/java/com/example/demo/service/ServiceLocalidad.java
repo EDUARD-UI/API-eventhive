@@ -23,17 +23,17 @@ public class ServiceLocalidad {
     private final LocalidadRepository localidadRepository;
     private final ServiceEvento serviceEvento;
 
-    public long contarPorOrganizador(Long orgId) {
+    public long contarPorOrganizador(String orgId) {
         return localidadRepository.countByEventoUsuarioId(orgId);
     }
 
-    public Localidad obtenerLocalidadPorId(Long id) {
+    public Localidad obtenerLocalidadPorId(String id) {
         return localidadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("La localidad no encontrada"));
     }
 
     public void crearLocalidad(String nombre, BigDecimal precio,
-            Integer capacidad, Integer disponibles, Long eventoId) {
+            Integer capacidad, Integer disponibles, String eventoId) {
         if (disponibles > capacidad) {
             throw new BusinessException("Los asientos disponibles no pueden ser mayores que la capacidad");
         }
@@ -49,8 +49,8 @@ public class ServiceLocalidad {
         localidadRepository.save(loc);
     }
 
-    public void actualizarLocalidad(Long id, String nombre, BigDecimal precio,
-            Integer capacidad, Integer disponibles, Long eventoId) {
+    public void actualizarLocalidad(String id, String nombre, BigDecimal precio,
+            Integer capacidad, Integer disponibles, String eventoId) {
         Localidad existente = obtenerLocalidadPorId(id);
 
         if (disponibles > capacidad) {
@@ -66,7 +66,7 @@ public class ServiceLocalidad {
         localidadRepository.save(existente);
     }
 
-    public void eliminarLocalidad(Long id) {
+    public void eliminarLocalidad(String id) {
         obtenerLocalidadPorId(id);
         localidadRepository.deleteById(id);
     }
@@ -84,7 +84,7 @@ public class ServiceLocalidad {
         );
     }
 
-    public PagedResponse<Localidad> obtenerPorOrganizadorPaginado(Long organizadorId, int page, int size) {
+    public PagedResponse<Localidad> obtenerPorOrganizadorPaginado(String organizadorId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Localidad> pageResult = localidadRepository.findByEventoUsuarioId(organizadorId, pageable);
 
@@ -97,7 +97,7 @@ public class ServiceLocalidad {
         );
     }
 
-    public PagedResponse<Localidad> obtenerPorEventoPaginado(Long eventoId, int page, int size) {
+    public PagedResponse<Localidad> obtenerPorEventoPaginado(String eventoId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Localidad> pageResult = localidadRepository.findByEventoId(eventoId, pageable);
 
@@ -110,7 +110,7 @@ public class ServiceLocalidad {
         );
     }
 
-    public boolean tieneLocalidades(Long eventoId) {
+    public boolean tieneLocalidades(String eventoId) {
         return localidadRepository.countByEventoId(eventoId) > 0;
     }
 }

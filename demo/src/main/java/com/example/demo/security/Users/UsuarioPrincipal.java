@@ -50,11 +50,6 @@ public class UsuarioPrincipal implements UserDetails {
         return true;
     }
 
-    @Override
-    public boolean isEnabled() {
-        return usuario.getEstado().getId() == 1;
-    }
-
     public Usuario getUsuario() {
         return usuario;
     }

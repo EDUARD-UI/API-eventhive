@@ -2,36 +2,28 @@ package com.example.demo.model;
 
 import java.util.List;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
+@Document(collection = "categorias")
 @Getter
 @Setter
-@Table(name = "Categorias")
 public class Categoria {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idCategoria")
-    private Long id;
+    private String id;
 
-    @Column(length = 100)
     private String foto;
 
-    @Column(name = "Nombre", nullable = false, length = 45)
     private String nombre;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "categoria")
+    @DBRef
     private List<Evento> eventos;
 }

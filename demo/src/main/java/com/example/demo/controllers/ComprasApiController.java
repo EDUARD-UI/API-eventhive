@@ -35,7 +35,7 @@ public class ComprasApiController {
     @PostMapping
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<ApiResponse<Map<String, Object>>> procesarCompra(
-            @RequestParam Long localidadId,
+            @RequestParam String localidadId,
             @RequestParam Integer cantidad,
             @RequestParam String metodoPago) {
 
@@ -53,7 +53,7 @@ public class ComprasApiController {
 
     @GetMapping("/{compraId}")
     @PreAuthorize("hasRole('CLIENTE')")
-    public ResponseEntity<ApiResponse<Compra>> obtenerCompra(@PathVariable Integer compraId) {
+    public ResponseEntity<ApiResponse<Compra>> obtenerCompra(@PathVariable String compraId) {
         Usuario usuario = authHelper.usuarioAutenticado();
         Compra compra = serviceCompra.obtenerCompraPorIdConDetalles(compraId);
 

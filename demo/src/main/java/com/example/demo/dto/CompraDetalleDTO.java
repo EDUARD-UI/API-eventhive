@@ -8,10 +8,11 @@ import java.time.LocalTime;
 import lombok.Getter;
 import lombok.Setter;
 
+
 @Getter
 @Setter
 public class CompraDetalleDTO {
-    private Integer id;
+    private String id;
     private LocalDateTime fechaCompra;
     private BigDecimal total;
     private String metodoPago;

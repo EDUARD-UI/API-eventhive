@@ -8,9 +8,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CategoriaEventosDTO {
-    private Long id;
+    private String id;
     private String nombre;
     private List<EventoDTO> eventos;
-    private Long totalEventos;
+    private int totalEventos;
     
 }

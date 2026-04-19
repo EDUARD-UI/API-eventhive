@@ -8,14 +8,14 @@ import lombok.Setter;
 @Getter
 @Setter
 public class EventoDestacadoDTO {
-    private Long id;
+    private String id;
     private String titulo, descripcion, lugar, categoriaNombre, foto;
     private LocalDate fecha;
 
     public EventoDestacadoDTO() {
     }
 
-    public EventoDestacadoDTO(Long id, String titulo, String descripcion, String lugar, String categoriaNombre, String foto, LocalDate fecha) {
+    public EventoDestacadoDTO(String id, String titulo, String descripcion, String lugar, String categoriaNombre, String foto, LocalDate fecha) {
         this.id = id;
         this.titulo = titulo;
         this.descripcion = descripcion;

@@ -1,37 +1,28 @@
 package com.example.demo.model;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
+@Document(collection = "tiqueteCompras")
 @Getter
 @Setter
-@Table(name = "Tiquete_Compra")
 public class TiqueteCompra {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idTiquete_Compra")
-    private Integer id;
+    private String id;
 
     private Integer cantidad;
 
-    @ManyToOne
-    @JoinColumn(name = "idTiquete", nullable = false)
+    @DBRef
     private Tiquete tiquete;
 
     @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "idCompra", nullable = false)
+    @DBRef
     private Compra compra;
 }

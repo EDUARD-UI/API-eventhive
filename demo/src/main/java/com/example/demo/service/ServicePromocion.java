@@ -30,30 +30,30 @@ public class ServicePromocion {
         return promocionRepository.findAll();
     }
 
-    public List<Promocion> obtenerPorOrganizador(Long orgId) {
+    public List<Promocion> obtenerPorOrganizador(String orgId) {
         return promocionRepository.findByEventoUsuarioId(orgId);
     }
 
-    public long contarPorOrganizador(Long orgId) {
+    public long contarPorOrganizador(String orgId) {
         return promocionRepository.countByEventoUsuarioId(orgId);
     }
 
-    public List<Promocion> obtenerPorEvento(Long eventoId) {
+    public List<Promocion> obtenerPorEvento(String eventoId) {
         return promocionRepository.findByEventoId(eventoId);
     }
 
-    public Promocion obtenerPromocionPorId(Long id) {
+    public Promocion obtenerPromocionPorId(String id) {
         return promocionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Promoción no encontrada con id: " + id));
     }
 
-    public Page<PromocionDTO> obtenerDTOPorOrganizador(Long orgId, Pageable pageable) {
+    public Page<PromocionDTO> obtenerDTOPorOrganizador(String orgId, Pageable pageable) {
         return promocionRepository.findByEventoUsuarioId(orgId, pageable)
                 .map(this::toDTO);
     }
 
     // valida, construye y guarda la promoción
-    public void crearPromocion(Long eventoId, String descripcion, BigDecimal descuento,
+    public void crearPromocion(String eventoId, String descripcion, BigDecimal descuento,
             String fechaInicio, String fechaFin, Usuario organizador) {
         validarDescuento(descuento);
         LocalDate inicio = LocalDate.parse(fechaInicio);
@@ -77,7 +77,7 @@ public class ServicePromocion {
     }
 
     // valida permisos, actualiza y guarda
-    public void actualizarPromocion(Long id, Long eventoId, String descripcion, BigDecimal descuento,
+    public void actualizarPromocion(String id, String eventoId, String descripcion, BigDecimal descuento,
             String fechaInicio, String fechaFin, Usuario organizador) {
         Promocion p = obtenerPromocionPorId(id);
         if (!p.getEvento().getUsuario().getId().equals(organizador.getId())) {
@@ -100,7 +100,7 @@ public class ServicePromocion {
     }
 
     // valida permisos y elimina
-    public void eliminarPromocion(Long id, Usuario organizador) {
+    public void eliminarPromocion(String id, Usuario organizador) {
         Promocion p = obtenerPromocionPorId(id);
         if (!p.getEvento().getUsuario().getId().equals(organizador.getId())) {
             throw new BusinessException("No autorizado");
@@ -109,7 +109,7 @@ public class ServicePromocion {
     }
 
     // conversión a DTO
-    public List<PromocionDTO> obtenerDTOPorOrganizador(Long orgId) {
+    public List<PromocionDTO> obtenerDTOPorOrganizador(String orgId) {
         return obtenerPorOrganizador(orgId).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());

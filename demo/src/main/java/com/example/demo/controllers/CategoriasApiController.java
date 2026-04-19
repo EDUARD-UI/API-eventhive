@@ -59,7 +59,7 @@ public class CategoriasApiController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Categoria>> obtenerCategoria(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Categoria>> obtenerCategoria(@PathVariable String id) {
         return ResponseEntity.ok(ApiResponse.ok("Categoría obtenida", 
             serviceCategoria.obtenerCategoriaPorId(id)));
     }
@@ -78,7 +78,7 @@ public class CategoriasApiController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> actualizarCategoria(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestParam String nombre,
             @RequestParam(required = false) MultipartFile foto) throws IOException {
         serviceCategoria.actualizarCategoria(id, nombre, foto);
@@ -87,7 +87,7 @@ public class CategoriasApiController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public ResponseEntity<ApiResponse<Void>> eliminarCategoria(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> eliminarCategoria(@PathVariable String id) {
         serviceCategoria.eliminarCategoria(id);
         return ResponseEntity.ok(ApiResponse.ok("Categoría eliminada exitosamente"));
     }

@@ -43,7 +43,7 @@ public class EventoDeseadoApiController {
 
     @PostMapping
     @PreAuthorize("hasRole('CLIENTE')")
-    public ResponseEntity<ApiResponse<Void>> agregarDeseado(@RequestParam Long eventoId) {
+    public ResponseEntity<ApiResponse<Void>> agregarDeseado(@RequestParam String eventoId) {
         Usuario usuario = authHelper.usuarioAutenticado();
         Evento evento = serviceEvento.obtenerEventoPorId(eventoId);
 
@@ -57,7 +57,7 @@ public class EventoDeseadoApiController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('CLIENTE')")
-    public ResponseEntity<ApiResponse<Void>> eliminarDeseado(@PathVariable long id) {
+    public ResponseEntity<ApiResponse<Void>> eliminarDeseado(@PathVariable String id) {
         Usuario usuario = authHelper.usuarioAutenticado();
         EventoDeseado ed = serviceEventoDeseado.obtenerEventoDeseadoPorId(id);
 

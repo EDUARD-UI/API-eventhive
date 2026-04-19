@@ -21,7 +21,7 @@ public class UsuarioPrincipal implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         String rolNombre = usuario.getRol().getNombre();
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + rolNombre.toUpperCase()));
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + rolNombre));
         return authorities;
     }
 

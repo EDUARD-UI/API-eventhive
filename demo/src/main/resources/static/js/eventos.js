@@ -41,7 +41,7 @@ function renderNavGuest() {
 // menu desplegable de categorias
 async function cargarCategorias() {
   try {
-    const res = await fetch('/api/categorias', { credentials: 'include' });
+    const res = await fetch('/api/categorias/nombres', { credentials: 'include' });
     const json = await res.json();
     const sel = document.getElementById('filtroCategoria');
     (json.data || []).forEach(c => {

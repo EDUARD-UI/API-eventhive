@@ -19,7 +19,7 @@ public class Valoracion {
 
     private String comentario;
 
-    private Long calificacion;
+    private Integer calificacion;
 
     @JsonIgnore
     @DBRef

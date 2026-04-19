@@ -7,10 +7,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dto.UsuarioSesionDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Rol;
 import com.example.demo.model.Usuario;
+import com.example.demo.repository.RolesRepository;
 import com.example.demo.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -20,95 +22,96 @@ import lombok.RequiredArgsConstructor;
 public class ServiceUsuario {
 
     private final UsuarioRepository usuarioRepository;
+    private final RolesRepository rolesRepository;
     private final PasswordEncoder passwordEncoder;
-    private final ServiceRoles serviceRoles;
-
-    public List<Usuario> obtenerTodosLosUsuarios() {
-        return usuarioRepository.findAll();
-    }
-
-    public Page<Usuario> obtenerTodosLosUsuarios(Pageable pageable) {
-        return usuarioRepository.findAll(pageable);
-    }
-
-    public Usuario obtenerUsuarioPorId(String id) {
-        return usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + id));
-    }
 
     public Usuario obtenerUsuarioPorCorreo(String correo) {
         return usuarioRepository.findByCorreo(correo);
     }
 
-    public void crearUsuario(String nombre, String apellido, String correo,
-                              String telefono, String clave, String rolId) {
-
-        if (obtenerUsuarioPorCorreo(correo) != null)
-            throw new BusinessException("El correo ya está registrado");
-
-        Rol rol = serviceRoles.findById(rolId);
-        if (rol == null) throw new ResourceNotFoundException("El rol especificado no existe");
-
-        Usuario nuevo = new Usuario();
-        nuevo.setNombre(nombre);
-        nuevo.setApellido(apellido);
-        nuevo.setCorreo(correo);
-        nuevo.setTelefono(telefono);
-        nuevo.setClave(passwordEncoder.encode(clave));
-        nuevo.setRol(rol);
-
-        usuarioRepository.save(nuevo);
+    public Usuario obtenerUsuarioPorId(String id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
     }
 
-    public void actualizarUsuario(String id, String nombre, String apellido, String correo,
-                                   String telefono, String clave, String rolId) {
+    public List<Usuario> obtenerTodosUsuarios() {
+        return usuarioRepository.findAll();
+    }
 
-        Usuario existente = obtenerUsuarioPorId(id);
-        if (existente == null) throw new ResourceNotFoundException("El usuario no existe");
+    public Page<Usuario> obtenerTodosUsuarios(Pageable pageable) {
+        return usuarioRepository.findAll(pageable);
+    }
 
-        Usuario conCorreo = obtenerUsuarioPorCorreo(correo);
-        if (conCorreo != null && !conCorreo.getId().equals(id))
-            throw new BusinessException("El correo ya está registrado por otro usuario");
+    public UsuarioSesionDTO obtenerSesionDTO(String id) {
+        Usuario usuario = obtenerUsuarioPorId(id);
+        UsuarioSesionDTO dto = new UsuarioSesionDTO();
+        dto.setId(usuario.getId());
+        dto.setNombre(usuario.getNombre());
+        dto.setApellido(usuario.getApellido());
+        dto.setCorreo(usuario.getCorreo());
+        if (usuario.getRol() != null) {
+            dto.setRolNombre(usuario.getRol().getNombre());
+        }
+        return dto;
+    }
 
-        Rol rol = serviceRoles.findById(rolId);
-        if (rol == null) throw new ResourceNotFoundException("El rol especificado no existe");
+    public void crearUsuario(String nombre, String apellido, String correo,
+                           String telefono, String clave, String rolId) {
+        
+        Usuario usuarioExistente = usuarioRepository.findByCorreo(correo);
+        if (usuarioExistente != null) {
+            throw new BusinessException("El correo ya está registrado");
+        }
 
-        existente.setNombre(nombre);
-        existente.setApellido(apellido);
-        existente.setCorreo(correo);
-        existente.setTelefono(telefono);
-        existente.setRol(rol);
+        // Buscar el rol en la BD
+        Rol rol = rolesRepository.findById(rolId)
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con id: " + rolId));
 
-        if (clave != null && !clave.isBlank())
-            existente.setClave(passwordEncoder.encode(clave));
+        // Crear nuevo usuario
+        Usuario usuario = new Usuario();
+        usuario.setNombre(nombre);
+        usuario.setApellido(apellido);
+        usuario.setCorreo(correo);
+        usuario.setTelefono(telefono);
+        usuario.setClave(passwordEncoder.encode(clave));  // Encriptar contraseña
+        usuario.setRol(rol);
 
-        usuarioRepository.save(existente);
+        usuarioRepository.save(usuario);
+    }
+
+    public void actualizarUsuario(String id, String nombre, String apellido, String telefono) {
+        Usuario usuario = obtenerUsuarioPorId(id);
+        usuario.setNombre(nombre);
+        usuario.setApellido(apellido);
+        usuario.setTelefono(telefono);
+        usuarioRepository.save(usuario);
+    }
+
+    public void cambiarContrasena(String id, String claveAnterior, String claveNueva) {
+        Usuario usuario = obtenerUsuarioPorId(id);
+
+        if (!passwordEncoder.matches(claveAnterior, usuario.getClave())) {
+            throw new BusinessException("La contraseña anterior es incorrecta");
+        }
+
+        usuario.setClave(passwordEncoder.encode(claveNueva));
+        usuarioRepository.save(usuario);
+    }
+
+    public void asignarRol(String usuarioId, String rolId) {
+        Usuario usuario = obtenerUsuarioPorId(usuarioId);
+        Rol rol = rolesRepository.findById(rolId)
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado"));
+        usuario.setRol(rol);
+        usuarioRepository.save(usuario);
     }
 
     public void eliminarUsuario(String id) {
-        if (obtenerUsuarioPorId(id) == null)
-            throw new ResourceNotFoundException("El usuario no existe");
+        obtenerUsuarioPorId(id);  // Valida que exista
         usuarioRepository.deleteById(id);
     }
 
-    //actualizar perfil del usuario en sesión (sin tocar rol ni estado)
-    public Usuario actualizarPerfil(Usuario usuarioEnSesion, String nombre,
-                                     String correo, String telefono, String clave) {
-        if (!correo.equals(usuarioEnSesion.getCorreo())) {
-            Usuario conCorreo = obtenerUsuarioPorCorreo(correo);
-            if (conCorreo != null)
-                throw new BusinessException("El correo ya está registrado por otro usuario");
-        }
-
-        usuarioEnSesion.setNombre(nombre);
-        usuarioEnSesion.setCorreo(correo);
-
-        if (telefono != null && !telefono.isBlank())
-            usuarioEnSesion.setTelefono(telefono);
-
-        if (clave != null && !clave.isBlank())
-            usuarioEnSesion.setClave(passwordEncoder.encode(clave));
-
-        return usuarioRepository.save(usuarioEnSesion);
+    public long contarUsuarios() {
+        return usuarioRepository.count();
     }
 }

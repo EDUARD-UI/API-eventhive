@@ -82,7 +82,7 @@ async function loadTodasLasCategorias() {
   const sel = document.getElementById('categorySelect');
   if (!sel) return;
   try {
-    const res  = await fetch(`${BASE}/api/categorias`, { credentials: 'include' });
+    const res  = await fetch(`${BASE}/api/categorias/nombres`, { credentials: 'include' });
     if (res.ok) extraerArray(await res.json()).forEach(c => {
       const opt = Object.assign(document.createElement('option'), {
         value: c.id, textContent: c.nombre, className: 'bg-dark text-white'

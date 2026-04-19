@@ -45,7 +45,7 @@ public class AuthApiController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<Map<String, String>>> login(
+    public ResponseEntity<ApiResponse<Map<String, Object>>> login(
             @RequestParam String correo,
             @RequestParam String clave,
             HttpSession session) {
@@ -58,10 +58,9 @@ public class AuthApiController {
                 SecurityContextHolder.getContext()
         );
 
-        String rol = serviceAutenticacion.obtenerRolUsuario(correo);
+        Map<String, Object> datosUsuario = serviceAutenticacion.obtenerDatosUsuarioAutenticado(correo);
 
-        return ResponseEntity.ok(ApiResponse.ok("Inicio de sesión exitoso",
-                Map.of("rol", rol)));
+        return ResponseEntity.ok(ApiResponse.ok("Inicio de sesión exitoso", datosUsuario));
     }
 
     @PostMapping("/logout")

@@ -2,7 +2,6 @@ package com.example.demo.controllers;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,10 +14,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponse;
-import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.dto.UsuarioSesionDTO;
 import com.example.demo.model.Usuario;
 import com.example.demo.service.ServiceUsuario;
-import com.example.demo.utils.AuthenticatedUserHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,67 +26,55 @@ import lombok.RequiredArgsConstructor;
 public class UsuariosApiController {
 
     private final ServiceUsuario serviceUsuario;
-    private final AuthenticatedUserHelper authHelper;
-
-    @GetMapping
-    public ResponseEntity<ApiResponse<Page<Usuario>>> listarUsuarios(Pageable pageable) {
-        return ResponseEntity.ok(ApiResponse.ok("Usuarios obtenidos", serviceUsuario.obtenerTodosLosUsuarios(pageable)));
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Usuario>> obtenerUsuario(@PathVariable String id) {
-        Usuario usuario = serviceUsuario.obtenerUsuarioPorId(id);
-        if (usuario == null) throw new ResourceNotFoundException("Usuario no encontrado");
-        return ResponseEntity.ok(ApiResponse.ok("Usuario obtenido", usuario));
+        return ResponseEntity.ok(ApiResponse.ok("Usuario obtenido",
+                serviceUsuario.obtenerUsuarioPorId(id)));
     }
 
-    @PostMapping
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public ResponseEntity<ApiResponse<Void>> crearUsuario(
-            @RequestParam String nombre,
-            @RequestParam String apellido,
-            @RequestParam String correo,
-            @RequestParam String telefono,
-            @RequestParam String clave,
-            @RequestParam String rol,
-            @RequestParam String estado) {
+    @GetMapping("/{id}/sesion")
+    public ResponseEntity<ApiResponse<UsuarioSesionDTO>> obtenerUsuarioSesion(@PathVariable String id) {
+        return ResponseEntity.ok(ApiResponse.ok("Datos de sesión obtenidos",
+                serviceUsuario.obtenerSesionDTO(id)));
+    }
 
-        serviceUsuario.crearUsuario(nombre, apellido, correo, telefono, clave, rol);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Usuario creado exitosamente"));
+    @GetMapping
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<ApiResponse<Page<Usuario>>> listarUsuarios(Pageable pageable) {
+        return ResponseEntity.ok(ApiResponse.ok("Usuarios obtenidos",
+                serviceUsuario.obtenerTodosUsuarios(pageable)));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> actualizarUsuario(
             @PathVariable String id,
             @RequestParam String nombre,
             @RequestParam String apellido,
-            @RequestParam String correo,
-            @RequestParam String telefono,
-            @RequestParam(required = false) String clave,
-            @RequestParam String rol,
-            @RequestParam String estado) {
+            @RequestParam String telefono) {
 
-        serviceUsuario.actualizarUsuario(id, nombre, apellido, correo, telefono, clave, rol);
+        serviceUsuario.actualizarUsuario(id, nombre, apellido, telefono);
         return ResponseEntity.ok(ApiResponse.ok("Usuario actualizado exitosamente"));
     }
 
-    @GetMapping("/perfil")
-    public ResponseEntity<ApiResponse<Usuario>> obtenerPerfil() {
-        Usuario usuario = authHelper.usuarioAutenticado();
-        return ResponseEntity.ok(ApiResponse.ok("Perfil obtenido", usuario));
+    @PostMapping("/{id}/cambiar-contrasena")
+    public ResponseEntity<ApiResponse<Void>> cambiarContrasena(
+            @PathVariable String id,
+            @RequestParam String claveAnterior,
+            @RequestParam String claveNueva) {
+
+        serviceUsuario.cambiarContrasena(id, claveAnterior, claveNueva);
+        return ResponseEntity.ok(ApiResponse.ok("Contraseña cambiada exitosamente"));
     }
 
-    @PutMapping("/perfil")
-    public ResponseEntity<ApiResponse<Usuario>> actualizarPerfil(
-            @RequestParam String nombre,
-            @RequestParam String correo,
-            @RequestParam(required = false) String telefono,
-            @RequestParam(required = false) String clave) {
+    @PostMapping("/{id}/asignar-rol")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<ApiResponse<Void>> asignarRol(
+            @PathVariable String id,
+            @RequestParam String rolId) {
 
-        Usuario usuarioEnSesion = authHelper.usuarioAutenticado();
-        Usuario usuarioActualizado = serviceUsuario.actualizarPerfil(usuarioEnSesion, nombre, correo, telefono, clave);
-        return ResponseEntity.ok(ApiResponse.ok("Perfil actualizado exitosamente", usuarioActualizado));
+        serviceUsuario.asignarRol(id, rolId);
+        return ResponseEntity.ok(ApiResponse.ok("Rol asignado exitosamente"));
     }
 
     @DeleteMapping("/{id}")

@@ -74,7 +74,7 @@ public class ServiceValoracion {
         v.setCliente(cliente);
         v.setEvento(evento);
         v.setComentario(comentario);
-        v.setCalificacion(calificacion);
+        v.setCalificacion((int) calificacion);
         valoracionRepository.save(v);
     }
 
@@ -83,7 +83,7 @@ public class ServiceValoracion {
 
         Valoracion v = obtenerValoracionVerificada(id, cliente);
         v.setComentario(comentario);
-        v.setCalificacion(calificacion);
+        v.setCalificacion((int) calificacion);
         valoracionRepository.save(v);
     }
 

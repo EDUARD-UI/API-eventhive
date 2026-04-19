@@ -64,7 +64,6 @@ public class CategoriasApiController {
             serviceCategoria.obtenerCategoriaPorId(id)));
     }
 
-    //CRUD
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> crearCategoria(

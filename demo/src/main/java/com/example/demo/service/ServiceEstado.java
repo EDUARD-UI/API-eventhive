@@ -10,8 +10,6 @@ import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Estado;
 import com.example.demo.repository.EstadoRepository;
-import com.example.demo.repository.EventoRepository;
-import com.example.demo.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,8 +18,6 @@ import lombok.RequiredArgsConstructor;
 public class ServiceEstado {
 
     private final EstadoRepository estadoRepository;
-    private final UsuarioRepository usuarioRepository;
-    private final EventoRepository eventoRepository;
 
     public Estado findByNombre(String nombre) {
         return estadoRepository.findByNombre(nombre);
@@ -40,13 +36,8 @@ public class ServiceEstado {
                 .orElseThrow(() -> new ResourceNotFoundException("Estado no encontrado"));
     }
 
-    public boolean tieneEntidadesAsociadas(String estadoId) {
-        return usuarioRepository.countByEstadoId(estadoId) > 0
-                || eventoRepository.countByEstadoId(estadoId) > 0;
-    }
-
     public void crearEstado(String nombre, String descripcion) {
-        if (findByNombre(nombre) != null) {
+        if (estadoRepository.existsByNombre(nombre)) {
             throw new BusinessException("Ya existe un estado con ese nombre");
         }
 
@@ -57,25 +48,20 @@ public class ServiceEstado {
     }
 
     public void actualizarEstado(String id, String nombre, String descripcion) {
-    Estado existente = obtenerEstadoPorId(id);
-    
-    Estado conNombre = findByNombre(nombre);
-    if (conNombre != null && !conNombre.getId().equals(id)) {
-        throw new BusinessException("Ya existe otro estado con ese nombre");
-    }
+        Estado existente = obtenerEstadoPorId(id);
 
-    existente.setNombre(nombre);
-    existente.setDescripcion(descripcion);
-    estadoRepository.save(existente);
-}
-
-    public void eliminarEstado(String id) {
-        obtenerEstadoPorId(id); // Valida que exista
-        
-        if (tieneEntidadesAsociadas(id)) {
-            throw new BusinessException("No se puede eliminar el estado porque está siendo utilizado");
+        if (estadoRepository.existsByNombre(nombre) && 
+            !nombre.equals(existente.getNombre())) {
+            throw new BusinessException("Ya existe otro estado con ese nombre");
         }
 
+        existente.setNombre(nombre);
+        existente.setDescripcion(descripcion);
+        estadoRepository.save(existente);
+    }
+
+    public void eliminarEstado(String id) {
+        obtenerEstadoPorId(id);
         estadoRepository.deleteById(id);
     }
 }

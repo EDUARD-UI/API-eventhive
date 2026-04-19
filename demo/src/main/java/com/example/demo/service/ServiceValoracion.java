@@ -13,6 +13,7 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Evento;
 import com.example.demo.model.Usuario;
 import com.example.demo.model.Valoracion;
+import com.example.demo.repository.EventoRepository;
 import com.example.demo.repository.ValoracionRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -22,9 +23,9 @@ import lombok.RequiredArgsConstructor;
 public class ServiceValoracion {
 
     private final ValoracionRepository valoracionRepository;
-    private final ServiceEvento serviceEvento;
+    private final EventoRepository eventoRepository;
 
-    public Valoracion obtenerValoracionPorId(Long id) {
+    public Valoracion obtenerValoracionPorId(String id) {
         return valoracionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Valoracion no encontrada con id: " + id));
     }
@@ -37,37 +38,37 @@ public class ServiceValoracion {
         return valoracionRepository.findAll();
     }
 
-    public Long contarValoracionesPorUsuario(Long usuarioId) {
+    public long contarValoracionesPorUsuario(String usuarioId) {
         return valoracionRepository.countByClienteId(usuarioId);
     }
 
-    //consultas pagindas
-    public Page<ValoracionDTO> obtenerValoracionesDTOPorUsuario(Long usuarioId, Pageable pageable) {
+    public Page<ValoracionDTO> obtenerValoracionesDTOPorUsuario(String usuarioId, Pageable pageable) {
         return valoracionRepository.findByClienteIdOrderByIdDesc(usuarioId, pageable)
                 .map(this::toDTO);
     }
 
-    public Page<ValoracionDTO> obtenerValoracionesDTOPorEvento(Long eventoId, Pageable pageable) {
+    public Page<ValoracionDTO> obtenerValoracionesDTOPorEvento(String eventoId, Pageable pageable) {
         return valoracionRepository.findByEventoIdOrderByIdDesc(eventoId, pageable)
                 .map(this::toDTO);
     }
 
-    public List<ValoracionDTO> obtenerValoracionesDTOPorUsuario(Long usuarioId) {
+    public List<ValoracionDTO> obtenerValoracionesDTOPorUsuario(String usuarioId) {
         return valoracionRepository.findByClienteIdOrderByIdDesc(usuarioId).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
-    public List<ValoracionDTO> obtenerValoracionesDTOPorEvento(Long eventoId) {
+    public List<ValoracionDTO> obtenerValoracionesDTOPorEvento(String eventoId) {
         return valoracionRepository.findByEventoIdOrderByIdDesc(eventoId).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
-    public void crearValoracion(Usuario cliente, Long eventoId, String comentario, long calificacion) {
+    public void crearValoracion(Usuario cliente, String eventoId, String comentario, long calificacion) {
         validarCalificacion(calificacion);
 
-        Evento evento = serviceEvento.obtenerEventoPorId(eventoId);
+        Evento evento = eventoRepository.findById(eventoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado"));
 
         Valoracion v = new Valoracion();
         v.setCliente(cliente);
@@ -77,7 +78,7 @@ public class ServiceValoracion {
         valoracionRepository.save(v);
     }
 
-    public void actualizarValoracion(Long id, Usuario cliente, String comentario, long calificacion) {
+    public void actualizarValoracion(String id, Usuario cliente, String comentario, long calificacion) {
         validarCalificacion(calificacion);
 
         Valoracion v = obtenerValoracionVerificada(id, cliente);
@@ -86,20 +87,18 @@ public class ServiceValoracion {
         valoracionRepository.save(v);
     }
 
-    public void eliminarValoracion(Long id, Usuario cliente) {
+    public void eliminarValoracion(String id, Usuario cliente) {
         obtenerValoracionVerificada(id, cliente);
         valoracionRepository.deleteById(id);
     }
 
-    //métodos privados de apoyo
     private void validarCalificacion(long calificacion) {
         if (calificacion < 1 || calificacion > 5) {
             throw new BusinessException("La calificación debe estar entre 1 y 5");
         }
     }
 
-    // verifica existencia y que el cliente sea el dueño
-    private Valoracion obtenerValoracionVerificada(Long id, Usuario cliente) {
+    private Valoracion obtenerValoracionVerificada(String id, Usuario cliente) {
         Valoracion v = obtenerValoracionPorId(id);
         if (v == null) {
             throw new ResourceNotFoundException("Valoración no encontrada");
@@ -110,6 +109,7 @@ public class ServiceValoracion {
         return v;
     }
 
+    //conversion a DTO
     private ValoracionDTO toDTO(Valoracion v) {
         ValoracionDTO dto = new ValoracionDTO();
         dto.setId(v.getId());

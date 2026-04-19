@@ -30,7 +30,7 @@ public class BoletosApiController {
     public ResponseEntity<ApiResponse<BoletosCompraDTO>> verBoletos(@PathVariable String compraId) {
         Usuario usuario = authHelper.usuarioAutenticado();
 
-        Compra compra = serviceCompra.obtenerCompraPorIdConDetalles(compraId);
+        Compra compra = serviceCompra.obtenerCompraPorId(compraId);
         if (!compra.getCliente().getId().equals(usuario.getId()))
             throw new BusinessException("No autorizado para ver esta compra");
 

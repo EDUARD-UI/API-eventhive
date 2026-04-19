@@ -36,28 +36,26 @@ public class RolesApiController {
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> crearRol(
             @RequestParam String nombre,
-            @RequestParam(required = false) String descripcion,
-            @RequestParam Long estadoId) {
+            @RequestParam(required = false) String descripcion) {
 
-        serviceRoles.crearRol(nombre, descripcion, estadoId);
+        serviceRoles.crearRol(nombre, descripcion);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Rol creado exitosamente"));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> actualizarRol(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestParam String nombre,
-            @RequestParam(required = false) String descripcion,
-            @RequestParam Long estadoId) {
+            @RequestParam(required = false) String descripcion) {
 
-        serviceRoles.actualizarRol(id, nombre, descripcion, estadoId);
+        serviceRoles.actualizarRol(id, nombre, descripcion);
         return ResponseEntity.ok(ApiResponse.ok("Rol actualizado exitosamente"));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public ResponseEntity<ApiResponse<Void>> eliminarRol(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> eliminarRol(@PathVariable String id) {
         serviceRoles.eliminarRol(id);
         return ResponseEntity.ok(ApiResponse.ok("Rol eliminado exitosamente"));
     }

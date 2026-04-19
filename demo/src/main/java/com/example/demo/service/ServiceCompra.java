@@ -36,9 +36,8 @@ public class ServiceCompra {
     private final TiqueteCompraRepository tiqueteCompraRepository;
     private final LocalidadRepository localidadRepository;
 
-    // funcion para procesar la compra, crear tiquetes y actualizar disponibilidad
     @Transactional
-    public Compra procesarCompra(Usuario cliente, String localidadId, String cantidad, String metodoPago) {
+    public Compra procesarCompra(Usuario cliente, String localidadId, Integer cantidad, String metodoPago) {
         Localidad localidad = localidadRepository.findById(localidadId)
                 .orElseThrow(() -> new ResourceNotFoundException("Localidad no encontrada"));
 
@@ -81,39 +80,27 @@ public class ServiceCompra {
                 .orElseThrow(() -> new ResourceNotFoundException("Compra no encontrada"));
     }
 
-    public Compra obtenerCompraPorIdConDetalles(String compraId) {
-        return compraRepository.findByIdWithDetalles(compraId)
-                .orElseThrow(() -> new ResourceNotFoundException("Compra no encontrada"));
-    }
-
     public List<Compra> obtenerComprasPorCliente(String clienteId) {
         return compraRepository.findByClienteIdOrderByFechaCompraDesc(clienteId);
     }
 
-    public List<Compra> obtenerComprasConDetallesPorCliente(String clienteId) {
-        return compraRepository.findComprasConDetallesPorClienteId(clienteId);
-    }
-
     public Page<CompraDetalleDTO> obtenerHistorialDTO(String clienteId, Pageable pageable) {
-        return compraRepository.findComprasConDetallesPorClienteId(clienteId, pageable)
+        return compraRepository.findByClienteIdOrderByFechaCompraDesc(clienteId, pageable)
                 .map(this::toDetalleDTO);
     }
 
-    // Historial por cliente
     public List<CompraDetalleDTO> obtenerHistorialDTO(String clienteId) {
-        return obtenerComprasConDetallesPorCliente(clienteId).stream()
+        return obtenerComprasPorCliente(clienteId).stream()
                 .map(this::toDetalleDTO)
                 .collect(Collectors.toList());
     }
 
-    // boletos por compra
     public BoletosCompraDTO obtenerBoletosDTO(String compraId) {
-        Compra compra = obtenerCompraPorIdConDetalles(compraId);
+        Compra compra = obtenerCompraPorId(compraId);
         if (compra == null) throw new ResourceNotFoundException("La compra no existe");
         return toBoletosDTO(compra);
     }
 
-    // funciones de apoyo de convercion a DTOs
     private CompraDetalleDTO toDetalleDTO(Compra compra) {
         CompraDetalleDTO dto = new CompraDetalleDTO();
         dto.setId(compra.getId());

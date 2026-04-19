@@ -55,7 +55,7 @@ public class ComprasApiController {
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<ApiResponse<Compra>> obtenerCompra(@PathVariable String compraId) {
         Usuario usuario = authHelper.usuarioAutenticado();
-        Compra compra = serviceCompra.obtenerCompraPorIdConDetalles(compraId);
+        Compra compra = serviceCompra.obtenerCompraPorId(compraId);
 
         if (!compra.getCliente().getId().equals(usuario.getId()))
             throw new BusinessException("No tiene permiso para ver esta compra");

@@ -56,7 +56,7 @@ public class EventosApiController {
 
     @GetMapping("/categoria/{categoriaId}")
     public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> obtenerEventosPorCategoria(
-            @PathVariable Long categoriaId,
+            @PathVariable String categoriaId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         PagedResponse<EventoDTO> result = serviceEventos.buscarPorCategoriaPaginado(categoriaId, page, size);
@@ -71,7 +71,7 @@ public class EventosApiController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<EventoDetalleDTO>> obtenerEvento(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<EventoDetalleDTO>> obtenerEvento(@PathVariable String id) {
         return ResponseEntity.ok(ApiResponse.ok("Evento obtenido", serviceEventos.obtenerEventoDetalleDTO(id)));
     }
 
@@ -85,7 +85,6 @@ public class EventosApiController {
         return ResponseEntity.ok(ApiResponse.ok("Nombres de eventos", serviceEventos.obtenerNombresEventos()));
     }
 
-    //endpoints para organizadores
     @GetMapping("/organizador/mis-eventos")
     @PreAuthorize("hasRole('ORGANIZADOR')")
     public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> obtenerEventosOrganizador(
@@ -117,7 +116,6 @@ public class EventosApiController {
         return ResponseEntity.ok(ApiResponse.ok("Dashboard cargado", dto));
     }
 
-    //crud
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ORGANIZADOR','ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> crearEvento(
@@ -126,8 +124,8 @@ public class EventosApiController {
             @RequestParam String lugar,
             @RequestParam String fecha,
             @RequestParam String hora,
-            @RequestParam Long categoriaId,
-            @RequestParam Long estadoId,
+            @RequestParam String categoriaId,
+            @RequestParam String estadoId,
             @RequestParam(required = false) MultipartFile foto) throws IOException {
 
         serviceEventos.crearEvento(
@@ -142,14 +140,14 @@ public class EventosApiController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ORGANIZADOR','ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> actualizarEvento(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestParam String titulo,
             @RequestParam String descripcion,
             @RequestParam String lugar,
             @RequestParam String fecha,
             @RequestParam String hora,
-            @RequestParam Long categoriaId,
-            @RequestParam Long estadoId,
+            @RequestParam String categoriaId,
+            @RequestParam String estadoId,
             @RequestParam(required = false) MultipartFile foto) throws IOException {
 
         serviceEventos.actualizarEvento(
@@ -163,14 +161,13 @@ public class EventosApiController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ORGANIZADOR','ADMINISTRADOR')")
-    public ResponseEntity<ApiResponse<Void>> eliminarEvento(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> eliminarEvento(@PathVariable String id) {
         Usuario usuario = usuarioAutenticado();
         boolean tieneLocalidades = serviceLocalidad.tieneLocalidades(id);
         serviceEventos.eliminarEvento(id, usuario, tieneLocalidades);
         return ResponseEntity.ok(ApiResponse.ok("Evento eliminado exitosamente"));
     }
 
-    // MÉTODO AUXILIAR
     private Usuario usuarioAutenticado() {
         return authHelper.usuarioAutenticado();
     }

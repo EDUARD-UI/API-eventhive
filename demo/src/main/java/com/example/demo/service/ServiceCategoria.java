@@ -56,7 +56,6 @@ public class ServiceCategoria {
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
     }
 
-    // Retorna nombres simples (sin eventos)
     public List<CategoriaDTO> obtenerCategoriaDTO() {
         return categoriasRepository.findAll().stream()
                 .map(c -> {
@@ -68,14 +67,12 @@ public class ServiceCategoria {
                 .collect(Collectors.toList());
     }
 
-    // Retorna categorías con sus eventos (máximo 8 por categoría)
     public List<CategoriaEventosDTO> obtenerCategoriasConEventos() {
         return categoriasRepository.findAll().stream()
                 .map(this::mapearCategoriaConEventos)
                 .collect(Collectors.toList());
     }
 
-    //crud
     public void crearCategoria(String nombre, MultipartFile foto) throws IOException {
         if (categoriasRepository.findByNombre(nombre) != null)
             throw new BusinessException("Ya existe una categoría con ese nombre");
@@ -113,20 +110,18 @@ public class ServiceCategoria {
         categoriasRepository.deleteById(id);
     }
 
-    // MÉTODO AUXILIAR
     private CategoriaEventosDTO mapearCategoriaConEventos(Categoria c) {
         CategoriaEventosDTO dto = new CategoriaEventosDTO();
         dto.setId(c.getId());
         dto.setNombre(c.getNombre());
         
-        // Obtener eventos de la categoría (limitado a 8)
         List<EventoDTO> eventos = serviceEvento.buscarPorCategoriaDTO(c.getId())
                 .stream()
                 .limit(8)
                 .collect(Collectors.toList());
         
         dto.setEventos(eventos);
-        dto.setTotalEventos(serviceEvento.contarEventosPorCategoria(c.getId()));
+        dto.setTotalEventos((int) serviceEvento.contarEventosPorCategoria(c.getId()));
         
         return dto;
     }

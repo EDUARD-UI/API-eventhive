@@ -30,23 +30,20 @@ public class ServiceEventoDeseado {
     }
 
     public void eliminarEventoDeseado(String id) {
-        return eventoDeseadoRepository.deleteById(id);
+        eventoDeseadoRepository.deleteById(id);
     }
 
-    //consultas paginadas
-    public Page<EventoDeseadoDTO> obtenerDeseadosDTOPorUsuario(Long usuarioId, Pageable pageable) {
+    public Page<EventoDeseadoDTO> obtenerDeseadosDTOPorUsuario(String usuarioId, Pageable pageable) {
         return eventoDeseadoRepository.findByUsuarioId(usuarioId, pageable)
                 .map(this::toDTO);
     }
 
-    // Eventos deseados del usuario logueado
-    public List<EventoDeseadoDTO> obtenerDeseadosDTOPorUsuario(Long usuarioId) {
+    public List<EventoDeseadoDTO> obtenerDeseadosDTOPorUsuario(String usuarioId) {
         return eventoDeseadoRepository.findByUsuarioId(usuarioId).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
-    //conversion a DTO
     private EventoDeseadoDTO toDTO(EventoDeseado ed) {
         EventoDeseadoDTO dto = new EventoDeseadoDTO();
         dto.setId(ed.getId());

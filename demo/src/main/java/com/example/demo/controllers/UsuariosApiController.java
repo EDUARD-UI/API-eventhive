@@ -36,7 +36,7 @@ public class UsuariosApiController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Usuario>> obtenerUsuario(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Usuario>> obtenerUsuario(@PathVariable String id) {
         Usuario usuario = serviceUsuario.obtenerUsuarioPorId(id);
         if (usuario == null) throw new ResourceNotFoundException("Usuario no encontrado");
         return ResponseEntity.ok(ApiResponse.ok("Usuario obtenido", usuario));
@@ -50,26 +50,26 @@ public class UsuariosApiController {
             @RequestParam String correo,
             @RequestParam String telefono,
             @RequestParam String clave,
-            @RequestParam Long rol,
-            @RequestParam Long estado) {
+            @RequestParam String rol,
+            @RequestParam String estado) {
 
-        serviceUsuario.crearUsuario(nombre, apellido, correo, telefono, clave, rol, estado);
+        serviceUsuario.crearUsuario(nombre, apellido, correo, telefono, clave, rol);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Usuario creado exitosamente"));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> actualizarUsuario(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestParam String nombre,
             @RequestParam String apellido,
             @RequestParam String correo,
             @RequestParam String telefono,
             @RequestParam(required = false) String clave,
-            @RequestParam Long rol,
-            @RequestParam Long estado) {
+            @RequestParam String rol,
+            @RequestParam String estado) {
 
-        serviceUsuario.actualizarUsuario(id, nombre, apellido, correo, telefono, clave, rol, estado);
+        serviceUsuario.actualizarUsuario(id, nombre, apellido, correo, telefono, clave, rol);
         return ResponseEntity.ok(ApiResponse.ok("Usuario actualizado exitosamente"));
     }
 
@@ -93,7 +93,7 @@ public class UsuariosApiController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public ResponseEntity<ApiResponse<Void>> eliminarUsuario(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> eliminarUsuario(@PathVariable String id) {
         serviceUsuario.eliminarUsuario(id);
         return ResponseEntity.ok(ApiResponse.ok("Usuario eliminado exitosamente"));
     }

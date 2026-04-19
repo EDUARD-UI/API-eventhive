@@ -41,7 +41,7 @@ public class PromocionApiController {
     @PostMapping
     @PreAuthorize("hasRole('ORGANIZADOR')")
     public ResponseEntity<ApiResponse<Void>> crear(
-            @RequestParam Long eventoId,
+            @RequestParam String eventoId,
             @RequestParam String descripcion,
             @RequestParam BigDecimal descuento,
             @RequestParam String fechaInicio,
@@ -54,8 +54,8 @@ public class PromocionApiController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ORGANIZADOR')")
     public ResponseEntity<ApiResponse<Void>> actualizar(
-            @PathVariable Long id,
-            @RequestParam Long eventoId,
+            @PathVariable String id,
+            @RequestParam String eventoId,
             @RequestParam String descripcion,
             @RequestParam BigDecimal descuento,
             @RequestParam String fechaInicio,
@@ -67,7 +67,7 @@ public class PromocionApiController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ORGANIZADOR')")
-    public ResponseEntity<ApiResponse<Void>> eliminar(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> eliminar(@PathVariable String id) {
         servicePromocion.eliminarPromocion(id, authHelper.usuarioAutenticado());
         return ResponseEntity.ok(ApiResponse.ok("Promoción eliminada exitosamente"));
     }

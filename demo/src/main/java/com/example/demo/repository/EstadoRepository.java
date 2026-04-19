@@ -8,4 +8,5 @@ import com.example.demo.model.Estado;
 @Repository
 public interface EstadoRepository extends MongoRepository<Estado, String> {
     Estado findByNombre(String nombre);
+    boolean existsByNombre(String nombre);
 }

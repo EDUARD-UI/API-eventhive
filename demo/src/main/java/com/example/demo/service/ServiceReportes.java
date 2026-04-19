@@ -18,7 +18,7 @@ public class ServiceReportes {
 
     private final EventoRepository eventoRepository;
 
-    public Map<String, String> contarEventosPorCategoria(String organizadorId) {
+    public Map<String, Long> contarEventosPorCategoria(String organizadorId) {
         List<Evento> eventos = eventoRepository.findByUsuarioId(organizadorId);
         
         return eventos.stream()

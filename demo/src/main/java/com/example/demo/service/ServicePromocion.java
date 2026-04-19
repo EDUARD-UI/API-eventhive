@@ -16,6 +16,7 @@ import com.example.demo.model.Evento;
 import com.example.demo.model.Promocion;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.PromocionRepository;
+import com.example.demo.repository.EventoRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class ServicePromocion {
 
     private final PromocionRepository promocionRepository;
-    private final ServiceEvento serviceEvento;
+    private final EventoRepository eventoRepository;
 
     public List<Promocion> obtenerPromociones() {
         return promocionRepository.findAll();
@@ -48,11 +49,10 @@ public class ServicePromocion {
     }
 
     public Page<PromocionDTO> obtenerDTOPorOrganizador(String orgId, Pageable pageable) {
-        return promocionRepository.findByEventoUsuarioId(orgId, pageable)
+        return promocionRepository.findByEventoUsuarioIdPageable(orgId, pageable)
                 .map(this::toDTO);
     }
 
-    // valida, construye y guarda la promoción
     public void crearPromocion(String eventoId, String descripcion, BigDecimal descuento,
             String fechaInicio, String fechaFin, Usuario organizador) {
         validarDescuento(descuento);
@@ -62,7 +62,8 @@ public class ServicePromocion {
             throw new BusinessException("La fecha de fin no puede ser anterior a la de inicio");
         }
 
-        Evento evento = serviceEvento.obtenerEventoPorId(eventoId);
+        Evento evento = eventoRepository.findById(eventoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado"));
         if (!evento.getUsuario().getId().equals(organizador.getId())) {
             throw new BusinessException("No puede crear promociones para eventos de otro organizador");
         }
@@ -76,7 +77,6 @@ public class ServicePromocion {
         promocionRepository.save(p);
     }
 
-    // valida permisos, actualiza y guarda
     public void actualizarPromocion(String id, String eventoId, String descripcion, BigDecimal descuento,
             String fechaInicio, String fechaFin, Usuario organizador) {
         Promocion p = obtenerPromocionPorId(id);
@@ -91,7 +91,8 @@ public class ServicePromocion {
             throw new BusinessException("La fecha de fin no puede ser anterior a la de inicio");
         }
 
-        p.setEvento(serviceEvento.obtenerEventoPorId(eventoId));
+        p.setEvento(eventoRepository.findById(eventoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado")));
         p.setDescripcion(descripcion);
         p.setDescuento(descuento);
         p.setFechaInicio(inicio);
@@ -99,7 +100,6 @@ public class ServicePromocion {
         promocionRepository.save(p);
     }
 
-    // valida permisos y elimina
     public void eliminarPromocion(String id, Usuario organizador) {
         Promocion p = obtenerPromocionPorId(id);
         if (!p.getEvento().getUsuario().getId().equals(organizador.getId())) {
@@ -108,7 +108,6 @@ public class ServicePromocion {
         promocionRepository.deleteById(id);
     }
 
-    // conversión a DTO
     public List<PromocionDTO> obtenerDTOPorOrganizador(String orgId) {
         return obtenerPorOrganizador(orgId).stream()
                 .map(this::toDTO)

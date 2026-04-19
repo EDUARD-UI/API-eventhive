@@ -23,7 +23,7 @@ public class ServiceRoles {
 
     public Rol findById(String id) {
         return rolesRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con id: " + id));
     }
 
     public Rol findByNombre(String nombre) {
@@ -42,8 +42,7 @@ public class ServiceRoles {
         return usuarioRepository.countByRolId(rolId) > 0;
     }
 
-    //lógica que antes vivía en el controller
-    public void crearRol(String nombre, String descripcion, String estadoId) {
+    public void crearRol(String nombre, String descripcion) {
         if (findByNombre(nombre) != null)
             throw new BusinessException("Ya existe un rol con ese nombre");
 
@@ -53,7 +52,7 @@ public class ServiceRoles {
         rolesRepository.save(nuevo);
     }
 
-    public void actualizarRol (String id, String nombre, String descripcion) {
+    public void actualizarRol(String id, String nombre, String descripcion) {
         Rol existente = findById(id);
         if (existente == null) throw new ResourceNotFoundException("El rol no existe");
 
@@ -66,7 +65,7 @@ public class ServiceRoles {
         rolesRepository.save(existente);
     }
 
-    public void eliminarRol (String id) {
+    public void eliminarRol(String id) {
         if (findById(id) == null) throw new ResourceNotFoundException("El rol no existe");
 
         if (tieneUsuariosAsociados(id))

@@ -51,7 +51,7 @@ public class LocalidadesApiController {
 
     @GetMapping("/evento/{eventoId}")
     public ResponseEntity<ApiResponse<PagedResponse<Localidad>>> listarPorEvento(
-            @PathVariable Long eventoId,
+            @PathVariable String eventoId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         PagedResponse<Localidad> result = serviceLocalidad.obtenerPorEventoPaginado(eventoId, page, size);
@@ -65,7 +65,7 @@ public class LocalidadesApiController {
             @RequestParam BigDecimal precio,
             @RequestParam Integer capacidad,
             @RequestParam Integer disponibles,
-            @RequestParam Long eventoId) {
+            @RequestParam String eventoId) {
 
         serviceLocalidad.crearLocalidad(nombre, precio, capacidad, disponibles, eventoId);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Localidad creada exitosamente"));
@@ -74,12 +74,12 @@ public class LocalidadesApiController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ORGANIZADOR','ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> actualizarLocalidad(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestParam String nombre,
             @RequestParam BigDecimal precio,
             @RequestParam Integer capacidad,
             @RequestParam Integer disponibles,
-            @RequestParam Long eventoId) {
+            @RequestParam String eventoId) {
 
         serviceLocalidad.actualizarLocalidad(id, nombre, precio, capacidad, disponibles, eventoId);
         return ResponseEntity.ok(ApiResponse.ok("Localidad actualizada exitosamente"));
@@ -87,7 +87,7 @@ public class LocalidadesApiController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ORGANIZADOR','ADMINISTRADOR')")
-    public ResponseEntity<ApiResponse<Void>> eliminarLocalidad(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> eliminarLocalidad(@PathVariable String id) {
         serviceLocalidad.eliminarLocalidad(id);
         return ResponseEntity.ok(ApiResponse.ok("Localidad eliminada exitosamente"));
     }

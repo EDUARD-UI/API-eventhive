@@ -33,9 +33,8 @@ public class Evento {
     private Categoria categoria;
 
     @DBRef(lazy = true)
-    private Usuario organizador;  // ← RENOMBRADO (antes era "usuario")
+    private Usuario organizador;
 
-    // ✅ EMBEBIDO - Localidad vive DENTRO del evento
     private List<Localidad> localidades;
 
     @DBRef(lazy = true)

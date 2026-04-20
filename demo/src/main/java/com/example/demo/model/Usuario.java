@@ -31,14 +31,12 @@ public class Usuario {
     @JsonIgnore
     private String clave;
 
-    @DBRef(lazy = true)  // ← Añadir lazy
     private Rol rol;
 
     @JsonIgnore
     @DBRef(lazy = true)
     private List<Evento> eventosOrganizados;
 
-    // CAMBIADO: eventosDeseados como array de IDs (embebido)
     private List<String> eventosDeseadosIds;
 
     @JsonIgnore

@@ -31,49 +31,39 @@ public class AuthApiController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> me() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        // Sin sesión activa o usuario anónimo
-        if (auth == null || !auth.isAuthenticated()
-                || auth instanceof AnonymousAuthenticationToken) {
+        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("No hay sesión activa"));
+                .body(ApiResponse.error("No hay sesión activa"));
         }
 
-        String correo = auth.getName();
-        Map<String, Object> datosUsuario = serviceAutenticacion.obtenerDatosUsuarioAutenticado(correo);
-
-        return ResponseEntity.ok(ApiResponse.ok("Sesión activa", datosUsuario));
+        Map<String, Object> datos = serviceAutenticacion.obtenerDatosUsuarioAutenticado(auth.getName());
+        return ResponseEntity.ok(ApiResponse.ok("Sesión activa", datos));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> login(
+    public ResponseEntity<ApiResponse<Void>> login(
             @RequestParam String correo,
             @RequestParam String clave,
             HttpSession session) {
-
-        Authentication authentication = serviceAutenticacion.autenticar(correo, clave);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        session.setAttribute(
+        try {
+            Authentication auth = serviceAutenticacion.autenticar(correo, clave);
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            session.setAttribute(
                 HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                 SecurityContextHolder.getContext()
-        );
-
-        Map<String, Object> datosUsuario = serviceAutenticacion.obtenerDatosUsuarioAutenticado(correo);
-
-        return ResponseEntity.ok(ApiResponse.ok("Inicio de sesión exitoso", datosUsuario));
+            );
+            return ResponseEntity.ok(ApiResponse.ok("Login exitoso"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error("Credenciales inválidas"));
+        }
     }
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(HttpSession session) {
         SecurityContextHolder.clearContext();
         session.invalidate();
-        return ResponseEntity.ok(ApiResponse.ok("Sesión cerrada exitosamente"));
-    }
-
-    @GetMapping("/expired")
-    public ResponseEntity<ApiResponse<Void>> sessionExpired() {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error("La sesión ha expirado. Por favor, inicie sesión nuevamente"));
+        return ResponseEntity.ok(ApiResponse.ok("Sesión cerrada"));
     }
 
     @PostMapping("/registrar-cliente")
@@ -83,11 +73,8 @@ public class AuthApiController {
             @RequestParam String correo,
             @RequestParam String telefono,
             @RequestParam String clave) {
-
         serviceAutenticacion.registrarCliente(nombre, apellido, correo, telefono, clave);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Registro exitoso"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Registro exitoso"));
     }
 
     @PostMapping("/registrar-organizador")
@@ -97,11 +84,7 @@ public class AuthApiController {
             @RequestParam String correo,
             @RequestParam String telefono,
             @RequestParam String clave) {
-
         serviceAutenticacion.registrarOrganizador(nombre, apellido, correo, telefono, clave);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Registro exitoso"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Registro exitoso"));
     }
-
 }

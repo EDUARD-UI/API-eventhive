@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.PromocionDTO;
+import com.example.demo.model.Usuario;
 import com.example.demo.service.ServicePromocion;
 import com.example.demo.utils.AuthenticatedUserHelper;
 
@@ -33,9 +34,10 @@ public class PromocionApiController {
 
     @GetMapping("/organizador")
     @PreAuthorize("hasRole('ORGANIZADOR')")
-    public ResponseEntity<ApiResponse<Page<PromocionDTO>>> listarPorOrganizador(Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<PromocionDTO>>> porOrganizador(Pageable pageable) {
+        Usuario usuario = authHelper.usuarioAutenticado();
         return ResponseEntity.ok(ApiResponse.ok("Promociones obtenidas",
-                servicePromocion.obtenerDTOPorOrganizador(authHelper.usuarioAutenticado().getId(), pageable)));
+            servicePromocion.obtenerDTOPorOrganizador(usuario.getId(), pageable)));
     }
 
     @PostMapping
@@ -46,9 +48,9 @@ public class PromocionApiController {
             @RequestParam BigDecimal descuento,
             @RequestParam String fechaInicio,
             @RequestParam String fechaFin) {
-
-        servicePromocion.crearPromocion(eventoId, descripcion, descuento, fechaInicio, fechaFin, authHelper.usuarioAutenticado());
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Promoción creada exitosamente"));
+        Usuario usuario = authHelper.usuarioAutenticado();
+        servicePromocion.crearPromocion(eventoId, descripcion, descuento, fechaInicio, fechaFin, usuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Promoción creada"));
     }
 
     @PutMapping("/{id}")
@@ -60,15 +62,16 @@ public class PromocionApiController {
             @RequestParam BigDecimal descuento,
             @RequestParam String fechaInicio,
             @RequestParam String fechaFin) {
-
-        servicePromocion.actualizarPromocion(id, eventoId, descripcion, descuento, fechaInicio, fechaFin, authHelper.usuarioAutenticado());
-        return ResponseEntity.ok(ApiResponse.ok("Promoción actualizada exitosamente"));
+        Usuario usuario = authHelper.usuarioAutenticado();
+        servicePromocion.actualizarPromocion(id, eventoId, descripcion, descuento, fechaInicio, fechaFin, usuario);
+        return ResponseEntity.ok(ApiResponse.ok("Promoción actualizada"));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ORGANIZADOR')")
     public ResponseEntity<ApiResponse<Void>> eliminar(@PathVariable String id) {
-        servicePromocion.eliminarPromocion(id, authHelper.usuarioAutenticado());
-        return ResponseEntity.ok(ApiResponse.ok("Promoción eliminada exitosamente"));
+        Usuario usuario = authHelper.usuarioAutenticado();
+        servicePromocion.eliminarPromocion(id, usuario);
+        return ResponseEntity.ok(ApiResponse.ok("Promoción eliminada"));
     }
 }

@@ -35,59 +35,58 @@ public class CategoriasApiController {
     private final ServiceCategoria serviceCategoria;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<Categoria>>> obtenerNombresCategorias(Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<Categoria>>> obtener(Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.ok("Categorías obtenidas", 
             serviceCategoria.obtenerTodasCategorias(pageable)));
     }
 
     @GetMapping("/nombres")
-    public ResponseEntity<ApiResponse<List<CategoriaDTO>>> listarCategorias() {
-        return ResponseEntity.ok(ApiResponse.ok("Nombres de categorías obtenidos", 
+    public ResponseEntity<ApiResponse<List<CategoriaDTO>>> listar() {
+        return ResponseEntity.ok(ApiResponse.ok("Categorías obtenidas", 
             serviceCategoria.obtenerCategoriaDTO()));
     }
 
     @GetMapping("/destacadas")
-    public ResponseEntity<ApiResponse<List<Categoria>>> obtenerCategoriasDestacadas() {
+    public ResponseEntity<ApiResponse<List<Categoria>>> destacadas() {
         return ResponseEntity.ok(ApiResponse.ok("Categorías destacadas", 
             serviceCategoria.obtenerTop4Categorias()));
     }
 
     @GetMapping("/con-eventos")
-    public ResponseEntity<ApiResponse<List<CategoriaEventosDTO>>> listarCategoriasConEventos() {
+    public ResponseEntity<ApiResponse<List<CategoriaEventosDTO>>> conEventos() {
         return ResponseEntity.ok(ApiResponse.ok("Categorías con eventos", 
             serviceCategoria.obtenerCategoriasConEventos()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Categoria>> obtenerCategoria(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Categoria>> obtenerPorId(@PathVariable String id) {
         return ResponseEntity.ok(ApiResponse.ok("Categoría obtenida", 
             serviceCategoria.obtenerCategoriaPorId(id)));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public ResponseEntity<ApiResponse<Void>> crearCategoria(
+    public ResponseEntity<ApiResponse<Void>> crear(
             @RequestParam String nombre,
             @RequestParam(required = false) MultipartFile foto) throws IOException {
         serviceCategoria.crearCategoria(nombre, foto);
-        return ResponseEntity.status(HttpStatus.CREATED)
-            .body(ApiResponse.ok("Categoría creada exitosamente"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Categoría creada"));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public ResponseEntity<ApiResponse<Void>> actualizarCategoria(
+    public ResponseEntity<ApiResponse<Void>> actualizar(
             @PathVariable String id,
             @RequestParam String nombre,
             @RequestParam(required = false) MultipartFile foto) throws IOException {
         serviceCategoria.actualizarCategoria(id, nombre, foto);
-        return ResponseEntity.ok(ApiResponse.ok("Categoría actualizada exitosamente"));
+        return ResponseEntity.ok(ApiResponse.ok("Categoría actualizada"));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public ResponseEntity<ApiResponse<Void>> eliminarCategoria(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> eliminar(@PathVariable String id) {
         serviceCategoria.eliminarCategoria(id);
-        return ResponseEntity.ok(ApiResponse.ok("Categoría eliminada exitosamente"));
+        return ResponseEntity.ok(ApiResponse.ok("Categoría eliminada"));
     }
 }

@@ -18,7 +18,6 @@ import com.example.demo.model.Promocion;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.EventoRepository;
 import com.example.demo.repository.PromocionRepository;
-import com.example.demo.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,7 +27,6 @@ public class ServicePromocion {
 
     private final PromocionRepository promocionRepository;
     private final EventoRepository eventoRepository;
-    private final UsuarioRepository usuarioRepository;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
 
     public List<Promocion> obtenerPromociones() {
@@ -41,29 +39,28 @@ public class ServicePromocion {
 
     public Promocion obtenerPromocionPorId(String id) {
         return promocionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Promoción no encontrada"));
+            .orElseThrow(() -> new ResourceNotFoundException("Promoción no encontrada"));
     }
 
     public void crearPromocion(String eventoId, String descripcion, BigDecimal descuento,
             String fechaInicio, String fechaFin, Usuario organizador) {
-        
-        // Convertir strings a LocalDate
+
         LocalDate fechaInicioLD = LocalDate.parse(fechaInicio, DATE_FORMATTER);
         LocalDate fechaFinLD = LocalDate.parse(fechaFin, DATE_FORMATTER);
-        
+
         if (fechaFinLD.isBefore(fechaInicioLD)) {
-            throw new BusinessException("La fecha de fin no puede ser anterior a la de inicio");
+            throw new BusinessException("Fecha fin no puede ser anterior a inicio");
         }
-        
+
         if (descuento.compareTo(BigDecimal.ONE) < 0 || descuento.compareTo(new BigDecimal("75")) > 0) {
-            throw new BusinessException("El descuento debe estar entre 1 y 75");
+            throw new BusinessException("Descuento entre 1 y 75");
         }
 
         Evento evento = eventoRepository.findById(eventoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado"));
-        
+            .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado"));
+
         if (!evento.getOrganizador().getId().equals(organizador.getId())) {
-            throw new BusinessException("No puede crear promociones para eventos de otro organizador");
+            throw new BusinessException("No autorizado");
         }
 
         Promocion p = new Promocion();
@@ -85,31 +82,29 @@ public class ServicePromocion {
 
     public void actualizarPromocion(String id, String eventoId, String descripcion, BigDecimal descuento,
             String fechaInicio, String fechaFin, Usuario organizador) {
-        
+
         Promocion p = obtenerPromocionPorId(id);
-        
-        // Validar autorización
+
         if (!p.getEvento().getOrganizador().getId().equals(organizador.getId())) {
             throw new BusinessException("No autorizado");
         }
-        
-        // Convertir strings a LocalDate
+
         LocalDate fechaInicioLD = LocalDate.parse(fechaInicio, DATE_FORMATTER);
         LocalDate fechaFinLD = LocalDate.parse(fechaFin, DATE_FORMATTER);
-        
+
         if (fechaFinLD.isBefore(fechaInicioLD)) {
-            throw new BusinessException("La fecha de fin no puede ser anterior a la de inicio");
+            throw new BusinessException("Fecha fin no puede ser anterior a inicio");
         }
-        
+
         if (descuento.compareTo(BigDecimal.ONE) < 0 || descuento.compareTo(new BigDecimal("75")) > 0) {
-            throw new BusinessException("El descuento debe estar entre 1 y 75");
+            throw new BusinessException("Descuento entre 1 y 75");
         }
 
         Evento evento = eventoRepository.findById(eventoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado"));
-        
+            .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado"));
+
         if (!evento.getOrganizador().getId().equals(organizador.getId())) {
-            throw new BusinessException("No puede actualizar promociones para eventos de otro organizador");
+            throw new BusinessException("No autorizado");
         }
 
         p.setEvento(evento);
@@ -121,22 +116,15 @@ public class ServicePromocion {
     }
 
     public Page<PromocionDTO> obtenerDTOPorOrganizador(String organizadorId, Pageable pageable) {
-        Usuario organizador = usuarioRepository.findById(organizadorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Organizador no encontrado"));
-        
-        // Obtener eventos del organizador
         List<String> eventoIds = eventoRepository.findByOrganizadorId(organizadorId).stream()
-                .map(Evento::getId)
-                .toList();
-        
+            .map(Evento::getId)
+            .toList();
+
         if (eventoIds.isEmpty()) {
             return new PageImpl<>(List.of(), pageable, 0);
         }
-        
-        // Obtener promociones de esos eventos
+
         Page<Promocion> promociones = promocionRepository.findByEventoIdIn(eventoIds, pageable);
-        
-        // Convertir a DTO
         return promociones.map(this::toDTO);
     }
 

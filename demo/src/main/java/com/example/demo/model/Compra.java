@@ -29,15 +29,5 @@ public class Compra {
     @DBRef(lazy = true)
     private Usuario cliente;
 
-    // ✅ EMBEBIDO - Items de la compra
     private List<ItemCompra> items;
-}
-
-// NUEVA CLASE EMBEBIDA
-@Getter
-@Setter
-class ItemCompra {
-    private String tiqueteId;
-    private Integer cantidad;
-    private BigDecimal precioUnitario;
 }

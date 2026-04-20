@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.Rol;
 import com.example.demo.model.Usuario;
+import com.example.demo.repository.RolesRepository;
+import com.example.demo.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,77 +19,63 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ServiceAutenticacion {
 
-    private final ServiceUsuario serviceUsuario;
-    private final ServiceRoles serviceRoles;
+    private final UsuarioRepository usuarioRepository;
+    private final RolesRepository rolesRepository;
     private final AuthenticationManager authenticationManager;
 
-    //Autenticar usuario con correo y contraseña
     public Authentication autenticar(String correo, String clave) {
         return authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(correo, clave)
+            new UsernamePasswordAuthenticationToken(correo, clave)
         );
     }
 
-    //Obtener datos del usuario autenticado
     public Map<String, Object> obtenerDatosUsuarioAutenticado(String correo) {
-        Usuario usuario = serviceUsuario.obtenerUsuarioPorCorreo(correo);
-
-        if (usuario == null) {
-            throw new BusinessException("Usuario no encontrado");
-        }
+        Usuario usuario = usuarioRepository.findByCorreo(correo);
+        if (usuario == null) throw new BusinessException("Usuario no encontrado");
 
         return Map.of(
-                "id", usuario.getId(),
-                "nombre", usuario.getNombre(),
-                "apellido", usuario.getApellido(),
-                "correo", usuario.getCorreo(),
-                "telefono", usuario.getTelefono() != null ? usuario.getTelefono() : "",
-                "rolNombre", usuario.getRol().getNombre()
+            "id", usuario.getId(),
+            "nombre", usuario.getNombre(),
+            "apellido", usuario.getApellido(),
+            "correo", usuario.getCorreo(),
+            "telefono", usuario.getTelefono() != null ? usuario.getTelefono() : "",
+            "rolNombre", usuario.getRol().getNombre()
         );
     }
 
-    //obtener el rol del usuario autenticado
     public String obtenerRolUsuario(String correo) {
-        Usuario usuario = serviceUsuario.obtenerUsuarioPorCorreo(correo);
-
-        if (usuario == null) {
-            throw new BusinessException("Usuario no encontrado");
-        }
-
+        Usuario usuario = usuarioRepository.findByCorreo(correo);
+        if (usuario == null) throw new BusinessException("Usuario no encontrado");
         return usuario.getRol().getNombre();
     }
 
-    //registro de cliente
-    public void registrarCliente(String nombre, String apellido, String correo,
-                                  String telefono, String clave) {
+    public void registrarCliente(String nombre, String apellido, String correo, String telefono, String clave) {
         validarRegistro(correo);
-
-        Rol rolCliente = serviceRoles.findByNombre("CLIENTE");
-        if (rolCliente == null) {
-            throw new BusinessException("Rol 'CLIENTE' no encontrado. Verifique que exista en MongoDB");
-        }
-
-        serviceUsuario.crearUsuario(nombre, apellido, correo, telefono, clave, rolCliente.getId());
+        Rol rol = rolesRepository.findByNombre("CLIENTE");
+        if (rol == null) throw new BusinessException("Rol CLIENTE no existe");
+        usuarioRepository.save(crearUsuario(nombre, apellido, correo, telefono, clave, rol));
     }
 
-    //registro de organizador
-    public void registrarOrganizador(String nombre, String apellido, String correo,
-                                      String telefono, String clave) {
+    public void registrarOrganizador(String nombre, String apellido, String correo, String telefono, String clave) {
         validarRegistro(correo);
-
-        Rol rolOrganizador = serviceRoles.findByNombre("ORGANIZADOR");
-        if (rolOrganizador == null) {
-            throw new BusinessException("Rol 'ORGANIZADOR' no encontrado. Verifique que exista en MongoDB");
-        }
-
-        serviceUsuario.crearUsuario(nombre, apellido, correo, telefono, clave, rolOrganizador.getId());
+        Rol rol = rolesRepository.findByNombre("ORGANIZADOR");
+        if (rol == null) throw new BusinessException("Rol ORGANIZADOR no existe");
+        usuarioRepository.save(crearUsuario(nombre, apellido, correo, telefono, clave, rol));
     }
 
-    //verificar q el correo no este registrado
+    private Usuario crearUsuario(String nombre, String apellido, String correo, String telefono, String clave, Rol rol) {
+        Usuario usuario = new Usuario();
+        usuario.setNombre(nombre);
+        usuario.setApellido(apellido);
+        usuario.setCorreo(correo);
+        usuario.setTelefono(telefono);
+        usuario.setClave(clave);
+        usuario.setRol(rol);
+        return usuario;
+    }
+
     private void validarRegistro(String correo) {
-        Usuario usuarioExistente = serviceUsuario.obtenerUsuarioPorCorreo(correo);
-        if (usuarioExistente != null) {
-            throw new BusinessException("El correo ya está registrado");
-        }
+        Usuario existe = usuarioRepository.findByCorreo(correo);
+        if (existe != null) throw new BusinessException("Correo ya registrado");
     }
 }

@@ -2,6 +2,7 @@ package com.example.demo.config;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,11 +14,15 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.example.demo.model.Categoria;
+import com.example.demo.model.Compra;
 import com.example.demo.model.Estado;
 import com.example.demo.model.Evento;
+import com.example.demo.model.ItemCompra;
 import com.example.demo.model.Localidad;
+import com.example.demo.model.Promocion;
 import com.example.demo.model.Rol;
 import com.example.demo.model.Usuario;
+import com.example.demo.model.Valoracion;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,8 +36,8 @@ public class DataInitializer {
     @Bean
     public CommandLineRunner initData() {
         return args -> {
-            if (mongoTemplate.collectionExists("usuarios") && 
-                mongoTemplate.getCollection("usuarios").countDocuments() > 0) {
+            if (mongoTemplate.collectionExists("usuarios")
+                    && mongoTemplate.getCollection("usuarios").countDocuments() > 0) {
                 System.out.println("✅ Base de datos ya inicializada");
                 return;
             }
@@ -74,7 +79,11 @@ public class DataInitializer {
             categoriaTeatro.setNombre("Teatro");
             categoriaTeatro.setFoto("teatro.jpg");
 
-            mongoTemplate.insertAll(List.of(categoriaConcierto, categoriaTeatro));
+            Categoria categoriaFestival = new Categoria();
+            categoriaFestival.setNombre("Festival");
+            categoriaFestival.setFoto("festival.jpg");
+
+            mongoTemplate.insertAll(List.of(categoriaConcierto, categoriaTeatro, categoriaFestival));
 
             // Usuarios - EMBEBENDO rol directamente
             Usuario eduard = new Usuario();
@@ -104,46 +113,209 @@ public class DataInitializer {
             jhonatan.setRol(rolOrganizador);
             jhonatan.setEventosDeseadosIds(new ArrayList<>());
 
-            mongoTemplate.insertAll(List.of(eduard, angie, jhonatan));
+            Usuario laura = new Usuario();
+            laura.setNombre("Laura");
+            laura.setApellido("Mendez Ruiz");
+            laura.setCorreo("laura.organizadora@gmail.com");
+            laura.setClave(passwordEncoder.encode("laura123"));
+            laura.setTelefono("3105551234");
+            laura.setRol(rolOrganizador);
+            laura.setEventosDeseadosIds(new ArrayList<>());
 
-            // Evento con localidades embebidas
-            Evento evento = new Evento();
-            evento.setTitulo("Concierto Rock 2024");
-            evento.setDescripcion("Mejor concierto del año");
-            evento.setFoto("rock.jpg");
-            evento.setFecha(LocalDate.of(2024, 12, 15));
-            evento.setHora(LocalTime.of(20, 0));
-            evento.setLugar("Estadio Nacional");
-            evento.setEstado(estadoPublicado);
-            evento.setCategoria(categoriaConcierto);
-            evento.setOrganizador(jhonatan);
+            Usuario carlos = new Usuario();
+            carlos.setNombre("Carlos");
+            carlos.setApellido("Ramirez Soto");
+            carlos.setCorreo("carlos.ramirez@gmail.com");
+            carlos.setClave(passwordEncoder.encode("carlos123"));
+            carlos.setTelefono("3157778899");
+            carlos.setRol(rolCliente);
+            carlos.setEventosDeseadosIds(new ArrayList<>());
 
-            Localidad vip = new Localidad();
-            vip.setNombre("VIP");
-            vip.setPrecio(new BigDecimal("250.00"));
-            vip.setCapacidad(100);
-            vip.setDisponibles(100);
+            Usuario maria = new Usuario();
+            maria.setNombre("Maria");
+            maria.setApellido("Fernandez Lopez");
+            maria.setCorreo("maria.fernandez@gmail.com");
+            maria.setClave(passwordEncoder.encode("maria123"));
+            maria.setTelefono("3128887766");
+            maria.setRol(rolCliente);
+            maria.setEventosDeseadosIds(new ArrayList<>());
 
-            Localidad general = new Localidad();
-            general.setNombre("General");
-            general.setPrecio(new BigDecimal("80.00"));
-            general.setCapacidad(500);
-            general.setDisponibles(500);
+            mongoTemplate.insertAll(List.of(eduard, angie, jhonatan, laura, carlos, maria));
 
-            evento.setLocalidades(List.of(vip, general));
-            evento.setPromociones(new ArrayList<>());
+            // evento 1 - concierto de rock
+            Evento evento1 = new Evento();
+            evento1.setTitulo("Concierto Rock 2024");
+            evento1.setDescripcion("Mejor concierto del año");
+            evento1.setFoto("rock.jpg");
+            evento1.setFecha(LocalDate.of(2024, 12, 15));
+            evento1.setHora(LocalTime.of(20, 0));
+            evento1.setLugar("Estadio Nacional");
+            evento1.setEstado(estadoPublicado);
+            evento1.setCategoria(categoriaConcierto);
+            evento1.setOrganizador(jhonatan);
 
-            mongoTemplate.insertAll(List.of(evento));
+            Localidad vip1 = new Localidad();
+            vip1.setNombre("VIP");
+            vip1.setPrecio(new BigDecimal("250.00"));
+            vip1.setCapacidad(100);
+            vip1.setDisponibles(100);
+
+            Localidad general1 = new Localidad();
+            general1.setNombre("General");
+            general1.setPrecio(new BigDecimal("80.00"));
+            general1.setCapacidad(500);
+            general1.setDisponibles(500);
+
+            evento1.setLocalidades(List.of(vip1, general1));
+
+            // Evento 2 - Festival de Verano
+            Evento evento2 = new Evento();
+            evento2.setTitulo("Festival de Verano 2025");
+            evento2.setDescripcion("3 días de música y diversión bajo el sol");
+            evento2.setFoto("festival_verano.jpg");
+            evento2.setFecha(LocalDate.of(2025, 1, 20));
+            evento2.setHora(LocalTime.of(14, 0));
+            evento2.setLugar("Parque Simon Bolivar");
+            evento2.setEstado(estadoPublicado);
+            evento2.setCategoria(categoriaFestival);
+            evento2.setOrganizador(laura);
+
+            Localidad platino = new Localidad();
+            platino.setNombre("Platino");
+            platino.setPrecio(new BigDecimal("400.00"));
+            platino.setCapacidad(200);
+            platino.setDisponibles(200);
+
+            Localidad preferencial = new Localidad();
+            preferencial.setNombre("Preferencial");
+            preferencial.setPrecio(new BigDecimal("180.00"));
+            preferencial.setCapacidad(800);
+            preferencial.setDisponibles(800);
+
+            evento2.setLocalidades(List.of(platino, preferencial));
+
+            // Evento 3 - Obra de Teatro Clásica
+            Evento evento3 = new Evento();
+            evento3.setTitulo("Hamlet - Obra Clásica");
+            evento3.setDescripcion("Presentación especial de la obra de Shakespeare");
+            evento3.setFoto("hamlet.jpg");
+            evento3.setFecha(LocalDate.of(2025, 2, 10));
+            evento3.setHora(LocalTime.of(19, 30));
+            evento3.setLugar("Teatro Colón");
+            evento3.setEstado(estadoPublicado);
+            evento3.setCategoria(categoriaTeatro);
+            evento3.setOrganizador(jhonatan);
+
+            Localidad palco = new Localidad();
+            palco.setNombre("Palco");
+            palco.setPrecio(new BigDecimal("120.00"));
+            palco.setCapacidad(50);
+            palco.setDisponibles(50);
+
+            Localidad platea = new Localidad();
+            platea.setNombre("Platea");
+            platea.setPrecio(new BigDecimal("60.00"));
+            platea.setCapacidad(300);
+            platea.setDisponibles(300);
+
+            evento3.setLocalidades(List.of(palco, platea));
+
+            // Evento 4 - Festival Electrónica
+            Evento evento4 = new Evento();
+            evento4.setTitulo("Electro Night Fest");
+            evento4.setDescripcion("Los mejores DJs internacionales en una noche");
+            evento4.setFoto("electro.jpg");
+            evento4.setFecha(LocalDate.of(2025, 3, 5));
+            evento4.setHora(LocalTime.of(22, 0));
+            evento4.setLugar("Centro de Eventos");
+            evento4.setEstado(estadoPublicado);
+            evento4.setCategoria(categoriaFestival);
+            evento4.setOrganizador(laura);
+
+            Localidad backstage = new Localidad();
+            backstage.setNombre("Backstage");
+            backstage.setPrecio(new BigDecimal("350.00"));
+            backstage.setCapacidad(80);
+            backstage.setDisponibles(80);
+
+            Localidad pista = new Localidad();
+            pista.setNombre("Pista");
+            pista.setPrecio(new BigDecimal("100.00"));
+            pista.setCapacidad(1000);
+            pista.setDisponibles(995);
+
+            evento4.setLocalidades(List.of(backstage, pista));
+
+            // Promociones
+            Promocion promo1 = new Promocion();
+            promo1.setDescripcion("20% de descuento en Festival de Verano");
+            promo1.setDescuento(new BigDecimal("20.00"));
+            promo1.setFechaInicio(LocalDate.of(2024, 12, 1));
+            promo1.setFechaFinal(LocalDate.of(2025, 1, 15));
+            promo1.setEvento(evento2);
+
+            Promocion promo2 = new Promocion();
+            promo2.setDescripcion("10% de descuento en Concierto Rock");
+            promo2.setDescuento(new BigDecimal("10.00"));
+            promo2.setFechaInicio(LocalDate.of(2024, 11, 1));
+            promo2.setFechaFinal(LocalDate.of(2024, 12, 10));
+            promo2.setEvento(evento1);
+
+            evento1.setPromociones(List.of(promo2));
+            evento2.setPromociones(List.of(promo1));
+            evento3.setPromociones(new ArrayList<>());
+            evento4.setPromociones(new ArrayList<>());
+
+            mongoTemplate.insertAll(List.of(evento1, evento2, evento3, evento4));
+            mongoTemplate.insertAll(List.of(promo1, promo2));
+
+            // Compras - Cliente1 compra entradas para evento1 y evento2
+            // Compras - Cliente1 compra entradas para evento1 y evento2
+            ItemCompra item1 = new ItemCompra();
+            item1.setEventoId(evento1.getId());
+            item1.setLocalidadId(vip1.getId());
+            item1.setCantidad(2);
+            item1.setPrecioUnitario(new BigDecimal("250.00"));
+
+            Compra compra1 = new Compra();
+            compra1.setCliente(carlos);
+            compra1.setFechaCompra(LocalDateTime.of(2024, 11, 20, 10, 30));
+            compra1.setTotal(new BigDecimal("500.00"));
+            compra1.setMetodoPago("TARJETA_CREDITO");
+            compra1.setItems(List.of(item1));
+
+            mongoTemplate.insertAll(List.of(compra1));
+
+            // Valoraciones
+            Valoracion valoracion1 = new Valoracion();
+            valoracion1.setCliente(carlos);
+            valoracion1.setEvento(evento1);
+            valoracion1.setCalificacion(5);
+            valoracion1.setComentario("Increíble concierto, la mejor experiencia");
+
+            Valoracion valoracion2 = new Valoracion();
+            valoracion2.setCliente(maria);
+            valoracion2.setEvento(evento3);
+            valoracion2.setCalificacion(4);
+            valoracion2.setComentario("Muy buena obra, actores excelentes");
+
+            mongoTemplate.insertAll(List.of(valoracion1, valoracion2));
 
             System.out.println("✅ Roles creados");
             System.out.println("✅ Estados creados");
             System.out.println("✅ Categorías creadas");
             System.out.println("✅ Usuarios creados");
-            System.out.println("✅ Evento creado");
+            System.out.println("✅ Eventos creados con localidades");
+            System.out.println("✅ Promociones creadas");
+            System.out.println("✅ Compras creadas");
+            System.out.println("✅ Valoraciones creadas");
             System.out.println("\n🔐 Credenciales:");
-            System.out.println("   📧 eduardestf20@gmail.com / eduard123");
-            System.out.println("   📧 angiecarloinatorresnarvaez@gmail.com / angie123");
-            System.out.println("   📧 contacteljohnny@gmail.com / jhonatan123\n");
+            System.out.println("   📧 eduardestf20@gmail.com / eduard123 - ADMIN");
+            System.out.println("   📧 angiecarloinatorresnarvaez@gmail.com / angie123 - ADMIN");
+            System.out.println("   📧 contacteljohnny@gmail.com / jhonatan123 - ORGANIZADOR");
+            System.out.println("   📧 laura.organizadora@gmail.com / laura123 - ORGANIZADOR");
+            System.out.println("   📧 carlos.ramirez@gmail.com / carlos123 - CLIENTE");
+            System.out.println("   📧 maria.fernandez@gmail.com / maria123 - CLIENTE\n");
         };
     }
 }

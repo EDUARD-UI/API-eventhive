@@ -1,4 +1,4 @@
-IDEAS PARA CLIENTES:
+### IDEAS PARA CLIENTES:
 
 Exportar evento a calendario
 Botón:  “Agregar a Google Calendar”
@@ -9,11 +9,10 @@ eventos que el usuario marcó como me gusta categorías de eventos que ha compra
 Ejemplo:    “Eventos que podrían interesarte”    
 (podria usar IA)
 
-IDEAS PARA ORGANIZADOR:
+### IDEAS PARA ORGANIZADOR:
 Comparador de eventos del mismo organizador: “Tu evento más exitoso este mes”.
 
 IDEAS PARA ADMINISTRACION:
 Ranking de organizadores:
 destacar organizadores
 detectar problemas.
-

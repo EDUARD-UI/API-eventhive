@@ -1,3 +1,5 @@
+# crear la clase DataInitializer con este codigo y conectar a la bd "eventHive" con solo correr el proyecto se inician los datos, hacer al menos 2 o 3 veces para verificar q se iniciaron
+
 package com.example.demo.config;
 
 import java.math.BigDecimal;
@@ -6,6 +8,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +24,7 @@ import com.example.demo.model.ItemCompra;
 import com.example.demo.model.Localidad;
 import com.example.demo.model.Promocion;
 import com.example.demo.model.Rol;
+import com.example.demo.model.Tiquete;
 import com.example.demo.model.Usuario;
 import com.example.demo.model.Valoracion;
 
@@ -44,7 +48,7 @@ public class DataInitializer {
 
             System.out.println("🌱 Inicializando MongoDB...");
 
-            // Roles
+            //ROLES
             Rol rolCliente = new Rol();
             rolCliente.setNombre("CLIENTE");
             rolCliente.setDescripcion("Usuario regular");
@@ -59,7 +63,7 @@ public class DataInitializer {
 
             mongoTemplate.insertAll(List.of(rolCliente, rolOrganizador, rolAdmin));
 
-            // Estados
+            //ESTADOS
             Estado estadoPublicado = new Estado();
             estadoPublicado.setNombre("PUBLICADO");
             estadoPublicado.setDescripcion("Evento visible");
@@ -70,7 +74,7 @@ public class DataInitializer {
 
             mongoTemplate.insertAll(List.of(estadoPublicado, estadoCancelado));
 
-            // Categorías
+            //CATEGORÍAS
             Categoria categoriaConcierto = new Categoria();
             categoriaConcierto.setNombre("Concierto");
             categoriaConcierto.setFoto("concierto.jpg");
@@ -85,7 +89,7 @@ public class DataInitializer {
 
             mongoTemplate.insertAll(List.of(categoriaConcierto, categoriaTeatro, categoriaFestival));
 
-            // Usuarios - EMBEBENDO rol directamente
+            //USUARIOS
             Usuario eduard = new Usuario();
             eduard.setNombre("Eduard Santiago");
             eduard.setApellido("Tordeciña Faria");
@@ -142,7 +146,8 @@ public class DataInitializer {
 
             mongoTemplate.insertAll(List.of(eduard, angie, jhonatan, laura, carlos, maria));
 
-            // evento 1 - concierto de rock
+            //EVENTOS
+            // Evento 1 - Concierto Rock
             Evento evento1 = new Evento();
             evento1.setTitulo("Concierto Rock 2024");
             evento1.setDescripcion("Mejor concierto del año");
@@ -167,6 +172,7 @@ public class DataInitializer {
             general1.setDisponibles(500);
 
             evento1.setLocalidades(List.of(vip1, general1));
+            mongoTemplate.save(evento1);
 
             // Evento 2 - Festival de Verano
             Evento evento2 = new Evento();
@@ -193,8 +199,9 @@ public class DataInitializer {
             preferencial.setDisponibles(800);
 
             evento2.setLocalidades(List.of(platino, preferencial));
+            mongoTemplate.save(evento2);
 
-            // Evento 3 - Obra de Teatro Clásica
+            // Evento 3 - Obra de Teatro
             Evento evento3 = new Evento();
             evento3.setTitulo("Hamlet - Obra Clásica");
             evento3.setDescripcion("Presentación especial de la obra de Shakespeare");
@@ -219,6 +226,7 @@ public class DataInitializer {
             platea.setDisponibles(300);
 
             evento3.setLocalidades(List.of(palco, platea));
+            mongoTemplate.save(evento3);
 
             // Evento 4 - Festival Electrónica
             Evento evento4 = new Evento();
@@ -242,11 +250,12 @@ public class DataInitializer {
             pista.setNombre("Pista");
             pista.setPrecio(new BigDecimal("100.00"));
             pista.setCapacidad(1000);
-            pista.setDisponibles(995);
+            pista.setDisponibles(1000);
 
             evento4.setLocalidades(List.of(backstage, pista));
+            mongoTemplate.save(evento4);
 
-            // Promociones
+            // PROMOCIONES 
             Promocion promo1 = new Promocion();
             promo1.setDescripcion("20% de descuento en Festival de Verano");
             promo1.setDescuento(new BigDecimal("20.00"));
@@ -261,16 +270,18 @@ public class DataInitializer {
             promo2.setFechaFinal(LocalDate.of(2024, 12, 10));
             promo2.setEvento(evento1);
 
+            // Asignar promociones a eventos
             evento1.setPromociones(List.of(promo2));
             evento2.setPromociones(List.of(promo1));
             evento3.setPromociones(new ArrayList<>());
             evento4.setPromociones(new ArrayList<>());
 
-            mongoTemplate.insertAll(List.of(evento1, evento2, evento3, evento4));
-            mongoTemplate.insertAll(List.of(promo1, promo2));
+            mongoTemplate.save(evento1);
+            mongoTemplate.save(evento2);
+            mongoTemplate.insert(promo1);
+            mongoTemplate.insert(promo2);
 
-            // Compras - Cliente1 compra entradas para evento1 y evento2
-            // Compras - Cliente1 compra entradas para evento1 y evento2
+            // Compra 1 - Carlos compra 2 tickets VIP para evento1
             ItemCompra item1 = new ItemCompra();
             item1.setEventoId(evento1.getId());
             item1.setLocalidadId(vip1.getId());
@@ -284,9 +295,109 @@ public class DataInitializer {
             compra1.setMetodoPago("TARJETA_CREDITO");
             compra1.setItems(List.of(item1));
 
-            mongoTemplate.insertAll(List.of(compra1));
+            mongoTemplate.save(compra1);
 
-            // Valoraciones
+            // Generar tiquetes para compra1
+            for (int i = 0; i < item1.getCantidad(); i++) {
+                Tiquete tiquete = new Tiquete();
+                tiquete.setCodigoQR(UUID.randomUUID().toString());
+                tiquete.setLocalidadId(vip1.getId());
+                tiquete.setEventoId(evento1.getId());
+                mongoTemplate.save(tiquete);
+            }
+
+            // Actualizar disponibles de vip1
+            vip1.setDisponibles(vip1.getDisponibles() - 2);
+            mongoTemplate.save(evento1);
+
+            // Compra 2 - Carlos compra 3 tickets Preferencial para evento2
+            ItemCompra item2 = new ItemCompra();
+            item2.setEventoId(evento2.getId());
+            item2.setLocalidadId(preferencial.getId());
+            item2.setCantidad(3);
+            item2.setPrecioUnitario(new BigDecimal("180.00"));
+
+            Compra compra2 = new Compra();
+            compra2.setCliente(carlos);
+            compra2.setFechaCompra(LocalDateTime.of(2024, 12, 5, 15, 45));
+            compra2.setTotal(new BigDecimal("540.00"));
+            compra2.setMetodoPago("TARJETA_CREDITO");
+            compra2.setItems(List.of(item2));
+
+            mongoTemplate.save(compra2);
+
+            // Generar tiquetes para compra2
+            for (int i = 0; i < item2.getCantidad(); i++) {
+                Tiquete tiquete = new Tiquete();
+                tiquete.setCodigoQR(UUID.randomUUID().toString());
+                tiquete.setLocalidadId(preferencial.getId());
+                tiquete.setEventoId(evento2.getId());
+                mongoTemplate.save(tiquete);
+            }
+
+            // Actualizar disponibles de preferencial
+            preferencial.setDisponibles(preferencial.getDisponibles() - 3);
+            mongoTemplate.save(evento2);
+
+            // Compra 3 - Maria compra 2 tickets Platea para evento3
+            ItemCompra item3 = new ItemCompra();
+            item3.setEventoId(evento3.getId());
+            item3.setLocalidadId(platea.getId());
+            item3.setCantidad(2);
+            item3.setPrecioUnitario(new BigDecimal("60.00"));
+
+            Compra compra3 = new Compra();
+            compra3.setCliente(maria);
+            compra3.setFechaCompra(LocalDateTime.of(2025, 1, 10, 18, 20));
+            compra3.setTotal(new BigDecimal("120.00"));
+            compra3.setMetodoPago("TARJETA_CREDITO");
+            compra3.setItems(List.of(item3));
+
+            mongoTemplate.save(compra3);
+
+            // Generar tiquetes para compra3
+            for (int i = 0; i < item3.getCantidad(); i++) {
+                Tiquete tiquete = new Tiquete();
+                tiquete.setCodigoQR(UUID.randomUUID().toString());
+                tiquete.setLocalidadId(platea.getId());
+                tiquete.setEventoId(evento3.getId());
+                mongoTemplate.save(tiquete);
+            }
+
+            // Actualizar disponibles de platea
+            platea.setDisponibles(platea.getDisponibles() - 2);
+            mongoTemplate.save(evento3);
+
+            // Compra 4 - Maria compra 5 tickets Pista para evento4
+            ItemCompra item4 = new ItemCompra();
+            item4.setEventoId(evento4.getId());
+            item4.setLocalidadId(pista.getId());
+            item4.setCantidad(5);
+            item4.setPrecioUnitario(new BigDecimal("100.00"));
+
+            Compra compra4 = new Compra();
+            compra4.setCliente(maria);
+            compra4.setFechaCompra(LocalDateTime.of(2025, 2, 1, 20, 0));
+            compra4.setTotal(new BigDecimal("500.00"));
+            compra4.setMetodoPago("TARJETA_CREDITO");
+            compra4.setItems(List.of(item4));
+
+            mongoTemplate.save(compra4);
+
+            // Generar tiquetes para compra4
+            for (int i = 0; i < item4.getCantidad(); i++) {
+                Tiquete tiquete = new Tiquete();
+                tiquete.setCodigoQR(UUID.randomUUID().toString());
+                tiquete.setLocalidadId(pista.getId());
+                tiquete.setEventoId(evento4.getId());
+                mongoTemplate.save(tiquete);
+            }
+
+            // Actualizar disponibles de pista
+            pista.setDisponibles(pista.getDisponibles() - 5);
+            mongoTemplate.save(evento4);
+
+            //VALORACIONES
             Valoracion valoracion1 = new Valoracion();
             valoracion1.setCliente(carlos);
             valoracion1.setEvento(evento1);
@@ -299,8 +410,10 @@ public class DataInitializer {
             valoracion2.setCalificacion(4);
             valoracion2.setComentario("Muy buena obra, actores excelentes");
 
-            mongoTemplate.insertAll(List.of(valoracion1, valoracion2));
+            mongoTemplate.save(valoracion1);
+            mongoTemplate.save(valoracion2);
 
+            //resumen
             System.out.println("✅ Roles creados");
             System.out.println("✅ Estados creados");
             System.out.println("✅ Categorías creadas");
@@ -308,6 +421,7 @@ public class DataInitializer {
             System.out.println("✅ Eventos creados con localidades");
             System.out.println("✅ Promociones creadas");
             System.out.println("✅ Compras creadas");
+            System.out.println("✅ Tiquetes generados");
             System.out.println("✅ Valoraciones creadas");
             System.out.println("\n🔐 Credenciales:");
             System.out.println("   📧 eduardestf20@gmail.com / eduard123 - ADMIN");

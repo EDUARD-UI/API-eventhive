@@ -1,4 +1,4 @@
-package com.example.demo.controllers;
+package com.example.demo.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,6 +34,12 @@ public class BoletosApiController {
         if (!compra.getCliente().getId().equals(usuario.getId()))
             throw new BusinessException("No autorizado para ver esta compra");
 
-        return ResponseEntity.ok(ApiResponse.ok("Compra obtenida", serviceCompra.obtenerBoletosDTO(compraId)));
+        BoletosCompraDTO boletosDTO = new BoletosCompraDTO();
+        boletosDTO.setCompraId(compra.getId());
+        boletosDTO.setFechaCompra(compra.getFechaCompra());
+        boletosDTO.setTotal(compra.getTotal());
+        boletosDTO.setItems(compra.getItems()); // Asegúrate que BoletosCompraDTO tenga List<ItemCompra>
+
+        return ResponseEntity.ok(ApiResponse.ok("Compra obtenida", boletosDTO));
     }
 }

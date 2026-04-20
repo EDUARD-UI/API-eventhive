@@ -22,15 +22,22 @@ public class Compra {
     private String id;
 
     private LocalDateTime fechaCompra;
-
     private BigDecimal total;
-
     private String metodoPago;
 
     @JsonIgnore
-    @DBRef
+    @DBRef(lazy = true)
     private Usuario cliente;
 
-    @DBRef
-    private List<TiqueteCompra> tiqueteCompras;
+    // ✅ EMBEBIDO - Items de la compra
+    private List<ItemCompra> items;
+}
+
+// NUEVA CLASE EMBEBIDA
+@Getter
+@Setter
+class ItemCompra {
+    private String tiqueteId;
+    private Integer cantidad;
+    private BigDecimal precioUnitario;
 }

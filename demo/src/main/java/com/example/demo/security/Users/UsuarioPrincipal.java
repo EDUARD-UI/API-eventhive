@@ -20,8 +20,14 @@ public class UsuarioPrincipal implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
-        String rolNombre = usuario.getRol().getNombre();
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + rolNombre));
+        
+        if (usuario.getRol() != null) {
+            String rolNombre = usuario.getRol().getNombre();
+            if (rolNombre != null && !rolNombre.isEmpty()) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + rolNombre));
+            }
+        }
+        
         return authorities;
     }
 
@@ -47,6 +53,11 @@ public class UsuarioPrincipal implements UserDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
         return true;
     }
 

@@ -70,6 +70,12 @@ public class AuthApiController {
         return ResponseEntity.ok(ApiResponse.ok("Sesión cerrada exitosamente"));
     }
 
+    @GetMapping("/expired")
+    public ResponseEntity<ApiResponse<Void>> sessionExpired() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error("La sesión ha expirado. Por favor, inicie sesión nuevamente"));
+    }
+
     @PostMapping("/registrar-cliente")
     public ResponseEntity<ApiResponse<Void>> registrarCliente(
             @RequestParam String nombre,

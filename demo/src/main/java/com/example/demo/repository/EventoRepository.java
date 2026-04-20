@@ -18,12 +18,12 @@ public interface EventoRepository extends MongoRepository<Evento, String> {
     List<Evento> findTop3ByOrderByFechaAsc();
     List<Evento> findByCategoriaId(String categoriaId);
     List<Evento> findByTituloContainingIgnoreCase(String titulo);
-    List<Evento> findByUsuarioId(String organizadorId);
-    long countByUsuarioId(String organizadorId);
+    List<Evento> findByOrganizadorId(String organizadorId);
+    long countByOrganizadorId(String organizadorId);
     long countByCategoriaId(String id);
     long countByEstadoId(String id);
 
-    @Query("{ 'usuario._id': ?0 }")
+    @Query("{ 'organizador._id': ?0 }")
     List<NombreEventoDTO> findNombresByOrganizadorId(String organizadorId);
     
     // Búsqueda por título
@@ -35,5 +35,5 @@ public interface EventoRepository extends MongoRepository<Evento, String> {
     Page<Evento> findAll(Pageable pageable);
     Page<Evento> findByCategoriaId(String categoriaId, Pageable pageable);
     Page<Evento> findByTituloContainingIgnoreCase(String titulo, Pageable pageable);
-    Page<Evento> findByUsuarioId(String organizadorId, Pageable pageable);
+    Page<Evento> findByOrganizadorId(String organizadorId, Pageable pageable);
 }

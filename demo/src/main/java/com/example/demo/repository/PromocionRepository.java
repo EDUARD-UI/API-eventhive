@@ -15,12 +15,14 @@ public interface PromocionRepository extends MongoRepository<Promocion, String> 
 
     List<Promocion> findByEventoId(String eventoId);
 
-    @Query("{ 'evento.usuario._id': ?0 }")
-    List<Promocion> findByEventoUsuarioId(String organizadorId);
+    Page<Promocion> findByEventoIdIn(List<String> eventoIds, Pageable pageable);
 
-    @Query("{ 'evento.usuario._id': ?0 }")
-    long countByEventoUsuarioId(String organizadorId);
+    @Query("{ 'evento.organizador._id': ?0 }")
+    List<Promocion> findByEventoOrganizadorId(String organizadorId);
 
-    @Query("{ 'evento.usuario._id': ?0 }")
-    Page<Promocion> findByEventoUsuarioIdPageable(String organizadorId, Pageable pageable);
+    @Query("{ 'evento.organizador._id': ?0 }")
+    long countByEventoOrganizadorId(String organizadorId);
+
+    @Query("{ 'evento.organizador._id': ?0 }")
+    Page<Promocion> findByEventoOrganizadorId(String organizadorId, Pageable pageable);
 }

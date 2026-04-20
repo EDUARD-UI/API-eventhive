@@ -21,7 +21,6 @@ public class Usuario {
     private String id;
 
     private String nombre;
-
     private String apellido;
 
     @Indexed(unique = true)
@@ -32,22 +31,21 @@ public class Usuario {
     @JsonIgnore
     private String clave;
 
-    @DBRef
+    @DBRef(lazy = true)  // ← Añadir lazy
     private Rol rol;
 
     @JsonIgnore
-    @DBRef
+    @DBRef(lazy = true)
     private List<Evento> eventosOrganizados;
 
-    @JsonIgnore
-    @DBRef
-    private List<EventoDeseado> eventosDeseados;
+    // CAMBIADO: eventosDeseados como array de IDs (embebido)
+    private List<String> eventosDeseadosIds;
 
     @JsonIgnore
-    @DBRef
+    @DBRef(lazy = true)
     private List<Valoracion> valoraciones;
 
     @JsonIgnore
-    @DBRef
+    @DBRef(lazy = true)
     private List<Compra> compras;
 }

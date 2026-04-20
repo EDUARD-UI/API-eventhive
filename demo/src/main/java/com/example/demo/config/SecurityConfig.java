@@ -2,11 +2,11 @@ package com.example.demo.config;
 
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,6 +16,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -24,17 +25,27 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.example.demo.security.Users.CustomUserDetailsService;
 
+import lombok.RequiredArgsConstructor;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Autowired
-    private CustomUserDetailsService customUserDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(customUserDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setHideUserNotFoundExceptions(true);
+        return authProvider;
     }
 
     @Bean
@@ -48,55 +59,62 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .userDetailsService(customUserDetailsService)
+                
+                // Configuración de sesión
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                        .sessionFixation().migrateSession()
+                        .sessionFixation(sessionFixation -> sessionFixation.migrateSession())
                         .maximumSessions(1)
-                        .expiredUrl("/login")
+                        .expiredUrl("/api/auth/expired")
                 )
-                .authorizeHttpRequests(auth -> {
-                    // Archivos estáticos
-                    auth.requestMatchers(
-                        "/", "/index.html", "/css/**", "/js/**",
-                        "/images/**", "/pages/**", "/uploads/**", "/assets/**"
-                    ).permitAll();
+                
+                // Autorización de peticiones
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                            "/", "/index.html", "/css/**", "/js/**",
+                            "/images/**", "/pages/**", "/uploads/**", "/assets/**"
+                        ).permitAll()
 
-                    // Auth pública
-                    auth.requestMatchers("/api/auth/login").permitAll();
-                    auth.requestMatchers("/api/auth/logout").permitAll();
-                    auth.requestMatchers("/api/auth/registrar-cliente").permitAll();
-                    auth.requestMatchers("/api/auth/registrar-organizador").permitAll();
-                    auth.requestMatchers("/api/auth/me").permitAll(); // Permite check de sesión
+                        // Auth pública
+                        .requestMatchers("/api/auth/**").permitAll()
 
-                    // Información pública de solo lectura
-                    auth.requestMatchers(HttpMethod.GET, "/api/eventos/**").permitAll();
-                    auth.requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll();
-                    auth.requestMatchers(HttpMethod.GET, "/api/localidades/**").permitAll();
-                    auth.requestMatchers(HttpMethod.GET, "/api/valoraciones/**").permitAll();
+                        // Información pública de solo lectura
+                        .requestMatchers(HttpMethod.GET, "/api/eventos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/localidades/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/valoraciones/**").permitAll()
 
-                    // cualquier otra ruta requiere autenticación
-                    auth.anyRequest().authenticated();
-                })
+                        // Cualquier otra ruta requiere autenticación
+                        .anyRequest().authenticated()
+                )
                 .formLogin(form -> form.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
+                
+                // Configuración de logout
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
                         .logoutSuccessUrl("/")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
-                );
+                        .clearAuthentication(true)
+                )
+                .authenticationProvider(authenticationProvider());
 
         return http.build();
+    }
+
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:5173",  // Frontend React (dev)
-            "http://localhost:3000",  // Alternativo
-            "http://localhost:4173"   // Frontend preview
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "http://localhost:4173"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));

@@ -2,10 +2,11 @@ package com.example.demo.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -15,8 +16,9 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Evento;
 import com.example.demo.model.Promocion;
 import com.example.demo.model.Usuario;
-import com.example.demo.repository.PromocionRepository;
 import com.example.demo.repository.EventoRepository;
+import com.example.demo.repository.PromocionRepository;
+import com.example.demo.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,17 +28,11 @@ public class ServicePromocion {
 
     private final PromocionRepository promocionRepository;
     private final EventoRepository eventoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
 
     public List<Promocion> obtenerPromociones() {
         return promocionRepository.findAll();
-    }
-
-    public List<Promocion> obtenerPorOrganizador(String orgId) {
-        return promocionRepository.findByEventoUsuarioId(orgId);
-    }
-
-    public long contarPorOrganizador(String orgId) {
-        return promocionRepository.countByEventoUsuarioId(orgId);
     }
 
     public List<Promocion> obtenerPorEvento(String eventoId) {
@@ -45,26 +41,28 @@ public class ServicePromocion {
 
     public Promocion obtenerPromocionPorId(String id) {
         return promocionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Promoción no encontrada con id: " + id));
-    }
-
-    public Page<PromocionDTO> obtenerDTOPorOrganizador(String orgId, Pageable pageable) {
-        return promocionRepository.findByEventoUsuarioIdPageable(orgId, pageable)
-                .map(this::toDTO);
+                .orElseThrow(() -> new ResourceNotFoundException("Promoción no encontrada"));
     }
 
     public void crearPromocion(String eventoId, String descripcion, BigDecimal descuento,
             String fechaInicio, String fechaFin, Usuario organizador) {
-        validarDescuento(descuento);
-        LocalDate inicio = LocalDate.parse(fechaInicio);
-        LocalDate fin = LocalDate.parse(fechaFin);
-        if (fin.isBefore(inicio)) {
+        
+        // Convertir strings a LocalDate
+        LocalDate fechaInicioLD = LocalDate.parse(fechaInicio, DATE_FORMATTER);
+        LocalDate fechaFinLD = LocalDate.parse(fechaFin, DATE_FORMATTER);
+        
+        if (fechaFinLD.isBefore(fechaInicioLD)) {
             throw new BusinessException("La fecha de fin no puede ser anterior a la de inicio");
+        }
+        
+        if (descuento.compareTo(BigDecimal.ONE) < 0 || descuento.compareTo(new BigDecimal("75")) > 0) {
+            throw new BusinessException("El descuento debe estar entre 1 y 75");
         }
 
         Evento evento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado"));
-        if (!evento.getUsuario().getId().equals(organizador.getId())) {
+        
+        if (!evento.getOrganizador().getId().equals(organizador.getId())) {
             throw new BusinessException("No puede crear promociones para eventos de otro organizador");
         }
 
@@ -72,49 +70,77 @@ public class ServicePromocion {
         p.setEvento(evento);
         p.setDescripcion(descripcion);
         p.setDescuento(descuento);
-        p.setFechaInicio(inicio);
-        p.setFechaFinal(fin);
-        promocionRepository.save(p);
-    }
-
-    public void actualizarPromocion(String id, String eventoId, String descripcion, BigDecimal descuento,
-            String fechaInicio, String fechaFin, Usuario organizador) {
-        Promocion p = obtenerPromocionPorId(id);
-        if (!p.getEvento().getUsuario().getId().equals(organizador.getId())) {
-            throw new BusinessException("No autorizado");
-        }
-
-        validarDescuento(descuento);
-        LocalDate inicio = LocalDate.parse(fechaInicio);
-        LocalDate fin = LocalDate.parse(fechaFin);
-        if (fin.isBefore(inicio)) {
-            throw new BusinessException("La fecha de fin no puede ser anterior a la de inicio");
-        }
-
-        p.setEvento(eventoRepository.findById(eventoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado")));
-        p.setDescripcion(descripcion);
-        p.setDescuento(descuento);
-        p.setFechaInicio(inicio);
-        p.setFechaFinal(fin);
+        p.setFechaInicio(fechaInicioLD);
+        p.setFechaFinal(fechaFinLD);
         promocionRepository.save(p);
     }
 
     public void eliminarPromocion(String id, Usuario organizador) {
         Promocion p = obtenerPromocionPorId(id);
-        if (!p.getEvento().getUsuario().getId().equals(organizador.getId())) {
+        if (!p.getEvento().getOrganizador().getId().equals(organizador.getId())) {
             throw new BusinessException("No autorizado");
         }
         promocionRepository.deleteById(id);
     }
 
-    public List<PromocionDTO> obtenerDTOPorOrganizador(String orgId) {
-        return obtenerPorOrganizador(orgId).stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+    public void actualizarPromocion(String id, String eventoId, String descripcion, BigDecimal descuento,
+            String fechaInicio, String fechaFin, Usuario organizador) {
+        
+        Promocion p = obtenerPromocionPorId(id);
+        
+        // Validar autorización
+        if (!p.getEvento().getOrganizador().getId().equals(organizador.getId())) {
+            throw new BusinessException("No autorizado");
+        }
+        
+        // Convertir strings a LocalDate
+        LocalDate fechaInicioLD = LocalDate.parse(fechaInicio, DATE_FORMATTER);
+        LocalDate fechaFinLD = LocalDate.parse(fechaFin, DATE_FORMATTER);
+        
+        if (fechaFinLD.isBefore(fechaInicioLD)) {
+            throw new BusinessException("La fecha de fin no puede ser anterior a la de inicio");
+        }
+        
+        if (descuento.compareTo(BigDecimal.ONE) < 0 || descuento.compareTo(new BigDecimal("75")) > 0) {
+            throw new BusinessException("El descuento debe estar entre 1 y 75");
+        }
+
+        Evento evento = eventoRepository.findById(eventoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado"));
+        
+        if (!evento.getOrganizador().getId().equals(organizador.getId())) {
+            throw new BusinessException("No puede actualizar promociones para eventos de otro organizador");
+        }
+
+        p.setEvento(evento);
+        p.setDescripcion(descripcion);
+        p.setDescuento(descuento);
+        p.setFechaInicio(fechaInicioLD);
+        p.setFechaFinal(fechaFinLD);
+        promocionRepository.save(p);
     }
 
-    public PromocionDTO toDTO(Promocion p) {
+    public Page<PromocionDTO> obtenerDTOPorOrganizador(String organizadorId, Pageable pageable) {
+        Usuario organizador = usuarioRepository.findById(organizadorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Organizador no encontrado"));
+        
+        // Obtener eventos del organizador
+        List<String> eventoIds = eventoRepository.findByOrganizadorId(organizadorId).stream()
+                .map(Evento::getId)
+                .toList();
+        
+        if (eventoIds.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+        
+        // Obtener promociones de esos eventos
+        Page<Promocion> promociones = promocionRepository.findByEventoIdIn(eventoIds, pageable);
+        
+        // Convertir a DTO
+        return promociones.map(this::toDTO);
+    }
+
+    private PromocionDTO toDTO(Promocion p) {
         PromocionDTO dto = new PromocionDTO();
         dto.setId(p.getId());
         dto.setDescripcion(p.getDescripcion());
@@ -126,11 +152,5 @@ public class ServicePromocion {
             dto.setEventoTitulo(p.getEvento().getTitulo());
         }
         return dto;
-    }
-
-    private void validarDescuento(BigDecimal d) {
-        if (d.compareTo(BigDecimal.ONE) < 0 || d.compareTo(new BigDecimal("75")) > 0) {
-            throw new BusinessException("El descuento debe estar entre 1 y 75");
-        }
     }
 }

@@ -20,10 +20,9 @@ public class Categoria {
     private String id;
 
     private String foto;
-
     private String nombre;
 
     @JsonIgnore
-    @DBRef
+    @DBRef(lazy = true)
     private List<Evento> eventos;
 }

@@ -114,30 +114,33 @@ public class ServiceEvento {
     }
 
     public void agregarEventoDeseado(String eventoId) {
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
-        if (usuario == null) throw new BusinessException("Usuario no encontrado");
+    String correo = SecurityContextHolder.getContext().getAuthentication().getName();
+    Usuario usuario = usuarioRepository.findByCorreo(correo);
+    if (usuario == null) throw new BusinessException("Usuario no encontrado");
 
-        if (usuario.getEventosDeseadosIds() == null) {
-            usuario.setEventosDeseadosIds(new ArrayList<>());
-        }
+    Evento evento = eventoRepository.findById(eventoId)
+        .orElseThrow(() -> new BusinessException("Evento no encontrado"));
 
-        if (!usuario.getEventosDeseadosIds().contains(eventoId)) {
-            usuario.getEventosDeseadosIds().add(eventoId);
-            usuarioRepository.save(usuario);
-        }
+    if (usuario.getEventosDeseados() == null) {
+        usuario.setEventosDeseados(new ArrayList<>());
     }
+
+    if (!usuario.getEventosDeseados().contains(evento)) {
+        usuario.getEventosDeseados().add(evento);
+        usuarioRepository.save(usuario);
+    }
+}
 
     public void eliminarEventoDeseado(String eventoId) {
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
-        if (usuario == null) throw new BusinessException("Usuario no encontrado");
+    String correo = SecurityContextHolder.getContext().getAuthentication().getName();
+    Usuario usuario = usuarioRepository.findByCorreo(correo);
+    if (usuario == null) throw new BusinessException("Usuario no encontrado");
 
-        if (usuario.getEventosDeseadosIds() != null) {
-            usuario.getEventosDeseadosIds().remove(eventoId);
-            usuarioRepository.save(usuario);
-        }
+    if (usuario.getEventosDeseados() != null) {
+        usuario.getEventosDeseados().removeIf(e -> e.getId().equals(eventoId));
+        usuarioRepository.save(usuario);
     }
+}
 
     public List<Evento> buscarPorCategoria(String categoriaId) {
         return eventoRepository.findByCategoriaId(categoriaId);

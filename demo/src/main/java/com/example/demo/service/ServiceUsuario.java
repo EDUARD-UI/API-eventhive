@@ -14,7 +14,6 @@ import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Rol;
 import com.example.demo.model.Usuario;
-import com.example.demo.repository.EventoRepository;
 import com.example.demo.repository.RolesRepository;
 import com.example.demo.repository.UsuarioRepository;
 
@@ -26,7 +25,6 @@ public class ServiceUsuario {
 
     private final UsuarioRepository usuarioRepository;
     private final RolesRepository rolesRepository;
-    private final EventoRepository eventoRepository;
     private final PasswordEncoder passwordEncoder;
 
     public Usuario obtenerUsuarioPorCorreo(String correo) {
@@ -35,7 +33,7 @@ public class ServiceUsuario {
 
     public Usuario obtenerUsuarioPorId(String id) {
         return usuarioRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
     }
 
     public List<Usuario> obtenerTodos() {
@@ -53,21 +51,27 @@ public class ServiceUsuario {
         dto.setNombre(usuario.getNombre());
         dto.setApellido(usuario.getApellido());
         dto.setCorreo(usuario.getCorreo());
-        if (usuario.getRol() != null) dto.setRolNombre(usuario.getRol().getNombre());
+        if (usuario.getRol() != null) {
+            dto.setRolNombre(usuario.getRol().getNombre());
+        }
         return dto;
     }
 
     public UsuarioDTO obtenerPerfil() {
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();
         Usuario usuario = usuarioRepository.findByCorreo(correo);
-        if (usuario == null) throw new BusinessException("Usuario no encontrado");
+        if (usuario == null) {
+            throw new BusinessException("Usuario no encontrado");
+        }
         return usuarioADTO(usuario);
     }
 
     public UsuarioDTO actualizarPerfil(UsuarioDTO dto) {
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();
         Usuario usuario = usuarioRepository.findByCorreo(correo);
-        if (usuario == null) throw new BusinessException("Usuario no encontrado");
+        if (usuario == null) {
+            throw new BusinessException("Usuario no encontrado");
+        }
 
         usuario.setNombre(dto.getNombre());
         usuario.setApellido(dto.getApellido());
@@ -80,13 +84,15 @@ public class ServiceUsuario {
     public Object listarEventosDeseados() {
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();
         Usuario usuario = usuarioRepository.findByCorreo(correo);
-        if (usuario == null) throw new BusinessException("Usuario no encontrado");
+        if (usuario == null) {
+            throw new BusinessException("Usuario no encontrado");
+        }
 
-        if (usuario.getEventosDeseadosIds() == null || usuario.getEventosDeseadosIds().isEmpty()) {
+        if (usuario.getEventosDeseados() == null || usuario.getEventosDeseados().isEmpty()) {
             return List.of();
         }
 
-        return eventoRepository.findAllById(usuario.getEventosDeseadosIds());
+        return usuario.getEventosDeseados();
     }
 
     public void crearUsuario(String nombre, String apellido, String correo, String telefono, String clave, String rolId) {
@@ -95,7 +101,7 @@ public class ServiceUsuario {
         }
 
         Rol rol = rolesRepository.findById(rolId)
-            .orElseThrow(() -> new ResourceNotFoundException("Rol no existe"));
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no existe"));
 
         Usuario usuario = new Usuario();
         usuario.setNombre(nombre);
@@ -128,7 +134,7 @@ public class ServiceUsuario {
     public void asignarRol(String usuarioId, String rolId) {
         Usuario usuario = obtenerUsuarioPorId(usuarioId);
         Rol rol = rolesRepository.findById(rolId)
-            .orElseThrow(() -> new ResourceNotFoundException("Rol no existe"));
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no existe"));
         usuario.setRol(rol);
         usuarioRepository.save(usuario);
     }
@@ -148,7 +154,9 @@ public class ServiceUsuario {
         dto.setApellido(usuario.getApellido());
         dto.setCorreo(usuario.getCorreo());
         dto.setTelefono(usuario.getTelefono());
-        if (usuario.getRol() != null) dto.setRolNombre(usuario.getRol().getNombre());
+        if (usuario.getRol() != null) {
+            dto.setRolNombre(usuario.getRol().getNombre());
+        }
         return dto;
     }
 }

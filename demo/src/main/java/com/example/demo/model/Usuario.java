@@ -38,7 +38,8 @@ public class Usuario {
     @DBRef(lazy = true)
     private List<Evento> eventosOrganizados;
 
-    private List<String> eventosDeseadosIds;
+    @DBRef(lazy = true)
+    private List<Evento> eventosDeseados;
 
     @JsonIgnore
     @DBRef(lazy = true)

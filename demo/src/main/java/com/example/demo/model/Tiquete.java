@@ -2,6 +2,7 @@ package com.example.demo.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Getter;
@@ -19,5 +20,9 @@ public class Tiquete {
     private String codigoQR;
 
     private String localidadId;
-    private String eventoId;
+    @DBRef
+    private Evento evento;
+
+    @DBRef
+    private Compra compra;
 }

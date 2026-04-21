@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
@@ -40,7 +41,8 @@ public class Evento {
     private List<Localidad> localidades;
 
     @DBRef
-    private List<Promocion> promociones;
+    @JsonBackReference  // Para evitar loop en la serialización
+    private Promocion promocion;  // Un evento tiene UNA promoción
 
     @JsonIgnore
     @DBRef(lazy = true)

@@ -48,7 +48,7 @@ public class ServiceEvento {
 
         evento.setOrganizador(organizador);
         if (evento.getLocalidades() == null) evento.setLocalidades(new ArrayList<>());
-        if (evento.getPromociones() == null) evento.setPromociones(new ArrayList<>());
+        if (evento.getPromocion() == null) evento.setPromocion(null);
 
         return eventoRepository.save(evento);
     }

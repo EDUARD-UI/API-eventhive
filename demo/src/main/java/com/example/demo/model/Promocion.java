@@ -1,13 +1,13 @@
 package com.example.demo.model;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -20,18 +20,13 @@ public class Promocion {
     @Id
     private String id;
 
+    private String nombre;
     private String descripcion;
-
-    private BigDecimal descuento;
-
+    private Double descuento;
     private LocalDate fechaInicio;
+    private LocalDate fechaFin;
 
-    private LocalDate fechaFinal;
-
-    @DBRef
-    private Evento evento;
-
-    @JsonIgnore
-    @DBRef
-    private Usuario organizador;
+    @DBRef(lazy = true)
+    @JsonManagedReference
+    private List<Evento> eventos;  // Una promoción puede tener MUCHOS eventos
 }

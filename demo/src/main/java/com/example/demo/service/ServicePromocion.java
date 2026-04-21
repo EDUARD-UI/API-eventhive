@@ -3,6 +3,7 @@ package com.example.demo.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -39,7 +40,7 @@ public class ServicePromocion {
     }
 
     public List<Promocion> obtenerPorEvento(String eventoId) {
-        return promocionRepository.findByEventoId(eventoId);
+        return promocionRepository.findByEventosId(eventoId);
     }
 
     public Promocion obtenerPromocionPorId(String id) {
@@ -68,21 +69,47 @@ public class ServicePromocion {
             throw new BusinessException("No autorizado");
         }
 
+        // Buscar si ya existe una promoción para este evento
+        Promocion promocionExistente = promocionRepository.findFirstByEventosId(eventoId);
+        if (promocionExistente != null) {
+            throw new BusinessException("Este evento ya tiene una promoción asignada");
+        }
+
         Promocion p = new Promocion();
-        p.setEvento(evento);
         p.setDescripcion(descripcion);
-        p.setDescuento(descuento);
+        p.setDescuento(descuento.doubleValue());
         p.setFechaInicio(fechaInicioLD);
-        p.setFechaFinal(fechaFinLD);
-        p.setOrganizador(organizador);
-        promocionRepository.save(p);
+        p.setFechaFin(fechaFinLD);
+        
+        // Inicializar lista de eventos
+        List<Evento> eventos = new ArrayList<>();
+        eventos.add(evento);
+        p.setEventos(eventos);
+        
+        Promocion saved = promocionRepository.save(p);
+        
+        // Actualizar el evento con la promoción
+        evento.setPromocion(saved);
+        eventoRepository.save(evento);
     }
 
     public void eliminarPromocion(String id, Usuario organizador) {
         Promocion p = obtenerPromocionPorId(id);
-        if (!p.getEvento().getOrganizador().getId().equals(organizador.getId())) {
+        
+        // Verificar autorización (el organizador debe ser dueño de al menos un evento)
+        boolean autorizado = p.getEventos().stream()
+            .anyMatch(e -> e.getOrganizador().getId().equals(organizador.getId()));
+        
+        if (!autorizado) {
             throw new BusinessException("No autorizado");
         }
+        
+        // Remover referencia de los eventos
+        for (Evento evento : p.getEventos()) {
+            evento.setPromocion(null);
+            eventoRepository.save(evento);
+        }
+        
         promocionRepository.deleteById(id);
     }
 
@@ -90,8 +117,12 @@ public class ServicePromocion {
             String fechaInicio, String fechaFin, Usuario organizador) {
 
         Promocion p = obtenerPromocionPorId(id);
-
-        if (!p.getEvento().getOrganizador().getId().equals(organizador.getId())) {
+        
+        // Verificar autorización
+        boolean autorizado = p.getEventos().stream()
+            .anyMatch(e -> e.getOrganizador().getId().equals(organizador.getId()));
+        
+        if (!autorizado) {
             throw new BusinessException("No autorizado");
         }
 
@@ -106,18 +137,31 @@ public class ServicePromocion {
             throw new BusinessException("Descuento entre 1 y 75");
         }
 
-        Evento evento = eventoRepository.findById(eventoId)
-            .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado"));
-
-        if (!evento.getOrganizador().getId().equals(organizador.getId())) {
-            throw new BusinessException("No autorizado");
+        // Si cambia el evento, actualizar referencias
+        if (eventoId != null && !eventoId.isEmpty()) {
+            Evento nuevoEvento = eventoRepository.findById(eventoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado"));
+            
+            if (!nuevoEvento.getOrganizador().getId().equals(organizador.getId())) {
+                throw new BusinessException("No autorizado");
+            }
+            
+            // Remover evento antiguo de la lista
+            p.getEventos().removeIf(e -> e.getId().equals(eventoId));
+            
+            // Agregar nuevo evento
+            p.getEventos().add(nuevoEvento);
+            
+            // Actualizar referencia en el evento
+            nuevoEvento.setPromocion(p);
+            eventoRepository.save(nuevoEvento);
         }
 
-        p.setEvento(evento);
         p.setDescripcion(descripcion);
-        p.setDescuento(descuento);
+        p.setDescuento(descuento.doubleValue());
         p.setFechaInicio(fechaInicioLD);
-        p.setFechaFinal(fechaFinLD);
+        p.setFechaFin(fechaFinLD);
+        
         promocionRepository.save(p);
     }
 
@@ -130,7 +174,7 @@ public class ServicePromocion {
             return new PageImpl<>(List.of(), pageable, 0);
         }
 
-        Page<Promocion> promociones = promocionRepository.findByEventoIdIn(eventoIds, pageable);
+        Page<Promocion> promociones = promocionRepository.findByEventosIdIn(eventoIds, pageable);
         return promociones.map(this::toDTO);
     }
 
@@ -138,12 +182,12 @@ public class ServicePromocion {
         PromocionDTO dto = new PromocionDTO();
         dto.setId(p.getId());
         dto.setDescripcion(p.getDescripcion());
-        dto.setDescuento(p.getDescuento());
+        dto.setDescuento(BigDecimal.valueOf(p.getDescuento()));
         dto.setFechaInicio(p.getFechaInicio());
-        dto.setFechaFinal(p.getFechaFinal());
-        if (p.getEvento() != null) {
-            dto.setEventoId(p.getEvento().getId());
-            dto.setEventoTitulo(p.getEvento().getTitulo());
+        dto.setFechaFinal(p.getFechaFin());
+        if (p.getEventos() != null && !p.getEventos().isEmpty()) {
+            dto.setEventoId(p.getEventos().get(0).getId());
+            dto.setEventoTitulo(p.getEventos().get(0).getTitulo());
         }
         return dto;
     }

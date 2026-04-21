@@ -13,16 +13,22 @@ import com.example.demo.model.Promocion;
 @Repository
 public interface PromocionRepository extends MongoRepository<Promocion, String> {
 
-    List<Promocion> findByEventoId(String eventoId);
+    // Buscar promociones por ID de evento (un evento puede tener UNA promoción)
+    @Query("{ 'eventos._id': ?0 }")
+    List<Promocion> findByEventosId(String eventoId);
+    
+    // Buscar primera promoción por ID de evento
+    @Query("{ 'eventos._id': ?0 }")
+    Promocion findFirstByEventosId(String eventoId);
 
-    Page<Promocion> findByEventoIdIn(List<String> eventoIds, Pageable pageable);
+    // Buscar promociones por lista de IDs de eventos
+    @Query("{ 'eventos._id': { $in: ?0 } }")
+    Page<Promocion> findByEventosIdIn(List<String> eventoIds, Pageable pageable);
 
-    @Query("{ 'evento.organizador._id': ?0 }")
-    List<Promocion> findByEventoOrganizadorId(String organizadorId);
+    // Buscar promociones por organizador
+    @Query("{ 'eventos.organizador._id': ?0 }")
+    List<Promocion> findByEventosOrganizadorId(String organizadorId);
 
-    @Query("{ 'evento.organizador._id': ?0 }")
-    long countByEventoOrganizadorId(String organizadorId);
-
-    @Query("{ 'evento.organizador._id': ?0 }")
-    Page<Promocion> findByEventoOrganizadorId(String organizadorId, Pageable pageable);
+    @Query("{ 'eventos.organizador._id': ?0 }")
+    Page<Promocion> findByEventosOrganizadorId(String organizadorId, Pageable pageable);
 }

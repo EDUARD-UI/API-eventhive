@@ -8,6 +8,8 @@ import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
+import com.example.demo.converter.LocalTimeReadConverter;
+import com.example.demo.converter.LocalTimeWriteConverter;
 import com.example.demo.converter.RolReadingConverter;
 import com.example.demo.converter.RolWritingConverter;
 
@@ -20,7 +22,9 @@ public class MongoConfig {
     public MongoCustomConversions customConversions() {
         return new MongoCustomConversions(Arrays.asList(
             new RolReadingConverter(),
-            new RolWritingConverter()
+            new RolWritingConverter(),
+            new LocalTimeReadConverter(),
+            new LocalTimeWriteConverter()
         ));
     }
 }

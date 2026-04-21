@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.exception.BusinessException;
@@ -22,6 +23,7 @@ public class ServiceAutenticacion {
     private final UsuarioRepository usuarioRepository;
     private final RolesRepository rolesRepository;
     private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder; // AÑADE ESTO
 
     public Authentication autenticar(String correo, String clave) {
         return authenticationManager.authenticate(
@@ -69,7 +71,8 @@ public class ServiceAutenticacion {
         usuario.setApellido(apellido);
         usuario.setCorreo(correo);
         usuario.setTelefono(telefono);
-        usuario.setClave(clave);
+        // CODIFICA LA CONTRASEÑA ANTES DE GUARDAR
+        usuario.setClave(passwordEncoder.encode(clave));
         usuario.setRol(rol);
         return usuario;
     }

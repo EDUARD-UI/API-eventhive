@@ -28,7 +28,10 @@ public class Promocion {
 
     private LocalDate fechaFinal;
 
-    @JsonIgnore
     @DBRef
     private Evento evento;
+
+    @JsonIgnore
+    @DBRef
+    private Usuario organizador;
 }

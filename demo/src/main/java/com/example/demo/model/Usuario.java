@@ -31,6 +31,7 @@ public class Usuario {
     @JsonIgnore
     private String clave;
 
+    @DBRef
     private Rol rol;
 
     @JsonIgnore

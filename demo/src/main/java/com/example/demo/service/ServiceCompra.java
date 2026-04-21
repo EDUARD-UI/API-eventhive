@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +35,13 @@ public class ServiceCompra {
         Usuario usuario = usuarioRepository.findByCorreo(correo);
         if (usuario == null) throw new BusinessException("Usuario no encontrado");
         return compraRepository.findByClienteIdOrderByFechaCompraDesc(usuario.getId());
+    }
+
+    public Page<Compra> listarMisCompras(Pageable pageable) {
+        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
+        Usuario usuario = usuarioRepository.findByCorreo(correo);
+        if (usuario == null) throw new BusinessException("Usuario no encontrado");
+        return compraRepository.findByClienteIdOrderByFechaCompraDesc(usuario.getId(), pageable);
     }
 
     public Compra obtenerPorId(String id) {

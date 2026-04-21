@@ -2,6 +2,8 @@ package com.example.demo.controllers;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.PagedResponse;
 import com.example.demo.model.Compra;
 import com.example.demo.model.ItemCompra;
 import com.example.demo.service.ServiceCompra;
@@ -29,9 +32,16 @@ public class CompraApiController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<List<Compra>>> listar() {
-        return ResponseEntity.ok(ApiResponse.ok("Compras obtenidas", 
-            compraService.listarMisCompras()));
+    public ResponseEntity<ApiResponse<PagedResponse<Compra>>> listar(Pageable pageable) {
+        Page<Compra> page = compraService.listarMisCompras(pageable);
+        PagedResponse<Compra> response = new PagedResponse<>(
+            page.getContent(),
+            page.getNumber(),
+            page.getSize(),
+            page.getTotalElements(),
+            page.getTotalPages()
+        );
+        return ResponseEntity.ok(ApiResponse.ok("Compras obtenidas", response));
     }
 
     @GetMapping("/{id}")

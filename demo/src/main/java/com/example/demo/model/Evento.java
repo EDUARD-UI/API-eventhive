@@ -8,6 +8,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,20 +28,21 @@ public class Evento {
     private LocalTime hora;
     private String lugar;
 
-    @DBRef(lazy = true)
+    @DBRef
     private Estado estado;
 
-    @DBRef(lazy = true)
+    @DBRef
     private Categoria categoria;
 
-    @DBRef(lazy = true)
+    @DBRef
     private Usuario organizador;
 
     private List<Localidad> localidades;
 
-    @DBRef(lazy = true)
+    @DBRef
     private List<Promocion> promociones;
 
+    @JsonIgnore
     @DBRef(lazy = true)
     private List<Valoracion> valoraciones;
 }

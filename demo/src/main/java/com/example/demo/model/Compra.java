@@ -26,7 +26,7 @@ public class Compra {
     private String metodoPago;
 
     @JsonIgnore
-    @DBRef(lazy = true)
+    @DBRef
     private Usuario cliente;
 
     private List<ItemCompra> items;

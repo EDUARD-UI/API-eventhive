@@ -70,11 +70,6 @@ public class SecurityConfig {
                 
                 // Autorización de peticiones
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                            "/", "/index.html", "/css/**", "/js/**",
-                            "/images/**", "/pages/**", "/uploads/**", "/assets/**"
-                        ).permitAll()
-
                         // Auth pública
                         .requestMatchers("/api/auth/**").permitAll()
 

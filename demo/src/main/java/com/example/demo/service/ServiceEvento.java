@@ -3,6 +3,8 @@ package com.example.demo.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,10 @@ public class ServiceEvento {
 
     public List<Evento> listarTodos() {
         return eventoRepository.findAll();
+    }
+
+    public Page<Evento> listarTodos(Pageable pageable) {
+        return eventoRepository.findAll(pageable);
     }
 
     public Evento obtenerPorId(String id) {

@@ -33,6 +33,11 @@ public class ServicePromocion {
         return promocionRepository.findAll();
     }
 
+    public Page<PromocionDTO> obtenerTodasPromociones(Pageable pageable) {
+        Page<Promocion> page = promocionRepository.findAll(pageable);
+        return page.map(this::toDTO);
+    }
+
     public List<Promocion> obtenerPorEvento(String eventoId) {
         return promocionRepository.findByEventoId(eventoId);
     }
@@ -69,6 +74,7 @@ public class ServicePromocion {
         p.setDescuento(descuento);
         p.setFechaInicio(fechaInicioLD);
         p.setFechaFinal(fechaFinLD);
+        p.setOrganizador(organizador);
         promocionRepository.save(p);
     }
 

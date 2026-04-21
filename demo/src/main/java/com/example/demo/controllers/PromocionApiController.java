@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.PagedResponse;
 import com.example.demo.dto.PromocionDTO;
 import com.example.demo.model.Usuario;
 import com.example.demo.service.ServicePromocion;
@@ -32,12 +33,33 @@ public class PromocionApiController {
     private final ServicePromocion servicePromocion;
     private final AuthenticatedUserHelper authHelper;
 
+    @GetMapping
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<ApiResponse<PagedResponse<PromocionDTO>>> listarTodas(Pageable pageable) {
+        Page<PromocionDTO> page = servicePromocion.obtenerTodasPromociones(pageable);
+        PagedResponse<PromocionDTO> response = new PagedResponse<>(
+            page.getContent(),
+            page.getNumber(),
+            page.getSize(),
+            page.getTotalElements(),
+            page.getTotalPages()
+        );
+        return ResponseEntity.ok(ApiResponse.ok("Promociones obtenidas", response));
+    }
+
     @GetMapping("/organizador")
     @PreAuthorize("hasRole('ORGANIZADOR')")
-    public ResponseEntity<ApiResponse<Page<PromocionDTO>>> porOrganizador(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedResponse<PromocionDTO>>> porOrganizador(Pageable pageable) {
         Usuario usuario = authHelper.usuarioAutenticado();
-        return ResponseEntity.ok(ApiResponse.ok("Promociones obtenidas",
-            servicePromocion.obtenerDTOPorOrganizador(usuario.getId(), pageable)));
+        Page<PromocionDTO> page = servicePromocion.obtenerDTOPorOrganizador(usuario.getId(), pageable);
+        PagedResponse<PromocionDTO> response = new PagedResponse<>(
+            page.getContent(),
+            page.getNumber(),
+            page.getSize(),
+            page.getTotalElements(),
+            page.getTotalPages()
+        );
+        return ResponseEntity.ok(ApiResponse.ok("Promociones obtenidas", response));
     }
 
     @PostMapping

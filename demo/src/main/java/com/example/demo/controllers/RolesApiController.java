@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.PagedResponse;
 import com.example.demo.model.Rol;
 import com.example.demo.service.ServiceRoles;
 
@@ -28,8 +29,16 @@ public class RolesApiController {
     private final ServiceRoles serviceRoles;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<Rol>>> listarRoles(Pageable pageable) {
-        return ResponseEntity.ok(ApiResponse.ok("Roles obtenidos", serviceRoles.obtenerTodosRoles(pageable)));
+    public ResponseEntity<ApiResponse<PagedResponse<Rol>>> listarRoles(Pageable pageable) {
+        Page<Rol> page = serviceRoles.obtenerTodosRoles(pageable);
+        PagedResponse<Rol> response = new PagedResponse<>(
+            page.getContent(),
+            page.getNumber(),
+            page.getSize(),
+            page.getTotalElements(),
+            page.getTotalPages()
+        );
+        return ResponseEntity.ok(ApiResponse.ok("Roles obtenidos", response));
     }
 
     @PostMapping

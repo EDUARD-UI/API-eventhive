@@ -202,7 +202,7 @@ DELETE /usuarios/{id}
 ```
 GET /usuarios/perfil
 ```
-**Autorización:** `isAuthenticated()`  
+**Autorización:** `isAuthenticated()` (usuario debe estar logueado)  
 
 **Respuesta (200 OK):**
 ```json
@@ -1157,6 +1157,8 @@ DELETE /compras/{id}
 
 ## 🎟️ Endpoints de Boletos
 
+> **Nota:** Este endpoint devuelve los datos básicos de la compra (según `BoletosApiController`). Para detalle de tiquetes, usar `/compras/{id}`.
+
 ### 1. Obtener Boletos de Compra
 ```
 GET /boletos/{compraId}
@@ -1331,7 +1333,15 @@ POST /promociones
 PUT /promociones/{id}
 ```
 **Autorización:** `ORGANIZADOR`  
-**Parámetros (form-data):** (igual a crear)
+**Parámetros de Ruta:**
+- `id` (string, requerido) - ID de la promoción
+
+**Parámetros (form-data):**
+- `eventoId` (string, requerido) - ID del evento
+- `descripcion` (string, requerido, max: 500) - Descripción
+- `descuento` (BigDecimal, requerido) - Porcentaje (0-1)
+- `fechaInicio` (string, requerido) - Formato: "YYYY-MM-DD"
+- `fechaFin` (string, requerido) - Formato: "YYYY-MM-DD"
 
 **Respuesta (200 OK):**
 ```json
@@ -1537,5 +1547,5 @@ DELETE /valoraciones/{id}
 
 Para reportar bugs o problemas con la API, contactar al equipo de desarrollo.
 
-**Última actualización:** Mayo 2026  
+**Última actualización:** Abril 2026  
 **Estado:** Producción

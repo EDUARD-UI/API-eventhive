@@ -1,6 +1,7 @@
 package com.example.demo.controllers;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,10 +18,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.EventoDTO;
 import com.example.demo.dto.PagedResponse;
+import com.example.demo.exception.BusinessException;
 import com.example.demo.model.Evento;
 import com.example.demo.model.Localidad;
 import com.example.demo.service.ServiceEvento;
+import com.example.demo.utils.MongoSerializationHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,89 +36,183 @@ public class EventosApiController {
     private final ServiceEvento eventoService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PagedResponse<Evento>>> listar(Pageable pageable) {
-        Page<Evento> page = eventoService.listarTodos(pageable);
-        PagedResponse<Evento> response = new PagedResponse<>(
-            page.getContent(),
-            page.getNumber(),
-            page.getSize(),
-            page.getTotalElements(),
-            page.getTotalPages()
-        );
-        return ResponseEntity.ok(ApiResponse.ok("Eventos obtenidos", response));
+    public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> listar(Pageable pageable) {
+        try {
+            Page<Evento> page = eventoService.listarTodos(pageable);
+            
+            // Convertir cada evento a DTO para evitar referencias circulares
+            List<EventoDTO> contenidoDTO = page.getContent().stream()
+                .map(MongoSerializationHelper::eventoADTO)
+                .collect(Collectors.toList());
+            
+            PagedResponse<EventoDTO> response = new PagedResponse<>(
+                contenidoDTO,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages()
+            );
+            
+            return ResponseEntity.ok(ApiResponse.ok("Eventos obtenidos", response));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Error al listar eventos: " + e.getMessage()));
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Evento>> obtener(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok("Evento obtenido", 
-            eventoService.obtenerPorId(id)));
+    public ResponseEntity<ApiResponse<EventoDTO>> obtener(@PathVariable String id) {
+        try {
+            Evento evento = eventoService.obtenerPorId(id);
+            
+            // Forzar carga de referencias perezosas (lazy)
+            MongoSerializationHelper.forzarCargaReferencias(evento);
+            
+            // Convertir a DTO
+            EventoDTO dto = MongoSerializationHelper.eventoADTO(evento);
+            
+            return ResponseEntity.ok(ApiResponse.ok("Evento obtenido", dto));
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Error al obtener evento: " + e.getMessage()));
+        }
     }
 
     @GetMapping("/{id}/localidades")
     public ResponseEntity<ApiResponse<List<Localidad>>> localidades(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok("Localidades obtenidas",
-            eventoService.obtenerLocalidades(id)));
+        try {
+            List<Localidad> localidades = eventoService.obtenerLocalidades(id);
+            return ResponseEntity.ok(ApiResponse.ok("Localidades obtenidas", localidades));
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
-    public ResponseEntity<ApiResponse<Evento>> crear(@RequestBody Evento evento) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Evento creado",
-            eventoService.crearEvento(evento)));
+    public ResponseEntity<ApiResponse<EventoDTO>> crear(@RequestBody Evento evento) {
+        try {
+            Evento eventoCreado = eventoService.crearEvento(evento);
+            MongoSerializationHelper.forzarCargaReferencias(eventoCreado);
+            EventoDTO dto = MongoSerializationHelper.eventoADTO(eventoCreado);
+            
+            return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok("Evento creado", dto));
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Error al crear evento: " + e.getMessage()));
+        }
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
-    public ResponseEntity<ApiResponse<Evento>> actualizar(@PathVariable String id, @RequestBody Evento evento) {
-        return ResponseEntity.ok(ApiResponse.ok("Evento actualizado",
-            eventoService.actualizarEvento(id, evento)));
+    public ResponseEntity<ApiResponse<EventoDTO>> actualizar(
+            @PathVariable String id, 
+            @RequestBody Evento evento) {
+        try {
+            Evento eventoActualizado = eventoService.actualizarEvento(id, evento);
+            MongoSerializationHelper.forzarCargaReferencias(eventoActualizado);
+            EventoDTO dto = MongoSerializationHelper.eventoADTO(eventoActualizado);
+            
+            return ResponseEntity.ok(ApiResponse.ok("Evento actualizado", dto));
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> eliminar(@PathVariable String id) {
-        eventoService.eliminarEvento(id);
-        return ResponseEntity.ok(ApiResponse.ok("Evento eliminado"));
+        try {
+            eventoService.eliminarEvento(id);
+            return ResponseEntity.ok(ApiResponse.ok("Evento eliminado"));
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @PostMapping("/{eventoId}/localidades")
     @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
-    public ResponseEntity<ApiResponse<Evento>> agregarLocalidad(
-            @PathVariable String eventoId, @RequestBody Localidad localidad) {
-        return ResponseEntity.ok(ApiResponse.ok("Localidad agregada",
-            eventoService.agregarLocalidad(eventoId, localidad)));
+    public ResponseEntity<ApiResponse<EventoDTO>> agregarLocalidad(
+            @PathVariable String eventoId, 
+            @RequestBody Localidad localidad) {
+        try {
+            Evento eventoActualizado = eventoService.agregarLocalidad(eventoId, localidad);
+            MongoSerializationHelper.forzarCargaReferencias(eventoActualizado);
+            EventoDTO dto = MongoSerializationHelper.eventoADTO(eventoActualizado);
+            
+            return ResponseEntity.ok(ApiResponse.ok("Localidad agregada", dto));
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @PutMapping("/{eventoId}/localidades/{localidadIndex}")
     @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
-    public ResponseEntity<ApiResponse<Evento>> actualizarLocalidad(
+    public ResponseEntity<ApiResponse<EventoDTO>> actualizarLocalidad(
             @PathVariable String eventoId,
             @PathVariable int localidadIndex,
             @RequestBody Localidad localidad) {
-        return ResponseEntity.ok(ApiResponse.ok("Localidad actualizada",
-            eventoService.actualizarLocalidad(eventoId, localidadIndex, localidad)));
+        try {
+            Evento eventoActualizado = eventoService.actualizarLocalidad(eventoId, localidadIndex, localidad);
+            MongoSerializationHelper.forzarCargaReferencias(eventoActualizado);
+            EventoDTO dto = MongoSerializationHelper.eventoADTO(eventoActualizado);
+            
+            return ResponseEntity.ok(ApiResponse.ok("Localidad actualizada", dto));
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{eventoId}/localidades/{localidadIndex}")
     @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
-    public ResponseEntity<ApiResponse<Evento>> eliminarLocalidad(
+    public ResponseEntity<ApiResponse<EventoDTO>> eliminarLocalidad(
             @PathVariable String eventoId,
             @PathVariable int localidadIndex) {
-        return ResponseEntity.ok(ApiResponse.ok("Localidad eliminada",
-            eventoService.eliminarLocalidad(eventoId, localidadIndex)));
+        try {
+            Evento eventoActualizado = eventoService.eliminarLocalidad(eventoId, localidadIndex);
+            MongoSerializationHelper.forzarCargaReferencias(eventoActualizado);
+            EventoDTO dto = MongoSerializationHelper.eventoADTO(eventoActualizado);
+            
+            return ResponseEntity.ok(ApiResponse.ok("Localidad eliminada", dto));
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @PostMapping("/{eventoId}/deseados")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Void>> agregarDeseado(@PathVariable String eventoId) {
-        eventoService.agregarEventoDeseado(eventoId);
-        return ResponseEntity.ok(ApiResponse.ok("Evento agregado a favoritos"));
+        try {
+            eventoService.agregarEventoDeseado(eventoId);
+            return ResponseEntity.ok(ApiResponse.ok("Evento agregado a favoritos"));
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{eventoId}/deseados")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Void>> eliminarDeseado(@PathVariable String eventoId) {
-        eventoService.eliminarEventoDeseado(eventoId);
-        return ResponseEntity.ok(ApiResponse.ok("Evento eliminado de favoritos"));
+        try {
+            eventoService.eliminarEventoDeseado(eventoId);
+            return ResponseEntity.ok(ApiResponse.ok("Evento eliminado de favoritos"));
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(e.getMessage()));
+        }
     }
 }

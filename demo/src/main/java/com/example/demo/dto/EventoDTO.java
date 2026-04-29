@@ -15,6 +15,7 @@ public class EventoDTO {
     LocalTime hora;
     Categoria categoria;
     Estado estado;
+    Organizador organizador;  // ← Agrega este campo
 
     @Getter
     @Setter
@@ -40,11 +41,26 @@ public class EventoDTO {
         }
     }
 
+    // ← Agrega esta clase interna
+    @Getter
+    @Setter
+    public static class Organizador {
+        String id;
+        String nombre;
+        Boolean esVerificado;
+
+        public Organizador(String id, String nombre, Boolean esVerificado) {
+            this.id = id;
+            this.nombre = nombre;
+            this.esVerificado = esVerificado;
+        }
+    }
+
     public EventoDTO() {
     }
 
     public EventoDTO(String id, String titulo, String descripcion, String lugar, String foto, LocalDate fecha, LocalTime hora, 
-                     Categoria categoria, Estado estado) {
+                     Categoria categoria, Estado estado, Organizador organizador) {
         this.id = id;
         this.titulo = titulo;
         this.descripcion = descripcion;
@@ -54,6 +70,6 @@ public class EventoDTO {
         this.hora = hora;
         this.categoria = categoria;
         this.estado = estado;
+        this.organizador = organizador;
     }
-    
 }

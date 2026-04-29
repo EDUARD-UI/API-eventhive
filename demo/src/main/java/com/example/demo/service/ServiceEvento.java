@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dto.EventoDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.Evento;
 import com.example.demo.model.Localidad;
@@ -114,33 +115,33 @@ public class ServiceEvento {
     }
 
     public void agregarEventoDeseado(String eventoId) {
-    String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-    Usuario usuario = usuarioRepository.findByCorreo(correo);
-    if (usuario == null) throw new BusinessException("Usuario no encontrado");
+        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
+        Usuario usuario = usuarioRepository.findByCorreo(correo);
+        if (usuario == null) throw new BusinessException("Usuario no encontrado");
 
-    Evento evento = eventoRepository.findById(eventoId)
-        .orElseThrow(() -> new BusinessException("Evento no encontrado"));
+        Evento evento = eventoRepository.findById(eventoId)
+            .orElseThrow(() -> new BusinessException("Evento no encontrado"));
 
-    if (usuario.getEventosDeseados() == null) {
-        usuario.setEventosDeseados(new ArrayList<>());
+        if (usuario.getEventosDeseados() == null) {
+            usuario.setEventosDeseados(new ArrayList<>());
+        }
+
+        if (!usuario.getEventosDeseados().contains(evento)) {
+            usuario.getEventosDeseados().add(evento);
+            usuarioRepository.save(usuario);
+        }
     }
-
-    if (!usuario.getEventosDeseados().contains(evento)) {
-        usuario.getEventosDeseados().add(evento);
-        usuarioRepository.save(usuario);
-    }
-}
 
     public void eliminarEventoDeseado(String eventoId) {
-    String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-    Usuario usuario = usuarioRepository.findByCorreo(correo);
-    if (usuario == null) throw new BusinessException("Usuario no encontrado");
+        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
+        Usuario usuario = usuarioRepository.findByCorreo(correo);
+        if (usuario == null) throw new BusinessException("Usuario no encontrado");
 
-    if (usuario.getEventosDeseados() != null) {
-        usuario.getEventosDeseados().removeIf(e -> e.getId().equals(eventoId));
-        usuarioRepository.save(usuario);
+        if (usuario.getEventosDeseados() != null) {
+            usuario.getEventosDeseados().removeIf(e -> e.getId().equals(eventoId));
+            usuarioRepository.save(usuario);
+        }
     }
-}
 
     public List<Evento> buscarPorCategoria(String categoriaId) {
         return eventoRepository.findByCategoriaId(categoriaId);
@@ -148,6 +149,43 @@ public class ServiceEvento {
 
     public long contarEventosPorCategoria(String categoriaId) {
         return eventoRepository.countByCategoriaId(categoriaId);
+    }
+
+    //helper
+    public EventoDTO convertirADTO(Evento evento) {
+        EventoDTO dto = new EventoDTO();
+        dto.setId(evento.getId());
+        dto.setTitulo(evento.getTitulo());
+        dto.setDescripcion(evento.getDescripcion());
+        dto.setLugar(evento.getLugar());
+        dto.setFoto(evento.getFoto());
+        dto.setFecha(evento.getFecha());
+        dto.setHora(evento.getHora());
+
+        if (evento.getCategoria() != null) {
+            dto.setCategoria(new EventoDTO.Categoria(
+                evento.getCategoria().getId(),
+                evento.getCategoria().getNombre()
+            ));
+        }
+
+        if (evento.getEstado() != null) {
+            dto.setEstado(new EventoDTO.Estado(
+                evento.getEstado().getId(),
+                evento.getEstado().getNombre()
+            ));
+        }
+
+        // organizador verificado
+        if (evento.getOrganizador() != null) {
+            dto.setOrganizador(new EventoDTO.Organizador(
+                evento.getOrganizador().getId(),
+                evento.getOrganizador().getNombre(),
+                evento.getOrganizador().getEsVerificado()
+            ));
+        }
+
+        return dto;
     }
 
     private void verificarPermiso(Evento evento) {

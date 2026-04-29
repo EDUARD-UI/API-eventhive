@@ -23,7 +23,7 @@ public class ServiceAutenticacion {
     private final UsuarioRepository usuarioRepository;
     private final RolesRepository rolesRepository;
     private final AuthenticationManager authenticationManager;
-    private final PasswordEncoder passwordEncoder; // AÑADE ESTO
+    private final PasswordEncoder passwordEncoder;
 
     public Authentication autenticar(String correo, String clave) {
         return authenticationManager.authenticate(
@@ -41,7 +41,8 @@ public class ServiceAutenticacion {
             "apellido", usuario.getApellido(),
             "correo", usuario.getCorreo(),
             "telefono", usuario.getTelefono() != null ? usuario.getTelefono() : "",
-            "rolNombre", usuario.getRol().getNombre()
+            "rolNombre", usuario.getRol().getNombre(),
+            "esVerificado", usuario.getEsVerificado() // AGREGADO
         );
     }
 
@@ -71,9 +72,9 @@ public class ServiceAutenticacion {
         usuario.setApellido(apellido);
         usuario.setCorreo(correo);
         usuario.setTelefono(telefono);
-        // CODIFICA LA CONTRASEÑA ANTES DE GUARDAR
         usuario.setClave(passwordEncoder.encode(clave));
         usuario.setRol(rol);
+        usuario.setEsVerificado(false);
         return usuario;
     }
 

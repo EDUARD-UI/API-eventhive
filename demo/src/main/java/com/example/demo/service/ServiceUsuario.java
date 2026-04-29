@@ -51,6 +51,8 @@ public class ServiceUsuario {
         dto.setNombre(usuario.getNombre());
         dto.setApellido(usuario.getApellido());
         dto.setCorreo(usuario.getCorreo());
+        dto.setTelefono(usuario.getTelefono());
+        dto.setEsVerificado(usuario.getEsVerificado());
         if (usuario.getRol() != null) {
             dto.setRolNombre(usuario.getRol().getNombre());
         }
@@ -110,6 +112,7 @@ public class ServiceUsuario {
         usuario.setTelefono(telefono);
         usuario.setClave(passwordEncoder.encode(clave));
         usuario.setRol(rol);
+        usuario.setEsVerificado(false);
 
         usuarioRepository.save(usuario);
     }
@@ -154,6 +157,7 @@ public class ServiceUsuario {
         dto.setApellido(usuario.getApellido());
         dto.setCorreo(usuario.getCorreo());
         dto.setTelefono(usuario.getTelefono());
+        dto.setEsVerificado(usuario.getEsVerificado());
         if (usuario.getRol() != null) {
             dto.setRolNombre(usuario.getRol().getNombre());
         }

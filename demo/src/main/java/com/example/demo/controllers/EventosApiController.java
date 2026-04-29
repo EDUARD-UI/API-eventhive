@@ -40,7 +40,7 @@ public class EventosApiController {
         try {
             Page<Evento> page = eventoService.listarTodos(pageable);
             
-            // Convertir cada evento a DTO para evitar referencias circulares
+            // Convertir cada evento a DTO
             List<EventoDTO> contenidoDTO = page.getContent().stream()
                 .map(MongoSerializationHelper::eventoADTO)
                 .collect(Collectors.toList());

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.PagedResponse;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Estado;
 import com.example.demo.service.ServiceEstado;
@@ -29,14 +30,26 @@ public class EstadosApiController {
     private final ServiceEstado serviceEstado;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<Estado>>> listarEstados(Pageable pageable) {
-        return ResponseEntity.ok(ApiResponse.ok("Estados obtenidos", serviceEstado.obtenerEstados(pageable)));
+    public ResponseEntity<ApiResponse<PagedResponse<Estado>>> listarEstados(Pageable pageable) {
+        Page<Estado> page = serviceEstado.obtenerEstados(pageable);
+
+        PagedResponse<Estado> response = new PagedResponse<>(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages()
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok("Estados obtenidos", response));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Estado>> obtenerEstado(@PathVariable String id) {
         Estado estado = serviceEstado.obtenerEstadoPorId(id);
-        if (estado == null) throw new ResourceNotFoundException("Estado no encontrado");
+        if (estado == null) {
+            throw new ResourceNotFoundException("Estado no encontrado");
+        }
         return ResponseEntity.ok(ApiResponse.ok("Estado obtenido", estado));
     }
 

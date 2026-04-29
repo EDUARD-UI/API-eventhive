@@ -27,7 +27,7 @@ public class PagedResponse<T> {
         this.pageSize = pageSize;
         this.totalElements = totalElements;
         this.totalPages = totalPages;
-        this.hasNext = pageNumber < (totalPages - 1);
+        this.hasNext = pageNumber < totalPages - 1;
         this.hasPrevious = pageNumber > 0;
     }
 }

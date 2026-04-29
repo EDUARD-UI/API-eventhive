@@ -59,43 +59,41 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                
                 // Configuración de sesión
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                        .sessionFixation(sessionFixation -> sessionFixation.migrateSession())
-                        .maximumSessions(1)
-                        .expiredUrl("/api/auth/expired")
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .sessionFixation(sessionFixation -> sessionFixation.migrateSession())
+                .maximumSessions(1)
+                .expiredUrl("/api/auth/expired")
                 )
-                
                 // Autorización de peticiones
                 .authorizeHttpRequests(auth -> auth
-                        // Auth pública
-                        .requestMatchers("/api/auth/**").permitAll()
-
-                        // Información pública de solo lectura
-                        .requestMatchers(HttpMethod.GET, "/api/eventos/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/localidades/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/valoraciones/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/localidades/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/valoraciones/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/roles/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/estados/**").permitAll()
-
-                        // Cualquier otra ruta requiere autenticación
-                        .anyRequest().authenticated()
+                // Auth pública (incluir logout)
+                .requestMatchers("/api/auth/**").permitAll()
+                // Información pública de solo lectura
+                .requestMatchers(HttpMethod.GET, "/api/eventos/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/localidades/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/valoraciones/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/roles/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/estados/**").permitAll()
+                // Cualquier otra ruta requiere autenticación
+                .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
-                
                 // Configuración de logout
                 .logout(logout -> logout
-                        .logoutUrl("/api/auth/logout")
-                        .logoutSuccessUrl("/")
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
-                        .clearAuthentication(true)
+                .logoutUrl("/api/auth/logout")
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    response.setStatus(200);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"success\":true,\"message\":\"Sesión cerrada\"}");
+                })
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+                .clearAuthentication(true)
+                .permitAll()
                 )
                 .authenticationProvider(authenticationProvider());
 
@@ -111,15 +109,15 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:5173",
-            "http://localhost:3000",
-            "http://localhost:4173"
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "http://localhost:4173"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -131,11 +129,11 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                    .allowedOrigins("http://localhost:5173", "http://localhost:3000", "http://localhost:4173")
-                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
-                    .allowedHeaders("*")
-                    .allowCredentials(true)
-                    .maxAge(3600);
+                        .allowedOrigins("http://localhost:5173", "http://localhost:3000", "http://localhost:4173")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+                        .allowedHeaders("*")
+                        .allowCredentials(true)
+                        .maxAge(3600);
             }
         };
     }

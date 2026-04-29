@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.CategoriaDTO;
 import com.example.demo.dto.CategoriaEventosDTO;
+import com.example.demo.dto.PagedResponse;
 import com.example.demo.model.Categoria;
 import com.example.demo.service.ServiceCategoria;
 
@@ -35,33 +36,42 @@ public class CategoriasApiController {
     private final ServiceCategoria serviceCategoria;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<Categoria>>> obtener(Pageable pageable) {
-        return ResponseEntity.ok(ApiResponse.ok("Categorías obtenidas", 
-            serviceCategoria.obtenerTodasCategorias(pageable)));
+    public ResponseEntity<ApiResponse<PagedResponse<Categoria>>> obtener(Pageable pageable) {
+        Page<Categoria> page = serviceCategoria.obtenerTodasCategorias(pageable);
+
+        PagedResponse<Categoria> response = new PagedResponse<>(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages()
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok("Categorías obtenidas", response));
     }
 
     @GetMapping("/nombres")
     public ResponseEntity<ApiResponse<List<CategoriaDTO>>> listar() {
-        return ResponseEntity.ok(ApiResponse.ok("Categorías obtenidas", 
-            serviceCategoria.obtenerCategoriaDTO()));
+        return ResponseEntity.ok(ApiResponse.ok("Categorías obtenidas",
+                serviceCategoria.obtenerCategoriaDTO()));
     }
 
     @GetMapping("/destacadas")
     public ResponseEntity<ApiResponse<List<Categoria>>> destacadas() {
-        return ResponseEntity.ok(ApiResponse.ok("Categorías destacadas", 
-            serviceCategoria.obtenerTop4Categorias()));
+        return ResponseEntity.ok(ApiResponse.ok("Categorías destacadas",
+                serviceCategoria.obtenerTop4Categorias()));
     }
 
     @GetMapping("/con-eventos")
     public ResponseEntity<ApiResponse<List<CategoriaEventosDTO>>> conEventos() {
-        return ResponseEntity.ok(ApiResponse.ok("Categorías con eventos", 
-            serviceCategoria.obtenerCategoriasConEventos()));
+        return ResponseEntity.ok(ApiResponse.ok("Categorías con eventos",
+                serviceCategoria.obtenerCategoriasConEventos()));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Categoria>> obtenerPorId(@PathVariable String id) {
-        return ResponseEntity.ok(ApiResponse.ok("Categoría obtenida", 
-            serviceCategoria.obtenerCategoriaPorId(id)));
+        return ResponseEntity.ok(ApiResponse.ok("Categoría obtenida",
+                serviceCategoria.obtenerCategoriaPorId(id)));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

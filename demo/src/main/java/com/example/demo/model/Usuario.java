@@ -34,6 +34,8 @@ public class Usuario {
     @DBRef
     private Rol rol;
 
+    private Boolean EsVerificado;
+
     @JsonIgnore
     @DBRef(lazy = true)
     private List<Evento> eventosOrganizados;

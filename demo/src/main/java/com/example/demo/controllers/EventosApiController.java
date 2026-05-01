@@ -101,6 +101,7 @@ public class EventosApiController {
     @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<EventoDTO>> crear(@RequestBody Evento evento) {
         try {
+            // La foto puede ser null, no requiere validación en el controller
             Evento eventoCreado = eventoService.crearEvento(evento);
             MongoSerializationHelper.forzarCargaReferencias(eventoCreado);
             EventoDTO dto = MongoSerializationHelper.eventoADTO(eventoCreado);
@@ -122,6 +123,7 @@ public class EventosApiController {
             @PathVariable String id,
             @RequestBody Evento evento) {
         try {
+            // Permitir que foto sea null
             Evento eventoActualizado = eventoService.actualizarEvento(id, evento);
             MongoSerializationHelper.forzarCargaReferencias(eventoActualizado);
             EventoDTO dto = MongoSerializationHelper.eventoADTO(eventoActualizado);
@@ -130,6 +132,9 @@ public class EventosApiController {
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error al actualizar evento: " + e.getMessage()));
         }
     }
 

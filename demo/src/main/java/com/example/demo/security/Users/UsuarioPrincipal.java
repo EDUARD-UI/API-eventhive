@@ -1,4 +1,4 @@
-package com.example.demo.security.Users;
+package com.example.demo.security.users;
 
 import java.util.ArrayList;
 import java.util.Collection;

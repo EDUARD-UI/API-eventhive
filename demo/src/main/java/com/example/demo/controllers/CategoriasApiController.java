@@ -90,8 +90,13 @@ public class CategoriasApiController {
     public ResponseEntity<ApiResponse<Void>> crear(
             @RequestParam String nombre,
             @RequestParam(required = false) MultipartFile foto) throws IOException {
-        serviceCategoria.crearCategoria(nombre, foto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Categoría creada"));
+        try {
+            serviceCategoria.crearCategoria(nombre, foto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Categoría creada"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -100,8 +105,13 @@ public class CategoriasApiController {
             @PathVariable String id,
             @RequestParam String nombre,
             @RequestParam(required = false) MultipartFile foto) throws IOException {
-        serviceCategoria.actualizarCategoria(id, nombre, foto);
-        return ResponseEntity.ok(ApiResponse.ok("Categoría actualizada"));
+        try {
+            serviceCategoria.actualizarCategoria(id, nombre, foto);
+            return ResponseEntity.ok(ApiResponse.ok("Categoría actualizada"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")

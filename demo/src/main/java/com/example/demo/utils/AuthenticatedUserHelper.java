@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.Usuario;
-import com.example.demo.security.Users.UsuarioPrincipal;
+import com.example.demo.security.users.UsuarioPrincipal;
 
 @Component
 public class AuthenticatedUserHelper {

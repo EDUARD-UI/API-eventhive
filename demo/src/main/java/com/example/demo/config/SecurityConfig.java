@@ -23,7 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.example.demo.security.Users.CustomUserDetailsService;
+import com.example.demo.security.users.CustomUserDetailsService;
 
 import lombok.RequiredArgsConstructor;
 

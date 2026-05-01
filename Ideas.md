@@ -12,7 +12,5 @@ Ejemplo:    “Eventos que podrían interesarte”
 ### IDEAS PARA ORGANIZADOR:
 Comparador de eventos del mismo organizador: “Tu evento más exitoso este mes”.
 
-IDEAS PARA ADMINISTRACION:
+### IDEAS PARA ADMINISTRACION:
 Ranking de organizadores:
-destacar organizadores
-detectar problemas.

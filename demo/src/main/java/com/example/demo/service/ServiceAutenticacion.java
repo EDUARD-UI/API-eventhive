@@ -32,19 +32,23 @@ public class ServiceAutenticacion {
     }
 
     public Map<String, Object> obtenerDatosUsuarioAutenticado(String correo) {
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
-        if (usuario == null) throw new BusinessException("Usuario no encontrado");
+    Usuario usuario = usuarioRepository.findByCorreo(correo);
+    if (usuario == null) throw new BusinessException("Usuario no encontrado");
 
-        return Map.of(
-            "id", usuario.getId(),
-            "nombre", usuario.getNombre(),
-            "apellido", usuario.getApellido(),
-            "correo", usuario.getCorreo(),
-            "telefono", usuario.getTelefono() != null ? usuario.getTelefono() : "",
-            "rolNombre", usuario.getRol().getNombre(),
-            "esVerificado", usuario.getEsVerificado() // AGREGADO
-        );
-    }
+    return Map.of(
+        "id", usuario.getId(),
+        "nombre", usuario.getNombre(),
+        "apellido", usuario.getApellido(),
+        "correo", usuario.getCorreo(),
+        "telefono", usuario.getTelefono() != null ? usuario.getTelefono() : "",
+        "rol", Map.of(
+            "id", usuario.getRol() != null ? usuario.getRol().getId() : "",
+            "nombre", usuario.getRol() != null ? usuario.getRol().getNombre() : ""
+        ),
+        "rolNombre", usuario.getRol() != null ? usuario.getRol().getNombre() : "",
+        "esVerificado", usuario.getEsVerificado() != null ? usuario.getEsVerificado() : false
+    );
+}
 
     public String obtenerRolUsuario(String correo) {
         Usuario usuario = usuarioRepository.findByCorreo(correo);

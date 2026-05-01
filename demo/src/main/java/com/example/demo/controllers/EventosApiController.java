@@ -39,24 +39,29 @@ public class EventosApiController {
     public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> listar(Pageable pageable) {
         try {
             Page<Evento> page = eventoService.listarTodos(pageable);
-            
-            // Convertir cada evento a DTO
+
             List<EventoDTO> contenidoDTO = page.getContent().stream()
-                .map(MongoSerializationHelper::eventoADTO)
-                .collect(Collectors.toList());
-            
+                    .map(evento -> {
+                        EventoDTO dto = MongoSerializationHelper.eventoADTO(evento);
+                        if (evento.getFoto() != null && evento.getFoto().trim().isEmpty()) {
+                            dto.setFoto(null);
+                        }
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+
             PagedResponse<EventoDTO> response = new PagedResponse<>(
-                contenidoDTO,
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages()
+                    contenidoDTO,
+                    page.getNumber(),
+                    page.getSize(),
+                    page.getTotalElements(),
+                    page.getTotalPages()
             );
-            
+
             return ResponseEntity.ok(ApiResponse.ok("Eventos obtenidos", response));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Error al listar eventos: " + e.getMessage()));
+                    .body(ApiResponse.error("Error al listar eventos: " + e.getMessage()));
         }
     }
 
@@ -64,20 +69,20 @@ public class EventosApiController {
     public ResponseEntity<ApiResponse<EventoDTO>> obtener(@PathVariable String id) {
         try {
             Evento evento = eventoService.obtenerPorId(id);
-            
-            // Forzar carga de referencias perezosas (lazy)
             MongoSerializationHelper.forzarCargaReferencias(evento);
-            
-            // Convertir a DTO
+
+            if (evento.getFoto() != null && evento.getFoto().trim().isEmpty()) {
+                evento.setFoto(null);
+            }
+
             EventoDTO dto = MongoSerializationHelper.eventoADTO(evento);
-            
             return ResponseEntity.ok(ApiResponse.ok("Evento obtenido", dto));
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.error(e.getMessage()));
+                    .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Error al obtener evento: " + e.getMessage()));
+                    .body(ApiResponse.error("Error al obtener evento: " + e.getMessage()));
         }
     }
 
@@ -88,7 +93,7 @@ public class EventosApiController {
             return ResponseEntity.ok(ApiResponse.ok("Localidades obtenidas", localidades));
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.error(e.getMessage()));
+                    .body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -99,32 +104,32 @@ public class EventosApiController {
             Evento eventoCreado = eventoService.crearEvento(evento);
             MongoSerializationHelper.forzarCargaReferencias(eventoCreado);
             EventoDTO dto = MongoSerializationHelper.eventoADTO(eventoCreado);
-            
+
             return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Evento creado", dto));
+                    .body(ApiResponse.ok("Evento creado", dto));
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(e.getMessage()));
+                    .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Error al crear evento: " + e.getMessage()));
+                    .body(ApiResponse.error("Error al crear evento: " + e.getMessage()));
         }
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<EventoDTO>> actualizar(
-            @PathVariable String id, 
+            @PathVariable String id,
             @RequestBody Evento evento) {
         try {
             Evento eventoActualizado = eventoService.actualizarEvento(id, evento);
             MongoSerializationHelper.forzarCargaReferencias(eventoActualizado);
             EventoDTO dto = MongoSerializationHelper.eventoADTO(eventoActualizado);
-            
+
             return ResponseEntity.ok(ApiResponse.ok("Evento actualizado", dto));
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(e.getMessage()));
+                    .body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -136,24 +141,24 @@ public class EventosApiController {
             return ResponseEntity.ok(ApiResponse.ok("Evento eliminado"));
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error(e.getMessage()));
+                    .body(ApiResponse.error(e.getMessage()));
         }
     }
 
     @PostMapping("/{eventoId}/localidades")
     @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<EventoDTO>> agregarLocalidad(
-            @PathVariable String eventoId, 
+            @PathVariable String eventoId,
             @RequestBody Localidad localidad) {
         try {
             Evento eventoActualizado = eventoService.agregarLocalidad(eventoId, localidad);
             MongoSerializationHelper.forzarCargaReferencias(eventoActualizado);
             EventoDTO dto = MongoSerializationHelper.eventoADTO(eventoActualizado);
-            
+
             return ResponseEntity.ok(ApiResponse.ok("Localidad agregada", dto));
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(e.getMessage()));
+                    .body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -167,11 +172,11 @@ public class EventosApiController {
             Evento eventoActualizado = eventoService.actualizarLocalidad(eventoId, localidadIndex, localidad);
             MongoSerializationHelper.forzarCargaReferencias(eventoActualizado);
             EventoDTO dto = MongoSerializationHelper.eventoADTO(eventoActualizado);
-            
+
             return ResponseEntity.ok(ApiResponse.ok("Localidad actualizada", dto));
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(e.getMessage()));
+                    .body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -184,11 +189,11 @@ public class EventosApiController {
             Evento eventoActualizado = eventoService.eliminarLocalidad(eventoId, localidadIndex);
             MongoSerializationHelper.forzarCargaReferencias(eventoActualizado);
             EventoDTO dto = MongoSerializationHelper.eventoADTO(eventoActualizado);
-            
+
             return ResponseEntity.ok(ApiResponse.ok("Localidad eliminada", dto));
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(e.getMessage()));
+                    .body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -200,7 +205,7 @@ public class EventosApiController {
             return ResponseEntity.ok(ApiResponse.ok("Evento agregado a favoritos"));
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(e.getMessage()));
+                    .body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -212,7 +217,7 @@ public class EventosApiController {
             return ResponseEntity.ok(ApiResponse.ok("Evento eliminado de favoritos"));
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(e.getMessage()));
+                    .body(ApiResponse.error(e.getMessage()));
         }
     }
 }

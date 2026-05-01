@@ -39,6 +39,12 @@ public class CategoriasApiController {
     public ResponseEntity<ApiResponse<PagedResponse<Categoria>>> obtener(Pageable pageable) {
         Page<Categoria> page = serviceCategoria.obtenerTodasCategorias(pageable);
 
+        page.getContent().forEach(cat -> {
+            if (cat.getFoto() != null && cat.getFoto().trim().isEmpty()) {
+                cat.setFoto(null);
+            }
+        });
+
         PagedResponse<Categoria> response = new PagedResponse<>(
                 page.getContent(),
                 page.getNumber(),
@@ -52,8 +58,13 @@ public class CategoriasApiController {
 
     @GetMapping("/nombres")
     public ResponseEntity<ApiResponse<List<CategoriaDTO>>> listar() {
-        return ResponseEntity.ok(ApiResponse.ok("Categorías obtenidas",
-                serviceCategoria.obtenerCategoriaDTO()));
+        List<CategoriaDTO> categorias = serviceCategoria.obtenerCategoriaDTO();
+        categorias.forEach(cat -> {
+            if (cat.getNombre() != null && cat.getNombre().isEmpty()) {
+                cat.setId(null);
+            }
+        });
+        return ResponseEntity.ok(ApiResponse.ok("Categorías obtenidas", categorias));
     }
 
     @GetMapping("/destacadas")

@@ -15,4 +15,4 @@ HTML + REACT JSX
 Tailwind CSS
 SweetAlert2
 QRCode.js para generación de boletos
-Panel del organizador con router SPA
+Panel del organizador sin router SPA

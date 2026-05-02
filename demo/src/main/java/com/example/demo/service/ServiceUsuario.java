@@ -45,26 +45,32 @@ public class ServiceUsuario {
     }
 
     public UsuarioSesionDTO obtenerSesionDTO(String correoOId) {
-    Usuario usuario;
-    usuario = usuarioRepository.findByCorreo(correoOId);
-    
-    if (usuario == null) {
-        usuario = usuarioRepository.findById(correoOId)
-            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        Usuario usuario;
+
+        usuario = usuarioRepository.findByCorreo(correoOId);
+
+        if (usuario == null) {
+            usuario = usuarioRepository.findById(correoOId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        }
+
+        UsuarioSesionDTO dto = new UsuarioSesionDTO();
+        dto.setId(usuario.getId());
+        dto.setNombre(usuario.getNombre());
+        dto.setApellido(usuario.getApellido());
+        dto.setCorreo(usuario.getCorreo());
+        dto.setTelefono(usuario.getTelefono());
+
+        if (usuario.getRol() != null) {
+            dto.setRolNombre(usuario.getRol().getNombre());
+        } else {
+            dto.setRolNombre("cliente");
+        }
+
+        dto.setEsVerificado(usuario.getEsVerificado() != null ? usuario.getEsVerificado() : false);
+
+        return dto;
     }
-    
-    UsuarioSesionDTO dto = new UsuarioSesionDTO();
-    dto.setId(usuario.getId());
-    dto.setNombre(usuario.getNombre());
-    dto.setApellido(usuario.getApellido());
-    dto.setCorreo(usuario.getCorreo());
-    dto.setTelefono(usuario.getTelefono());
-    dto.setEsVerificado(usuario.getEsVerificado() != null ? usuario.getEsVerificado() : false);
-    if (usuario.getRol() != null) {
-        dto.setRolNombre(usuario.getRol().getNombre());
-    }
-    return dto;
-}
 
     public UsuarioDTO obtenerPerfil() {
         String correo = SecurityContextHolder.getContext().getAuthentication().getName();

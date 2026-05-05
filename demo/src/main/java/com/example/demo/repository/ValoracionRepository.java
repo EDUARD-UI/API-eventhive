@@ -32,14 +32,14 @@ public interface ValoracionRepository extends MongoRepository<Valoracion, String
     @Query("{ 'evento.usuario._id': ?0 }")
     long countByEventoUsuarioId(String organizadorId);
 
-    // Valoraciones de eventos (parte de valoraciones)
     @Aggregation(pipeline = {
-        "{ $lookup: { from: 'eventos', localField: 'evento._id', foreignField: '_id', as: 'evento' } }",
-        "{ $unwind: '$evento' }",
-        "{ $group: { _id: '$evento._id', evento: { $first: '$evento.nombre' }, "
-        + "promedio: { $avg: '$puntuacion' }, totalReviews: { $sum: 1 } } }",
-        "{ $project: { _id: 0, evento: 1, promedio: 1, totalReviews: 1 } }",
-        "{ $sort: { promedio: -1 } }"
-    })
-    List<ValoracionesDto> obtenerValoracionesEventos();
+    "{ $match: { evento: { $exists: true }, calificacion: { $exists: true } } }",
+    "{ $group: { _id: '$evento._id', " +  // Cambiar $evento.$id por $evento._id
+    "promedio: { $avg: '$calificacion' }, totalReviews: { $sum: 1 } } }",
+    "{ $match: { totalReviews: { $gt: 0 } } }",
+    "{ $project: { _id: 0, evento: '$_id', " +  // Solo pasar el ID
+    "promedio: { $round: [ '$promedio', 2 ] }, totalReviews: 1 } }",
+    "{ $sort: { promedio: -1 } }"
+})
+List<ValoracionesDto> obtenerValoracionesEventos();
 }

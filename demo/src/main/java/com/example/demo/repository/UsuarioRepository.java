@@ -22,11 +22,10 @@ public interface UsuarioRepository extends MongoRepository<Usuario, String> {
 
     long countByRolId(String rolId);
 
-    // Usuarios agrupados por rol (parte de usuarios - DIRECTA, sin lookups)
     @Aggregation(pipeline = {
-        "{ $group: { _id: '$rol.nombre', cantidad: { $sum: 1 } } }",
-        "{ $project: { _id: 0, rol: '$_id', cantidad: 1 } }",
-        "{ $sort: { rol: 1 } }"
-    })
-    List<UsuariosRolDto> obtenerUsuariosPorRol();
+    "{ $group: { _id: '$rol._id', cantidad: { $sum: 1 } } }",  // Cambiar $rol.nombre por $rol._id
+    "{ $project: { _id: 0, rol: '$_id', cantidad: 1 } }",
+    "{ $sort: { rol: 1 } }"
+})
+List<UsuariosRolDto> obtenerUsuariosPorRol();
 }

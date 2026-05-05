@@ -36,7 +36,7 @@ public class ReportesService {
     }
 
     public List<VentasEventoDto> obtenerVentasPorEvento() {
-        return tiqueteRepository.obtenerVentasPorEvento();
+        return reportesRepository.obtenerVentasPorEvento();
     }
 
     public List<UsuariosRolDto> obtenerUsuariosPorRol() {
@@ -48,7 +48,7 @@ public class ReportesService {
     }
 
     public List<OcupacionDto> obtenerOcupacionEventos() {
-        return tiqueteRepository.obtenerOcupacionEventos();
+        return reportesRepository.obtenerOcupacionEventos();
     }
 
     public List<VentasEventoDto> obtenerVentasPorOrganizador(String organizadorId) {

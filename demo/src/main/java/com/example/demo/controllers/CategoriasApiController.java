@@ -1,6 +1,5 @@
 package com.example.demo.controllers;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -89,7 +88,7 @@ public class CategoriasApiController {
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> crear(
             @RequestParam String nombre,
-            @RequestParam(required = false) MultipartFile foto) throws IOException {
+            @RequestParam(required = false) MultipartFile foto) {
         try {
             serviceCategoria.crearCategoria(nombre, foto);
             return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Categoría creada"));
@@ -104,7 +103,7 @@ public class CategoriasApiController {
     public ResponseEntity<ApiResponse<Void>> actualizar(
             @PathVariable String id,
             @RequestParam String nombre,
-            @RequestParam(required = false) MultipartFile foto) throws IOException {
+            @RequestParam(required = false) MultipartFile foto) {
         try {
             serviceCategoria.actualizarCategoria(id, nombre, foto);
             return ResponseEntity.ok(ApiResponse.ok("Categoría actualizada"));

@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,6 +16,7 @@ import com.example.demo.dto.reportes.ValoracionesDto;
 import com.example.demo.dto.reportes.VentasEventoDto;
 import com.example.demo.dto.reportes.VentasFechaDto;
 import com.example.demo.service.ReportesService;
+import com.example.demo.utils.AuthenticatedUserHelper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +26,10 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class ReportesApiController {
-    
+
     private final ReportesService reportesService;
-    
+    private final AuthenticatedUserHelper authenticatedUserHelper;
+
     @GetMapping("/ventas")
     public ResponseEntity<List<VentasFechaDto>> obtenerVentas() {
         log.info("GET /api/reportes/ventas");
@@ -63,7 +64,7 @@ public class ReportesApiController {
         List<OcupacionDto> ocupacion = reportesService.obtenerOcupacionEventos();
         return ResponseEntity.ok(ocupacion);
     }
-    
+
     @GetMapping("/valoraciones")
     public ResponseEntity<List<ValoracionesDto>> obtenerValoracionesEventos() {
         log.info("GET /api/reportes/valoraciones");
@@ -71,22 +72,26 @@ public class ReportesApiController {
         return ResponseEntity.ok(valoraciones);
     }
 
-
-    @GetMapping("/organizador/{organizadorId}/ventas")
+    @GetMapping("/mis-ventas")
     @PreAuthorize("hasRole('ORGANIZADOR')")
-    public ResponseEntity<List<VentasEventoDto>> obtenerVentasPorOrganizador(
-            @PathVariable Long organizadorId) {
-        log.info("GET /api/reportes/organizador/{}/ventas", organizadorId);
+    public ResponseEntity<List<VentasEventoDto>> obtenerMisVentas() {
+        log.info("GET /api/reportes/mis-ventas");
+        String organizadorId = obtenerIdUsuarioAutenticado();
         List<VentasEventoDto> ventas = reportesService.obtenerVentasPorOrganizador(organizadorId);
         return ResponseEntity.ok(ventas);
     }
 
-    @GetMapping("/organizador/{organizadorId}/asistentes")
+    @GetMapping("/mis-asistentes")
     @PreAuthorize("hasRole('ORGANIZADOR')")
-    public ResponseEntity<List<AsistentesDto>> obtenerAsistentesPorOrganizador(
-            @PathVariable Long organizadorId) {
-        log.info("GET /api/reportes/organizador/{}/asistentes", organizadorId);
+    public ResponseEntity<List<AsistentesDto>> obtenerMisAsistentes() {
+        log.info("GET /api/reportes/mis-asistentes");
+        String organizadorId = obtenerIdUsuarioAutenticado();
         List<AsistentesDto> asistentes = reportesService.obtenerAsistentesPorOrganizador(organizadorId);
         return ResponseEntity.ok(asistentes);
+    }
+
+    //metodo auxiliar
+    private String obtenerIdUsuarioAutenticado() {
+        return authenticatedUserHelper.usuarioAutenticado().getId();
     }
 }

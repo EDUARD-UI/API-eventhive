@@ -22,37 +22,37 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class ReportesService {
-    
+
     private final ReportesRepository reportesRepository;
-    
+
     public List<VentasFechaDto> obtenerVentasPorFecha() {
         return reportesRepository.obtenerVentasPorFecha();
     }
-    
+
     public List<VentasEventoDto> obtenerVentasPorEvento() {
         return reportesRepository.obtenerVentasPorEvento();
     }
-    
+
     public List<UsuariosRolDto> obtenerUsuariosPorRol() {
         return reportesRepository.obtenerUsuariosPorRol();
     }
-    
+
     public List<EventosCategoriaDto> obtenerEventosPorCategoria() {
         return reportesRepository.obtenerEventosPorCategoria();
     }
-    
+
     public List<OcupacionDto> obtenerOcupacionEventos() {
         return reportesRepository.obtenerOcupacionEventos();
     }
-    
-    public List<VentasEventoDto> obtenerVentasPorOrganizador(Long organizadorId) {
+
+    public List<VentasEventoDto> obtenerVentasPorOrganizador(String organizadorId) {
         return reportesRepository.obtenerVentasPorOrganizador(organizadorId);
     }
-    
-    public List<AsistentesDto> obtenerAsistentesPorOrganizador(Long organizadorId) {
+
+    public List<AsistentesDto> obtenerAsistentesPorOrganizador(String organizadorId) {
         return reportesRepository.obtenerAsistentesPorOrganizador(organizadorId);
     }
-    
+
     public List<ValoracionesDto> obtenerValoracionesEventos() {
         return reportesRepository.obtenerValoracionesEventos();
     }

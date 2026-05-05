@@ -13,6 +13,9 @@ import com.example.demo.dto.reportes.ValoracionesDto;
 import com.example.demo.dto.reportes.VentasEventoDto;
 import com.example.demo.dto.reportes.VentasFechaDto;
 import com.example.demo.repository.ReportesRepository;
+import com.example.demo.repository.TiqueteRepository;
+import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.repository.ValoracionRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,25 +27,28 @@ import lombok.extern.slf4j.Slf4j;
 public class ReportesService {
 
     private final ReportesRepository reportesRepository;
+    private final TiqueteRepository tiqueteRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final ValoracionRepository valoracionRepository;
 
     public List<VentasFechaDto> obtenerVentasPorFecha() {
         return reportesRepository.obtenerVentasPorFecha();
     }
 
     public List<VentasEventoDto> obtenerVentasPorEvento() {
-        return reportesRepository.obtenerVentasPorEvento();
+        return tiqueteRepository.obtenerVentasPorEvento();
     }
 
     public List<UsuariosRolDto> obtenerUsuariosPorRol() {
-        return reportesRepository.obtenerUsuariosPorRol();
+        return usuarioRepository.obtenerUsuariosPorRol();
     }
 
     public List<EventosCategoriaDto> obtenerEventosPorCategoria() {
-        return reportesRepository.obtenerEventosPorCategoria();
+        return tiqueteRepository.obtenerEventosPorCategoria();
     }
 
     public List<OcupacionDto> obtenerOcupacionEventos() {
-        return reportesRepository.obtenerOcupacionEventos();
+        return tiqueteRepository.obtenerOcupacionEventos();
     }
 
     public List<VentasEventoDto> obtenerVentasPorOrganizador(String organizadorId) {
@@ -54,6 +60,6 @@ public class ReportesService {
     }
 
     public List<ValoracionesDto> obtenerValoracionesEventos() {
-        return reportesRepository.obtenerValoracionesEventos();
+        return valoracionRepository.obtenerValoracionesEventos();
     }
 }

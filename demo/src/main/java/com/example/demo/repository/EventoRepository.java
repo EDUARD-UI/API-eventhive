@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import com.example.demo.dto.NombreEventoDTO;
 import com.example.demo.dto.reportes.EventosCategoriaDto;
+import com.example.demo.dto.reportes.EventosEstadoDto;
 import com.example.demo.model.Evento;
 
 @Repository
@@ -49,11 +50,22 @@ public interface EventoRepository extends MongoRepository<Evento, String> {
     Page<Evento> findByOrganizadorId(String organizadorId, Pageable pageable);
 
     @Aggregation(pipeline = {
-    "{ $addFields: { categoriaObjectId: { $toObjectId: '$categoria._id' } } }",
-    "{ $lookup: { from: 'categorias', localField: 'categoriaObjectId', foreignField: '_id', as: 'categoriaData' } }",
-    "{ $unwind: '$categoriaData' }",
-    "{ $group: { _id: '$categoriaData.nombre', total: { $sum: 1 } } }",
-    "{ $sort: { total: -1 } }"
-})
-List<EventosCategoriaDto> obtenerEventosPorCategoria();
+        "{ $addFields: { categoriaObjectId: { $toObjectId: '$categoria._id' } } }",
+        "{ $lookup: { from: 'categorias', localField: 'categoriaObjectId', foreignField: '_id', as: 'categoriaData' } }",
+        "{ $unwind: '$categoriaData' }",
+        "{ $group: { _id: '$categoriaData.nombre', total: { $sum: 1 } } }",
+        "{ $sort: { total: -1 } }"
+    })
+    List<EventosCategoriaDto> obtenerEventosPorCategoria();
+
+    @Aggregation(pipeline = {
+        "{ $addFields: { estadoOid: { $toObjectId: '$estado._id' } } }",
+        "{ $lookup: { from: 'estados', localField: 'estadoOid', foreignField: '_id', as: 'estadoData' } }",
+        "{ $unwind: { path: '$estadoData', preserveNullAndEmptyArrays: true } }",
+        "{ $addFields: { estadoNombre: { $ifNull: [ '$estadoData.nombre', 'SIN_ESTADO' ] } } }",
+        "{ $group: { _id: '$estadoNombre', cantidad: { $sum: 1 } } }",
+        "{ $project: { _id: 0, estado: '$_id', cantidad: 1 } }",
+        "{ $sort: { cantidad: -1 } }"
+    })
+    List<EventosEstadoDto> obtenerEventosPorEstado();
 }

@@ -5,9 +5,15 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.dto.reportes.CompradoresFrecuentesDto;
 import com.example.demo.dto.reportes.EventosCategoriaDto;
+import com.example.demo.dto.reportes.EventosEstadoDto;
+import com.example.demo.dto.reportes.IngresosCategoriaDto;
+import com.example.demo.dto.reportes.MetodoPagoDto;
 import com.example.demo.dto.reportes.OcupacionDto;
+import com.example.demo.dto.reportes.TicketPromedioDto;
 import com.example.demo.dto.reportes.UsuariosRolDto;
+import com.example.demo.dto.reportes.ValoracionIngresoDto;
 import com.example.demo.dto.reportes.ValoracionesDto;
 import com.example.demo.dto.reportes.VentasEventoDto;
 import com.example.demo.dto.reportes.VentasFechaDto;
@@ -52,5 +58,40 @@ public class ReportesService {
 
     public List<ValoracionesDto> obtenerValoracionesEventos() {
         return valoracionRepository.obtenerValoracionesEventos();
+    }
+
+    // Eventos con ocupacion critica — para alertar al admin sobre posibles fracasos
+    public List<OcupacionDto> obtenerEventosEnRiesgo() {
+        return reportesRepository.obtenerEventosEnRiesgo();
+    }
+
+    // Ingresos por categoria — para saber que tipo de eventos son mas rentables
+    public List<IngresosCategoriaDto> obtenerIngresosPorCategoria() {
+        return reportesRepository.obtenerIngresosPorCategoria();
+    }
+
+    // Compradores frecuentes — para medir fidelidad de la base de usuarios
+    public List<CompradoresFrecuentesDto> obtenerCompradoresFrecuentes() {
+        return reportesRepository.obtenerCompradoresFrecuentes();
+    }
+
+    // Metodos de pago usados — para analisis financiero y fricciones en checkout
+    public List<MetodoPagoDto> obtenerMetodosPago() {
+        return reportesRepository.obtenerMetodosPago();
+    }
+
+    // Ticket promedio mensual — para detectar tendencias de gasto del usuario
+    public List<TicketPromedioDto> obtenerTicketPromedio() {
+        return reportesRepository.obtenerTicketPromedio();
+    }
+
+    // Eventos por estado — para controlar el ciclo de vida operativo
+    public List<EventosEstadoDto> obtenerEventosPorEstado() {
+        return eventoRepository.obtenerEventosPorEstado();
+    }
+
+    // Valoracion vs ingresos — para correlacionar satisfaccion con rendimiento economico
+    public List<ValoracionIngresoDto> obtenerValoracionVsIngresos() {
+        return valoracionRepository.obtenerValoracionVsIngresos();
     }
 }

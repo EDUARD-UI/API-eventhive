@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -31,7 +32,7 @@ public class Usuario {
     @JsonIgnore
     private String clave;
 
-    @DBRef
+    @Field("rol")
     private Rol rol;
 
     private Boolean EsVerificado;

@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import com.example.demo.dto.reportes.AsistentesDto;
 import com.example.demo.dto.reportes.OcupacionDto;
 import com.example.demo.dto.reportes.VentasEventoDto;
 import com.example.demo.dto.reportes.VentasFechaDto;
@@ -17,8 +16,8 @@ public interface ReportesRepository extends MongoRepository<Compra, String> {
 
     @Aggregation(pipeline = {
         "{ $match: { fechaCompra: { $exists: true }, items: { $exists: true, $ne: [] } } }",
-        "{ $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$fechaCompra' } }, " +
-        "totalVentas: { $sum: 1 }, ingresos: { $sum: '$total' } } }",
+        "{ $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$fechaCompra' } }, "
+        + "totalVentas: { $sum: 1 }, ingresos: { $sum: '$total' } } }",
         "{ $project: { _id: 0, fecha: '$_id', totalVentas: 1, ingresos: 1 } }",
         "{ $sort: { fecha: -1 } }"
     })
@@ -29,8 +28,8 @@ public interface ReportesRepository extends MongoRepository<Compra, String> {
         "{ $unwind: '$items' }",
         "{ $lookup: { from: 'eventos', localField: 'items.eventoId', foreignField: '_id', as: 'evento' } }",
         "{ $unwind: { path: '$evento', preserveNullAndEmptyArrays: false } }",
-        "{ $group: { _id: '$evento.titulo', ventas: { $sum: '$items.cantidad' }, " +
-        "ingresos: { $sum: { $multiply: [ '$items.cantidad', '$items.precioUnitario' ] } } } }",
+        "{ $group: { _id: '$evento.titulo', ventas: { $sum: '$items.cantidad' }, "
+        + "ingresos: { $sum: { $multiply: [ '$items.cantidad', '$items.precioUnitario' ] } } } }",
         "{ $project: { _id: 0, evento: '$_id', ventas: 1, ingresos: 1 } }",
         "{ $sort: { ingresos: -1 } }"
     })
@@ -43,37 +42,11 @@ public interface ReportesRepository extends MongoRepository<Compra, String> {
         "{ $unwind: { path: '$evento', preserveNullAndEmptyArrays: false } }",
         "{ $unwind: { path: '$evento.localidades', preserveNullAndEmptyArrays: true } }",
         "{ $match: { $expr: { $eq: [ '$items.localidadId', '$evento.localidades.id' ] } } }",
-        "{ $group: { _id: '$evento._id', evento: { $first: '$evento.titulo' }, " +
-        "capacidad: { $first: '$evento.localidades.capacidad' }, vendidos: { $sum: '$items.cantidad' } } }",
-        "{ $project: { _id: 0, evento: 1, capacidad: 1, vendidos: 1, " +
-        "ocupacion: { $round: [ { $multiply: [ { $divide: [ '$vendidos', '$capacidad' ] }, 100 ] }, 2 ] } } }",
+        "{ $group: { _id: '$evento._id', evento: { $first: '$evento.titulo' }, "
+        + "capacidad: { $first: '$evento.localidades.capacidad' }, vendidos: { $sum: '$items.cantidad' } } }",
+        "{ $project: { _id: 0, evento: 1, capacidad: 1, vendidos: 1, "
+        + "ocupacion: { $round: [ { $multiply: [ { $divide: [ '$vendidos', '$capacidad' ] }, 100 ] }, 2 ] } } }",
         "{ $sort: { ocupacion: -1 } }"
     })
     List<OcupacionDto> obtenerOcupacionEventos();
-
-    @Aggregation(pipeline = {
-        "{ $match: { items: { $exists: true, $ne: [] } } }",
-        "{ $unwind: '$items' }",
-        "{ $lookup: { from: 'eventos', localField: 'items.eventoId', foreignField: '_id', as: 'evento' } }",
-        "{ $unwind: { path: '$evento', preserveNullAndEmptyArrays: false } }",
-        "{ $match: { 'evento.organizador.$id': ?0 } }",
-        "{ $group: { _id: '$evento._id', evento: { $first: '$evento.titulo' }, " +
-        "ventas: { $sum: '$items.cantidad' }, ingresos: { $sum: { $multiply: [ '$items.cantidad', '$items.precioUnitario' ] } } } }",
-        "{ $project: { _id: 0, evento: 1, ventas: 1, ingresos: 1 } }",
-        "{ $sort: { ingresos: -1 } }"
-    })
-    List<VentasEventoDto> obtenerVentasPorOrganizador(String organizadorId);
-
-    @Aggregation(pipeline = {
-        "{ $match: { items: { $exists: true, $ne: [] } } }",
-        "{ $unwind: '$items' }",
-        "{ $lookup: { from: 'eventos', localField: 'items.eventoId', foreignField: '_id', as: 'evento' } }",
-        "{ $unwind: { path: '$evento', preserveNullAndEmptyArrays: false } }",
-        "{ $match: { 'evento.organizador.$id': ?0 } }",
-        "{ $group: { _id: '$evento._id', evento: { $first: '$evento.titulo' }, " +
-        "asistentes: { $sum: '$items.cantidad' } } }",
-        "{ $project: { _id: 0, evento: 1, asistentes: 1 } }",
-        "{ $sort: { asistentes: -1 } }"
-    })
-    List<AsistentesDto> obtenerAsistentesPorOrganizador(String organizadorId);
 }

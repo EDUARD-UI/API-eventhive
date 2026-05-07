@@ -4,6 +4,10 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.exception.BusinessException;
@@ -18,8 +22,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ServiceRoles {
 
-    private final RolesRepository rolesRepository;
+    private final RolesRepository  rolesRepository;
     private final UsuarioRepository usuarioRepository;
+    private final MongoTemplate     mongoTemplate;
 
     public Rol findById(String id) {
         return rolesRepository.findById(id)
@@ -43,7 +48,7 @@ public class ServiceRoles {
     }
 
     public void crearRol(String nombre, String descripcion) {
-        if (findByNombre(nombre) != null)
+        if (rolesRepository.existsByNombre(nombre))
             throw new BusinessException("Ya existe un rol con ese nombre");
 
         Rol nuevo = new Rol();
@@ -53,23 +58,34 @@ public class ServiceRoles {
     }
 
     public void actualizarRol(String id, String nombre, String descripcion) {
-        Rol existente = findById(id);
-        if (existente == null) throw new ResourceNotFoundException("El rol no existe");
+        // 1. Verificar que el rol existe
+        Rol existente = rolesRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con id: " + id));
 
-        Rol conNombre = findByNombre(nombre);
-        if (conNombre != null && !conNombre.getId().equals(id))
-            throw new BusinessException("Ya existe otro rol con ese nombre");
+        if (!existente.getNombre().equalsIgnoreCase(nombre)) {
+            if (rolesRepository.existsByNombre(nombre))
+                throw new BusinessException("Ya existe otro rol con ese nombre");
+        }
 
-        existente.setNombre(nombre);
-        existente.setDescripcion(descripcion);
-        rolesRepository.save(existente);
+        //coreccion en prueba
+        Query query = new Query(Criteria.where("_id").is(id));
+        Update update = new Update()
+                .set("nombre", nombre)
+                .set("descripcion", descripcion);
+        mongoTemplate.updateFirst(query, update, Rol.class);
     }
 
     public void eliminarRol(String id) {
-        if (findById(id) == null) throw new ResourceNotFoundException("El rol no existe");
+        // 1. Verificar que el rol existe
+        Rol rol = rolesRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con id: " + id));
 
-        if (tieneUsuariosAsociados(id))
-            throw new BusinessException("No se puede eliminar el rol porque tiene usuarios asociados");
+        // 2. Verificar que no tenga usuarios asociados
+        long usuariosConRol = usuarioRepository.countByRolId(id);
+        if (usuariosConRol > 0)
+            throw new BusinessException(
+                "No se puede eliminar el rol '" + rol.getNombre() + "' porque tiene "
+                + usuariosConRol + " usuario(s) asociado(s)");
 
         rolesRepository.deleteById(id);
     }

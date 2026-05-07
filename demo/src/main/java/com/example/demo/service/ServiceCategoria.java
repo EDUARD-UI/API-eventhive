@@ -68,17 +68,18 @@ public class ServiceCategoria {
     }
 
     public void crearCategoria(String nombre, MultipartFile foto) throws IOException {
-        if (categoriasRepository.findByNombre(nombre) != null) {
+        if (categoriasRepository.findByNombre(nombre) != null)
             throw new BusinessException("Categoría ya existe");
-        }
 
         Categoria categoria = new Categoria();
         categoria.setNombre(nombre);
 
         if (foto != null && !foto.isEmpty()) {
             Utilidades.validarFoto(foto);
-            String nombreFoto = Utilidades.guardarFoto(foto, uploadPath);
-            categoria.setFoto(nombreFoto);
+            categoria.setFoto(Utilidades.guardarFoto(foto, uploadPath));
+        } else {
+            //en caso de no añadir una imagen dejar en null
+            categoria.setFoto(null);
         }
 
         categoriasRepository.save(categoria);
@@ -87,11 +88,10 @@ public class ServiceCategoria {
     public void actualizarCategoria(String id, String nombre, MultipartFile foto) throws IOException {
         Categoria existente = obtenerCategoriaPorId(id);
 
-        Categoria conNombre = categoriasRepository.findByNombre(nombre);
-        if (conNombre != null && !conNombre.getId().equals(id)) {
-            throw new BusinessException("Nombre ya existe");
+        if (!existente.getNombre().equalsIgnoreCase(nombre)) {
+            if (categoriasRepository.findByNombre(nombre) != null)
+                throw new BusinessException("Ya existe una categoría con ese nombre");
         }
-
         existente.setNombre(nombre);
 
         if (foto != null && !foto.isEmpty()) {
@@ -99,19 +99,20 @@ public class ServiceCategoria {
             if (existente.getFoto() != null) {
                 Utilidades.eliminarFoto(existente.getFoto(), uploadPath);
             }
-            String nombreFoto = Utilidades.guardarFoto(foto, uploadPath);
-            existente.setFoto(nombreFoto);
+            existente.setFoto(Utilidades.guardarFoto(foto, uploadPath));
         }
 
         categoriasRepository.save(existente);
     }
 
     public void eliminarCategoria(String id) {
-        if (contarEventosPorCategoria(id) > 0) {
-            throw new BusinessException("No se puede eliminar categoría con eventos");
-        }
-
         Categoria categoria = obtenerCategoriaPorId(id);
+        long eventosConCategoria = eventoRepository.countByCategoriaId(id);
+        if (eventosConCategoria > 0)
+            throw new BusinessException(
+                "No se puede eliminar la categoría '" + categoria.getNombre() + "' porque tiene "
+                + eventosConCategoria + " evento(s) asociado(s)");
+
         if (categoria.getFoto() != null) {
             Utilidades.eliminarFoto(categoria.getFoto(), uploadPath);
         }

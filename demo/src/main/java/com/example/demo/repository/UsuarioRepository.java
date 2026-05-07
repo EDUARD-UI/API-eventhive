@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.example.demo.dto.reportes.UsuariosRolDto;
@@ -20,6 +21,7 @@ public interface UsuarioRepository extends MongoRepository<Usuario, String> {
 
     boolean existsByCorreo(String correo);
 
+    @Query(value = "{ 'rol._id': ?0 }", count = true)
     long countByRolId(String rolId);
 
     @Aggregation(pipeline = {

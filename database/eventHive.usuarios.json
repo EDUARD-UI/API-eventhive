@@ -1,0 +1,495 @@
+[{
+  "_id": {
+    "$oid": "69ed84bdf70154dcf9081408"
+  },
+  "nombre": "santiago",
+  "apellido": "lindor",
+  "correo": "eduardestf20@gmail.com",
+  "telefono": "3046169085",
+  "clave": "$2a$10$34KwjM3IDCFYXv67BxSULefUsVFQdWK99lccCemZ/fqz4RN1X5P3.",
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c001",
+    "nombre": "ADMINISTRADOR",
+    "descripcion": "Administrador del sistema con todos los permisos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "69f55b55654ae93e8877f97b"
+  },
+  "nombre": "jhonatan",
+  "apellido": "Saez",
+  "correo": "contacteljhonny@gmail.com",
+  "telefono": "3123335643",
+  "clave": "$2a$10$c0QJfMDw9xZW2bYsD4ynBeEBs8gnGkKLn8bACn1qIplXrxCLSgs1q",
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c003",
+    "nombre": "CLIENTE",
+    "descripcion": "Cliente que puede comprar entradas y ver eventos"
+  },
+  "EsVerificado": false,
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "69f55c64654ae93e8877f97c"
+  },
+  "nombre": "angie",
+  "apellido": "Torres",
+  "correo": "Angiecarolinatorresnarvaez@gmail.com",
+  "telefono": "3002225566",
+  "clave": "$2a$10$HxlrybdrM.1H5tCmmJxAkOmmrby3KtzJ4KwHuNgdL1aTRDCYTyXp.",
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c002",
+    "nombre": "ORGANIZADOR",
+    "descripcion": "Organizador de eventos que puede crear y gestionar eventos"
+  },
+  "EsVerificado": false,
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "69f9633a4fcf37583101eca5"
+  },
+  "nombre": "Roberto",
+  "apellido": "García Eventos",
+  "correo": "roberto.garcia.eventos@email.com",
+  "telefono": "+57 300 123 4567",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "EsVerificado": true,
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c002",
+    "nombre": "ORGANIZADOR",
+    "descripcion": "Organizador de eventos que puede crear y gestionar eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "69f9633a4fcf37583101eca6"
+  },
+  "nombre": "Claudia",
+  "apellido": "Rodríguez Producciones",
+  "correo": "claudia.rodriguez.prod@email.com",
+  "telefono": "+57 301 234 5678",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "EsVerificado": true,
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c002",
+    "nombre": "ORGANIZADOR",
+    "descripcion": "Organizador de eventos que puede crear y gestionar eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "69f9633a4fcf37583101eca7"
+  },
+  "nombre": "Fernando",
+  "apellido": "López Entertainment",
+  "correo": "fernando.lopez.ent@email.com",
+  "telefono": "+57 302 345 6789",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "EsVerificado": true,
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c002",
+    "nombre": "ORGANIZADOR",
+    "descripcion": "Organizador de eventos que puede crear y gestionar eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "69f9633a4fcf37583101eca8"
+  },
+  "nombre": "Marcela",
+  "apellido": "Martínez Cultura",
+  "correo": "marcela.martinez.cult@email.com",
+  "telefono": "+57 303 456 7890",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "EsVerificado": true,
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c002",
+    "nombre": "ORGANIZADOR",
+    "descripcion": "Organizador de eventos que puede crear y gestionar eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "69f9633a4fcf37583101eca9"
+  },
+  "nombre": "Daniel",
+  "apellido": "Sánchez Tech Events",
+  "correo": "daniel.sanchez.tech@email.com",
+  "telefono": "+57 304 567 8901",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "EsVerificado": true,
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c002",
+    "nombre": "ORGANIZADOR",
+    "descripcion": "Organizador de eventos que puede crear y gestionar eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a1b2c3d4e5f6a7b82001"
+  },
+  "nombre": "Tomás",
+  "apellido": "Aguilar",
+  "correo": "tomas.aguilar1@email.com",
+  "telefono": "+57912342001",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": false,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c003",
+    "nombre": "CLIENTE",
+    "descripcion": "Cliente que puede comprar entradas y ver eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a1b2c3d4e5f6a7b82002"
+  },
+  "nombre": "Isabela",
+  "apellido": "Vargas",
+  "correo": "isabela.vargas2@email.com",
+  "telefono": "+57912342002",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": false,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c003",
+    "nombre": "CLIENTE",
+    "descripcion": "Cliente que puede comprar entradas y ver eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a1b2c3d4e5f6a7b82003"
+  },
+  "nombre": "Sebastián",
+  "apellido": "Medina",
+  "correo": "sebastian.medina3@email.com",
+  "telefono": "+57912342003",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": false,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c003",
+    "nombre": "CLIENTE",
+    "descripcion": "Cliente que puede comprar entradas y ver eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a1b2c3d4e5f6a7b82004"
+  },
+  "nombre": "Natalia",
+  "apellido": "Castro",
+  "correo": "natalia.castro4@email.com",
+  "telefono": "+57912342004",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": false,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c003",
+    "nombre": "CLIENTE",
+    "descripcion": "Cliente que puede comprar entradas y ver eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a1b2c3d4e5f6a7b82005"
+  },
+  "nombre": "Felipe",
+  "apellido": "Restrepo",
+  "correo": "felipe.restrepo5@email.com",
+  "telefono": "+57912342005",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": false,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c003",
+    "nombre": "CLIENTE",
+    "descripcion": "Cliente que puede comprar entradas y ver eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a1b2c3d4e5f6a7b82006"
+  },
+  "nombre": "Daniela",
+  "apellido": "Quintero",
+  "correo": "daniela.quintero6@email.com",
+  "telefono": "+57912342006",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": false,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c003",
+    "nombre": "CLIENTE",
+    "descripcion": "Cliente que puede comprar entradas y ver eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a1b2c3d4e5f6a7b82007"
+  },
+  "nombre": "Mateo",
+  "apellido": "Peñaloza",
+  "correo": "mateo.penaloza7@email.com",
+  "telefono": "+57912342007",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": false,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c003",
+    "nombre": "CLIENTE",
+    "descripcion": "Cliente que puede comprar entradas y ver eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a1b2c3d4e5f6a7b82008"
+  },
+  "nombre": "Valeria",
+  "apellido": "Osorio",
+  "correo": "valeria.osorio8@email.com",
+  "telefono": "+57912342008",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": false,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c003",
+    "nombre": "CLIENTE",
+    "descripcion": "Cliente que puede comprar entradas y ver eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a1b2c3d4e5f6a7b82009"
+  },
+  "nombre": "Camilo",
+  "apellido": "Ríos",
+  "correo": "camilo.rios9@email.com",
+  "telefono": "+57912342009",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": false,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c003",
+    "nombre": "CLIENTE",
+    "descripcion": "Cliente que puede comprar entradas y ver eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a1b2c3d4e5f6a7b8200a"
+  },
+  "nombre": "Luisa",
+  "apellido": "Prada",
+  "correo": "luisa.prada10@email.com",
+  "telefono": "+57912342010",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": false,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c003",
+    "nombre": "CLIENTE",
+    "descripcion": "Cliente que puede comprar entradas y ver eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a1b2c3d4e5f6a7b8200b"
+  },
+  "nombre": "Santiago",
+  "apellido": "Mendoza",
+  "correo": "santiago.mendoza11@email.com",
+  "telefono": "+57912342011",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": false,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c003",
+    "nombre": "CLIENTE",
+    "descripcion": "Cliente que puede comprar entradas y ver eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a1b2c3d4e5f6a7b8200c"
+  },
+  "nombre": "Alejandra",
+  "apellido": "Bermúdez",
+  "correo": "alejandra.bermudez12@email.com",
+  "telefono": "+57912342012",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": false,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c003",
+    "nombre": "CLIENTE",
+    "descripcion": "Cliente que puede comprar entradas y ver eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a1b2c3d4e5f6a7b8200d"
+  },
+  "nombre": "Juliana",
+  "apellido": "Acosta",
+  "correo": "juliana.acosta13@email.com",
+  "telefono": "+57912342013",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": false,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c003",
+    "nombre": "CLIENTE",
+    "descripcion": "Cliente que puede comprar entradas y ver eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a1b2c3d4e5f6a7b8200e"
+  },
+  "nombre": "Esteban",
+  "apellido": "Giraldo",
+  "correo": "esteban.giraldo14@email.com",
+  "telefono": "+57912342014",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": false,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c003",
+    "nombre": "CLIENTE",
+    "descripcion": "Cliente que puede comprar entradas y ver eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a1b2c3d4e5f6a7b8200f"
+  },
+  "nombre": "Paola",
+  "apellido": "Salcedo",
+  "correo": "paola.salcedo15@email.com",
+  "telefono": "+57912342015",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": false,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c003",
+    "nombre": "CLIENTE",
+    "descripcion": "Cliente que puede comprar entradas y ver eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a2c3d4e5f6a7b8c82001"
+  },
+  "nombre": "Gloria",
+  "apellido": "Pedraza Eventos",
+  "correo": "gloria.pedraza.eventos@email.com",
+  "telefono": "+57 305 678 9012",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": true,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c002",
+    "nombre": "ORGANIZADOR",
+    "descripcion": "Organizador de eventos que puede crear y gestionar eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a2c3d4e5f6a7b8c82002"
+  },
+  "nombre": "Hernán",
+  "apellido": "Lozano Producciones",
+  "correo": "hernan.lozano.prod@email.com",
+  "telefono": "+57 306 789 0123",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": true,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c002",
+    "nombre": "ORGANIZADOR",
+    "descripcion": "Organizador de eventos que puede crear y gestionar eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a2c3d4e5f6a7b8c82003"
+  },
+  "nombre": "Viviana",
+  "apellido": "Cárdenas Cultural",
+  "correo": "viviana.cardenas.cult@email.com",
+  "telefono": "+57 307 890 1234",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": true,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c002",
+    "nombre": "ORGANIZADOR",
+    "descripcion": "Organizador de eventos que puede crear y gestionar eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a2c3d4e5f6a7b8c82004"
+  },
+  "nombre": "Rodrigo",
+  "apellido": "Nieto Entertainment",
+  "correo": "rodrigo.nieto.ent@email.com",
+  "telefono": "+57 308 901 2345",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": true,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c002",
+    "nombre": "ORGANIZADOR",
+    "descripcion": "Organizador de eventos que puede crear y gestionar eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+},
+{
+  "_id": {
+    "$oid": "6820a2c3d4e5f6a7b8c82005"
+  },
+  "nombre": "Lorena",
+  "apellido": "Zapata Shows",
+  "correo": "lorena.zapata.shows@email.com",
+  "telefono": "+57 309 012 3456",
+  "clave": "$2a$10$N9qo8uLOickgx2ZMRZoMy.Mr5vQqJQJX5k5k5k5k5k5k5k5k5k5k",
+  "esVerificado": true,
+  "eventosDeseados": [],
+  "rol": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c002",
+    "nombre": "ORGANIZADOR",
+    "descripcion": "Organizador de eventos que puede crear y gestionar eventos"
+  },
+  "_class": "com.example.demo.model.Usuario"
+}]

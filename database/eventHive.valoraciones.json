@@ -1,0 +1,152 @@
+[{
+  "_id": {
+    "$oid": "69f9de07a0317c20e28b0aec"
+  },
+  "comentario": "Excelente concierto, la energía fue increíble",
+  "calificacion": 5,
+  "cliente": {
+    "$ref": "usuarios",
+    "$id": {
+      "$oid": "69f55b55654ae93e8877f97b"
+    }
+  },
+  "evento": {
+    "$ref": "eventos",
+    "$id": {
+      "$oid": "69f9637d4fcf37583101ecab"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "69f9de07a0317c20e28b0aed"
+  },
+  "comentario": "Muy buen evento, la organización estuvo perfecta",
+  "calificacion": 4,
+  "cliente": {
+    "$ref": "usuarios",
+    "$id": {
+      "$oid": "69f55b55654ae93e8877f97b"
+    }
+  },
+  "evento": {
+    "$ref": "eventos",
+    "$id": {
+      "$oid": "69f9637d4fcf37583101ecab"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "69f9de07a0317c20e28b0aee"
+  },
+  "comentario": "El sonido pudo ser mejor pero el artista estuvo increíble",
+  "calificacion": 3,
+  "cliente": {
+    "$ref": "usuarios",
+    "$id": {
+      "$oid": "69f55b55654ae93e8877f97b"
+    }
+  },
+  "evento": {
+    "$ref": "eventos",
+    "$id": {
+      "$oid": "69f9637d4fcf37583101ecac"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "69f9de07a0317c20e28b0aef"
+  },
+  "comentario": "Festival de tecnología muy completo, aprendí bastante",
+  "calificacion": 5,
+  "cliente": {
+    "$ref": "usuarios",
+    "$id": {
+      "$oid": "69f55b55654ae93e8877f97b"
+    }
+  },
+  "evento": {
+    "$ref": "eventos",
+    "$id": {
+      "$oid": "69f9637d4fcf37583101ecac"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "69f9de07a0317c20e28b0af0"
+  },
+  "comentario": "El clásico estuvo emocionante de principio a fin",
+  "calificacion": 5,
+  "cliente": {
+    "$ref": "usuarios",
+    "$id": {
+      "$oid": "69f55b55654ae93e8877f97b"
+    }
+  },
+  "evento": {
+    "$ref": "eventos",
+    "$id": {
+      "$oid": "69f9637d4fcf37583101ecad"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "69f9de07a0317c20e28b0af1"
+  },
+  "comentario": "Buena exposición pero faltó más variedad de artistas",
+  "calificacion": 3,
+  "cliente": {
+    "$ref": "usuarios",
+    "$id": {
+      "$oid": "69f55b55654ae93e8877f97b"
+    }
+  },
+  "evento": {
+    "$ref": "eventos",
+    "$id": {
+      "$oid": "69f9637d4fcf37583101ecae"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "69f9de07a0317c20e28b0af2"
+  },
+  "comentario": "La experiencia gastronómica fue única e inolvidable",
+  "calificacion": 5,
+  "cliente": {
+    "$ref": "usuarios",
+    "$id": {
+      "$oid": "69f55b55654ae93e8877f97b"
+    }
+  },
+  "evento": {
+    "$ref": "eventos",
+    "$id": {
+      "$oid": "69f9637d4fcf37583101ecaf"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "69f9de07a0317c20e28b0af3"
+  },
+  "comentario": "La obra de teatro estuvo magistral, actuaciones increíbles",
+  "calificacion": 4,
+  "cliente": {
+    "$ref": "usuarios",
+    "$id": {
+      "$oid": "69f55b55654ae93e8877f97b"
+    }
+  },
+  "evento": {
+    "$ref": "eventos",
+    "$id": {
+      "$oid": "69f9637d4fcf37583101ecb0"
+    }
+  }
+}]

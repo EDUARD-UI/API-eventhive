@@ -1,0 +1,84 @@
+[{
+  "_id": {
+    "$oid": "69f4e128a33a6dd2b1d58ca8"
+  },
+  "nombre": "Música en Vivo",
+  "foto": null
+},
+{
+  "_id": {
+    "$oid": "69f4e128a33a6dd2b1d58ca9"
+  },
+  "nombre": "Deportes",
+  "foto": null
+},
+{
+  "_id": {
+    "$oid": "69f4e128a33a6dd2b1d58caa"
+  },
+  "nombre": "Teatro y Cultura",
+  "foto": null
+},
+{
+  "_id": {
+    "$oid": "69f4e128a33a6dd2b1d58cab"
+  },
+  "nombre": "Gastronomía",
+  "foto": null
+},
+{
+  "_id": {
+    "$oid": "69f4e128a33a6dd2b1d58cac"
+  },
+  "nombre": "Tecnología",
+  "foto": null
+},
+{
+  "_id": {
+    "$oid": "69f4e128a33a6dd2b1d58cad"
+  },
+  "nombre": "Festivales",
+  "foto": null
+},
+{
+  "_id": {
+    "$oid": "69f4e128a33a6dd2b1d58cae"
+  },
+  "nombre": "Conferencias y Seminarios",
+  "foto": null
+},
+{
+  "_id": {
+    "$oid": "69f4e128a33a6dd2b1d58caf"
+  },
+  "nombre": "Arte y Exposiciones",
+  "foto": null
+},
+{
+  "_id": {
+    "$oid": "69f4e128a33a6dd2b1d58cb0"
+  },
+  "nombre": "Vida Nocturna",
+  "foto": null
+},
+{
+  "_id": {
+    "$oid": "69f4e128a33a6dd2b1d58cb1"
+  },
+  "nombre": "Familia y Niños",
+  "foto": null
+},
+{
+  "_id": {
+    "$oid": "69f4e128a33a6dd2b1d58cb2"
+  },
+  "nombre": "Bienestar y Salud",
+  "foto": null
+},
+{
+  "_id": {
+    "$oid": "69f4e128a33a6dd2b1d58cb3"
+  },
+  "nombre": "Cine y Audiovisual",
+  "foto": null
+}]

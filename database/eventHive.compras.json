@@ -1,0 +1,405 @@
+[{
+  "_id": {
+    "$oid": "6820b1c2d3e4f5a6b7c8d001"
+  },
+  "fechaCompra": {
+    "$date": "2024-06-10T14:30:00.000Z"
+  },
+  "total": {
+    "$numberDecimal": "250000"
+  },
+  "metodoPago": "TARJETA_CREDITO",
+  "cliente": {
+    "_id": {
+      "$oid": "6820a1b2c3d4e5f6a7b82001"
+    }
+  },
+  "items": [
+    {
+      "eventoId": "69f9637d4fcf37583101ecab",
+      "localidadId": "loc001",
+      "cantidad": 1,
+      "precioUnitario": {
+        "$numberDecimal": "250000"
+      }
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "6820b1c2d3e4f5a6b7c8d002"
+  },
+  "fechaCompra": {
+    "$date": "2024-06-01T10:00:00.000Z"
+  },
+  "total": {
+    "$numberDecimal": "240000"
+  },
+  "metodoPago": "PSE",
+  "cliente": {
+    "_id": {
+      "$oid": "6820a1b2c3d4e5f6a7b82002"
+    }
+  },
+  "items": [
+    {
+      "eventoId": "69f9637d4fcf37583101ecab",
+      "localidadId": "loc002",
+      "cantidad": 2,
+      "precioUnitario": {
+        "$numberDecimal": "120000"
+      }
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "6820b1c2d3e4f5a6b7c8d003"
+  },
+  "fechaCompra": {
+    "$date": "2024-07-15T09:00:00.000Z"
+  },
+  "total": {
+    "$numberDecimal": "85000"
+  },
+  "metodoPago": "TARJETA_DEBITO",
+  "cliente": {
+    "_id": {
+      "$oid": "6820a1b2c3d4e5f6a7b82003"
+    }
+  },
+  "items": [
+    {
+      "eventoId": "69f9637d4fcf37583101ecac",
+      "localidadId": "loc001",
+      "cantidad": 1,
+      "precioUnitario": {
+        "$numberDecimal": "85000"
+      }
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "6820b1c2d3e4f5a6b7c8d004"
+  },
+  "fechaCompra": {
+    "$date": "2024-07-10T16:45:00.000Z"
+  },
+  "total": {
+    "$numberDecimal": "360000"
+  },
+  "metodoPago": "TARJETA_CREDITO",
+  "cliente": {
+    "_id": {
+      "$oid": "6820a1b2c3d4e5f6a7b82004"
+    }
+  },
+  "items": [
+    {
+      "eventoId": "69f9637d4fcf37583101ecac",
+      "localidadId": "loc002",
+      "cantidad": 2,
+      "precioUnitario": {
+        "$numberDecimal": "180000"
+      }
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "6820b1c2d3e4f5a6b7c8d005"
+  },
+  "fechaCompra": {
+    "$date": "2024-08-05T14:30:00.000Z"
+  },
+  "total": {
+    "$numberDecimal": "200000"
+  },
+  "metodoPago": "PSE",
+  "cliente": {
+    "_id": {
+      "$oid": "6820a1b2c3d4e5f6a7b82005"
+    }
+  },
+  "items": [
+    {
+      "eventoId": "69f9637d4fcf37583101ecad",
+      "localidadId": "loc003",
+      "cantidad": 1,
+      "precioUnitario": {
+        "$numberDecimal": "200000"
+      }
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "6820b1c2d3e4f5a6b7c8d006"
+  },
+  "fechaCompra": {
+    "$date": "2024-08-01T11:00:00.000Z"
+  },
+  "total": {
+    "$numberDecimal": "190000"
+  },
+  "metodoPago": "TARJETA_CREDITO",
+  "cliente": {
+    "_id": {
+      "$oid": "6820a1b2c3d4e5f6a7b82006"
+    }
+  },
+  "items": [
+    {
+      "eventoId": "69f9637d4fcf37583101ecad",
+      "localidadId": "loc001",
+      "cantidad": 2,
+      "precioUnitario": {
+        "$numberDecimal": "95000"
+      }
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "6820b1c2d3e4f5a6b7c8d007"
+  },
+  "fechaCompra": {
+    "$date": "2024-08-20T09:30:00.000Z"
+  },
+  "total": {
+    "$numberDecimal": "35000"
+  },
+  "metodoPago": "TARJETA_DEBITO",
+  "cliente": {
+    "_id": {
+      "$oid": "6820a1b2c3d4e5f6a7b82007"
+    }
+  },
+  "items": [
+    {
+      "eventoId": "69f9637d4fcf37583101ecae",
+      "localidadId": "loc001",
+      "cantidad": 1,
+      "precioUnitario": {
+        "$numberDecimal": "35000"
+      }
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "6820b1c2d3e4f5a6b7c8d008"
+  },
+  "fechaCompra": {
+    "$date": "2024-08-22T14:00:00.000Z"
+  },
+  "total": {
+    "$numberDecimal": "36000"
+  },
+  "metodoPago": "PSE",
+  "cliente": {
+    "_id": {
+      "$oid": "6820a1b2c3d4e5f6a7b82008"
+    }
+  },
+  "items": [
+    {
+      "eventoId": "69f9637d4fcf37583101ecae",
+      "localidadId": "loc002",
+      "cantidad": 2,
+      "precioUnitario": {
+        "$numberDecimal": "18000"
+      }
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "6820b1c2d3e4f5a6b7c8d009"
+  },
+  "fechaCompra": {
+    "$date": "2024-09-02T18:00:00.000Z"
+  },
+  "total": {
+    "$numberDecimal": "350000"
+  },
+  "metodoPago": "TARJETA_CREDITO",
+  "cliente": {
+    "_id": {
+      "$oid": "6820a1b2c3d4e5f6a7b82009"
+    }
+  },
+  "items": [
+    {
+      "eventoId": "69f9637d4fcf37583101ecaf",
+      "localidadId": "loc001",
+      "cantidad": 1,
+      "precioUnitario": {
+        "$numberDecimal": "350000"
+      }
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "6820b1c2d3e4f5a6b7c8d00a"
+  },
+  "fechaCompra": {
+    "$date": "2024-09-03T12:00:00.000Z"
+  },
+  "total": {
+    "$numberDecimal": "550000"
+  },
+  "metodoPago": "PSE",
+  "cliente": {
+    "_id": {
+      "$oid": "6820a1b2c3d4e5f6a7b8200a"
+    }
+  },
+  "items": [
+    {
+      "eventoId": "69f9637d4fcf37583101ecaf",
+      "localidadId": "loc002",
+      "cantidad": 1,
+      "precioUnitario": {
+        "$numberDecimal": "550000"
+      }
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "6820b1c2d3e4f5a6b7c8d00b"
+  },
+  "fechaCompra": {
+    "$date": "2024-09-15T10:30:00.000Z"
+  },
+  "total": {
+    "$numberDecimal": "120000"
+  },
+  "metodoPago": "TARJETA_DEBITO",
+  "cliente": {
+    "_id": {
+      "$oid": "6820a1b2c3d4e5f6a7b8200b"
+    }
+  },
+  "items": [
+    {
+      "eventoId": "69f9637d4fcf37583101ecb0",
+      "localidadId": "loc001",
+      "cantidad": 1,
+      "precioUnitario": {
+        "$numberDecimal": "120000"
+      }
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "6820b1c2d3e4f5a6b7c8d00c"
+  },
+  "fechaCompra": {
+    "$date": "2024-09-16T15:00:00.000Z"
+  },
+  "total": {
+    "$numberDecimal": "85000"
+  },
+  "metodoPago": "TARJETA_CREDITO",
+  "cliente": {
+    "_id": {
+      "$oid": "6820a1b2c3d4e5f6a7b8200c"
+    }
+  },
+  "items": [
+    {
+      "eventoId": "69f9637d4fcf37583101ecb0",
+      "localidadId": "loc002",
+      "cantidad": 1,
+      "precioUnitario": {
+        "$numberDecimal": "85000"
+      }
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "6820b1c2d3e4f5a6b7c8d00d"
+  },
+  "fechaCompra": {
+    "$date": "2024-10-02T13:00:00.000Z"
+  },
+  "total": {
+    "$numberDecimal": "160000"
+  },
+  "metodoPago": "PSE",
+  "cliente": {
+    "_id": {
+      "$oid": "6820a1b2c3d4e5f6a7b8200d"
+    }
+  },
+  "items": [
+    {
+      "eventoId": "69f9637d4fcf37583101ecab",
+      "localidadId": "loc003",
+      "cantidad": 2,
+      "precioUnitario": {
+        "$numberDecimal": "80000"
+      }
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "6820b1c2d3e4f5a6b7c8d00e"
+  },
+  "fechaCompra": {
+    "$date": "2024-10-05T17:30:00.000Z"
+  },
+  "total": {
+    "$numberDecimal": "420000"
+  },
+  "metodoPago": "TARJETA_CREDITO",
+  "cliente": {
+    "_id": {
+      "$oid": "6820a1b2c3d4e5f6a7b8200e"
+    }
+  },
+  "items": [
+    {
+      "eventoId": "69f9637d4fcf37583101ecac",
+      "localidadId": "loc001",
+      "cantidad": 2,
+      "precioUnitario": {
+        "$numberDecimal": "210000"
+      }
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "6820b1c2d3e4f5a6b7c8d00f"
+  },
+  "fechaCompra": {
+    "$date": "2024-10-10T09:00:00.000Z"
+  },
+  "total": {
+    "$numberDecimal": "95000"
+  },
+  "metodoPago": "TARJETA_DEBITO",
+  "cliente": {
+    "_id": {
+      "$oid": "6820a1b2c3d4e5f6a7b8200f"
+    }
+  },
+  "items": [
+    {
+      "eventoId": "69f9637d4fcf37583101ecad",
+      "localidadId": "loc002",
+      "cantidad": 1,
+      "precioUnitario": {
+        "$numberDecimal": "95000"
+      }
+    }
+  ]
+}]

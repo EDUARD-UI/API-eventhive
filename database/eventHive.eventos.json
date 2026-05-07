@@ -1,0 +1,360 @@
+[{
+  "_id": {
+    "$oid": "69f9637d4fcf37583101ecab"
+  },
+  "titulo": "Concierto de Maluma en Vivo",
+  "descripcion": "Concierto en vivo con el artista latino Maluma. Disfruta de sus éxitos más populares en un ambiente energético y festivo.",
+  "foto": null,
+  "fecha": "2024-06-15",
+  "hora": "20:00",
+  "lugar": "Estadio El Campín, Bogotá",
+  "estado": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c102"
+  },
+  "categoria": {
+    "_id": "69f4e128a33a6dd2b1d58ca8"
+  },
+  "organizador": {
+    "_id": "69f55c64654ae93e8877f97c"
+  },
+  "localidades": [
+    {
+      "id": "loc001",
+      "nombre": "Zona VIP",
+      "precio": 250000,
+      "capacidad": 500,
+      "disponibles": 450
+    },
+    {
+      "id": "loc002",
+      "nombre": "Zona General",
+      "precio": 120000,
+      "capacidad": 2000,
+      "disponibles": 1800
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "69f9637d4fcf37583101ecac"
+  },
+  "titulo": "Festival de Tecnología Colombia 2024",
+  "descripcion": "Conferencias y talleres sobre inteligencia artificial, blockchain y desarrollo web. Expositores internacionales.",
+  "foto": null,
+  "fecha": "2024-07-20",
+  "hora": "09:00",
+  "lugar": "Centro de Convenciones Corferias, Bogotá",
+  "estado": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c102"
+  },
+  "categoria": {
+    "_id": "69f4e128a33a6dd2b1d58cac"
+  },
+  "organizador": {
+    "_id": "69f55c64654ae93e8877f97c"
+  },
+  "localidades": [
+    {
+      "id": "loc001",
+      "nombre": "Entrada General",
+      "precio": 85000,
+      "capacidad": 1500,
+      "disponibles": 1200
+    },
+    {
+      "id": "loc002",
+      "nombre": "Pase Premium",
+      "precio": 180000,
+      "capacidad": 300,
+      "disponibles": 280
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "69f9637d4fcf37583101ecad"
+  },
+  "titulo": "Partido Deportivo: Millonarios vs Santa Fe",
+  "descripcion": "Clásico de Bogotá. Dos de los equipos más importantes del país se enfrentan en una emocionante jornada.",
+  "foto": null,
+  "fecha": "2024-08-10",
+  "hora": "16:00",
+  "lugar": "Estadio Nemesio Camacho, Bogotá",
+  "estado": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c102"
+  },
+  "categoria": {
+    "_id": "69f4e128a33a6dd2b1d58ca9"
+  },
+  "organizador": {
+    "_id": "69f55c64654ae93e8877f97c"
+  },
+  "localidades": [
+    {
+      "id": "loc001",
+      "nombre": "Tribuna Sur",
+      "precio": 95000,
+      "capacidad": 3000,
+      "disponibles": 2500
+    },
+    {
+      "id": "loc002",
+      "nombre": "Tribuna Norte",
+      "precio": 95000,
+      "capacidad": 3000,
+      "disponibles": 2700
+    },
+    {
+      "id": "loc003",
+      "nombre": "Zona Premium",
+      "precio": 200000,
+      "capacidad": 400,
+      "disponibles": 350
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "69f9637d4fcf37583101ecae"
+  },
+  "titulo": "Exposición de Arte Contemporáneo",
+  "descripcion": "Exposición de obras de artistas colombianos contemporáneos. Incluye pintura, escultura e instalaciones interactivas.",
+  "foto": null,
+  "fecha": "2024-08-25",
+  "hora": "10:00",
+  "lugar": "Museo de Arte Moderno, Bogotá",
+  "estado": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c102"
+  },
+  "categoria": {
+    "_id": "69f4e128a33a6dd2b1d58caf"
+  },
+  "organizador": {
+    "_id": "69f55c64654ae93e8877f97c"
+  },
+  "localidades": [
+    {
+      "id": "loc001",
+      "nombre": "Entrada General",
+      "precio": 35000,
+      "capacidad": 800,
+      "disponibles": 600
+    },
+    {
+      "id": "loc002",
+      "nombre": "Entrada Estudiante",
+      "precio": 18000,
+      "capacidad": 200,
+      "disponibles": 150
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "69f9637d4fcf37583101ecaf"
+  },
+  "titulo": "Cena Gastronómica - Chef Internacional",
+  "descripcion": "Experiencia culinaria única con chef de 3 estrellas Michelin. Menú degustación de 7 tiempos.",
+  "foto": null,
+  "fecha": "2024-09-05",
+  "hora": "19:00",
+  "lugar": "Restaurante La Blanca, Bogotá",
+  "estado": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c102"
+  },
+  "categoria": {
+    "_id": "69f4e128a33a6dd2b1d58cab"
+  },
+  "organizador": {
+    "_id": "69f55c64654ae93e8877f97c"
+  },
+  "localidades": [
+    {
+      "id": "loc001",
+      "nombre": "Mesa Estándar",
+      "precio": 350000,
+      "capacidad": 60,
+      "disponibles": 45
+    },
+    {
+      "id": "loc002",
+      "nombre": "Mesa VIP",
+      "precio": 550000,
+      "capacidad": 20,
+      "disponibles": 15
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "69f9637d4fcf37583101ecb0"
+  },
+  "titulo": "Obra de Teatro: La Casa de Bernarda Alba",
+  "descripcion": "Clásico de Lorca interpretado por la compañía nacional de teatro. Producción de gran formato.",
+  "foto": null,
+  "fecha": "2024-09-18",
+  "hora": "19:30",
+  "lugar": "Teatro Colón, Bogotá",
+  "estado": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c102"
+  },
+  "categoria": {
+    "_id": "69f4e128a33a6dd2b1d58caa"
+  },
+  "organizador": {
+    "_id": "69f55c64654ae93e8877f97c"
+  },
+  "localidades": [
+    {
+      "id": "loc001",
+      "nombre": "Platea",
+      "precio": 120000,
+      "capacidad": 400,
+      "disponibles": 350
+    },
+    {
+      "id": "loc002",
+      "nombre": "Balcón",
+      "precio": 85000,
+      "capacidad": 250,
+      "disponibles": 200
+    },
+    {
+      "id": "loc003",
+      "nombre": "Palcos",
+      "precio": 200000,
+      "capacidad": 100,
+      "disponibles": 80
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "69f9637d4fcf37583101ecb1"
+  },
+  "titulo": "Festival de Cine Independiente",
+  "descripcion": "Muestra de cine independiente colombiano e internacional. Proyecciones, charlas con directores y premiaciones.",
+  "foto": null,
+  "fecha": "2024-10-02",
+  "hora": "16:00",
+  "lugar": "Cine Hoyts Gigante, Bogotá",
+  "estado": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c102"
+  },
+  "categoria": {
+    "_id": "69f4e128a33a6dd2b1d58cb3"
+  },
+  "organizador": {
+    "_id": "69f55c64654ae93e8877f97c"
+  },
+  "localidades": [
+    {
+      "id": "loc001",
+      "nombre": "Entrada Festival",
+      "precio": 45000,
+      "capacidad": 2000,
+      "disponibles": 1800
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "69f9637d4fcf37583101ecb2"
+  },
+  "titulo": "Seminario de Salud Mental y Bienestar",
+  "descripcion": "Taller práctico sobre técnicas de meditación, mindfulness y gestión del estrés con expertos certificados.",
+  "foto": null,
+  "fecha": "2024-10-15",
+  "hora": "09:30",
+  "lugar": "Centro de Wellness Urban, Bogotá",
+  "estado": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c102"
+  },
+  "categoria": {
+    "_id": "69f4e128a33a6dd2b1d58cb2"
+  },
+  "organizador": {
+    "_id": "69f55c64654ae93e8877f97c"
+  },
+  "localidades": [
+    {
+      "id": "loc001",
+      "nombre": "Participante",
+      "precio": 65000,
+      "capacidad": 150,
+      "disponibles": 120
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "69f9637d4fcf37583101ecb3"
+  },
+  "titulo": "Festival de Música Electrónica Nocturna",
+  "descripcion": "Night club event con DJs internacionales. Música electrónica, house y techno toda la noche.",
+  "foto": null,
+  "fecha": "2024-11-02",
+  "hora": "23:00",
+  "lugar": "Club Occidente, Bogotá",
+  "estado": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c102"
+  },
+  "categoria": {
+    "_id": "69f4e128a33a6dd2b1d58cb0"
+  },
+  "organizador": {
+    "_id": "69f55c64654ae93e8877f97c"
+  },
+  "localidades": [
+    {
+      "id": "loc001",
+      "nombre": "Entrada General",
+      "precio": 80000,
+      "capacidad": 800,
+      "disponibles": 600
+    },
+    {
+      "id": "loc002",
+      "nombre": "Table VIP",
+      "precio": 400000,
+      "capacidad": 50,
+      "disponibles": 40
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "69f9637d4fcf37583101ecb4"
+  },
+  "titulo": "Festival Familiar: Actividades y Juegos",
+  "descripcion": "Evento para toda la familia con juegos, talleres para niños, zona de comidas y entretenimiento en vivo.",
+  "foto": null,
+  "fecha": "2024-11-16",
+  "hora": "10:00",
+  "lugar": "Parque La Florida, Bogotá",
+  "estado": {
+    "_id": "67f8a1b2c3d4e5f6a7b8c102"
+  },
+  "categoria": {
+    "_id": "69f4e128a33a6dd2b1d58cb1"
+  },
+  "organizador": {
+    "_id": "69f55c64654ae93e8877f97c"
+  },
+  "localidades": [
+    {
+      "id": "loc001",
+      "nombre": "Entrada Adulto",
+      "precio": 45000,
+      "capacidad": 2000,
+      "disponibles": 1700
+    },
+    {
+      "id": "loc002",
+      "nombre": "Entrada Niño",
+      "precio": 25000,
+      "capacidad": 1000,
+      "disponibles": 850
+    }
+  ]
+}]

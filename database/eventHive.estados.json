@@ -1,0 +1,28 @@
+[{
+  "_id": {
+    "$oid": "67f8a1b2c3d4e5f6a7b8c101"
+  },
+  "nombre": "BORRADOR",
+  "descripcion": "Evento en creación, no visible al público"
+},
+{
+  "_id": {
+    "$oid": "67f8a1b2c3d4e5f6a7b8c102"
+  },
+  "nombre": "PUBLICADO",
+  "descripcion": "Evento publicado y visible para todos"
+},
+{
+  "_id": {
+    "$oid": "67f8a1b2c3d4e5f6a7b8c103"
+  },
+  "nombre": "CANCELADO",
+  "descripcion": "Evento cancelado"
+},
+{
+  "_id": {
+    "$oid": "67f8a1b2c3d4e5f6a7b8c104"
+  },
+  "nombre": "FINALIZADO",
+  "descripcion": "Evento finalizado"
+}]

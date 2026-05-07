@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 
 import com.example.demo.dto.NombreEventoDTO;
 import com.example.demo.dto.reportes.EventosCategoriaDto;
-import com.example.demo.dto.reportes.EventosEstadoDto;
 import com.example.demo.model.Evento;
 
 @Repository
@@ -57,15 +56,4 @@ public interface EventoRepository extends MongoRepository<Evento, String> {
         "{ $sort: { total: -1 } }"
     })
     List<EventosCategoriaDto> obtenerEventosPorCategoria();
-
-    @Aggregation(pipeline = {
-        "{ $addFields: { estadoOid: { $toObjectId: '$estado._id' } } }",
-        "{ $lookup: { from: 'estados', localField: 'estadoOid', foreignField: '_id', as: 'estadoData' } }",
-        "{ $unwind: { path: '$estadoData', preserveNullAndEmptyArrays: true } }",
-        "{ $addFields: { estadoNombre: { $ifNull: [ '$estadoData.nombre', 'SIN_ESTADO' ] } } }",
-        "{ $group: { _id: '$estadoNombre', cantidad: { $sum: 1 } } }",
-        "{ $project: { _id: 0, estado: '$_id', cantidad: 1 } }",
-        "{ $sort: { cantidad: -1 } }"
-    })
-    List<EventosEstadoDto> obtenerEventosPorEstado();
 }

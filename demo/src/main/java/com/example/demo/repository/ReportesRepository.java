@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import com.example.demo.dto.reportes.CompradoresFrecuentesDto;
 import com.example.demo.dto.reportes.IngresosCategoriaDto;
 import com.example.demo.dto.reportes.MetodoPagoDto;
 import com.example.demo.dto.reportes.OcupacionDto;
@@ -81,18 +80,6 @@ public interface ReportesRepository extends MongoRepository<Compra, String> {
         "{ $sort: { ingresos: -1 } }"
     })
     List<IngresosCategoriaDto> obtenerIngresosPorCategoria();
-    
-@Aggregation(pipeline = {
-        "{ $match: { 'cliente._id': { $exists: true } } }",
-        "{ $group: { _id: '$cliente._id', totalCompras: { $sum: 1 }, totalGastado: { $sum: '$total' } } }",
-        "{ $match: { totalCompras: { $gt: 1 } } }",
-        "{ $addFields: { clienteOid: { $toObjectId: '$_id' } } }",
-        "{ $lookup: { from: 'usuarios', localField: 'clienteOid', foreignField: '_id', as: 'clienteData' } }",
-        "{ $unwind: { path: '$clienteData', preserveNullAndEmptyArrays: true } }",
-        "{ $project: { _id: 0, clienteId: '$_id', nombre: { $concat: [ { $ifNull: [ '$clienteData.nombre', '' ] }, ' ', { $ifNull: [ '$clienteData.apellido', '' ] } ] }, totalCompras: 1, totalGastado: 1 } }",
-        "{ $sort: { totalCompras: -1 } }"
-    })
-    List<CompradoresFrecuentesDto> obtenerCompradoresFrecuentes();
 
     @Aggregation(pipeline = {
         "{ $group: { _id: '$metodoPago', cantidad: { $sum: 1 }, totalRecaudado: { $sum: '$total' } } }",

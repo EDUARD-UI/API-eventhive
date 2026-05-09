@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.exception.BusinessException;
@@ -18,7 +18,7 @@ import com.example.demo.model.Localidad;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.CompraRepository;
 import com.example.demo.repository.EventoRepository;
-import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.utils.AuthenticatedUserHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,20 +27,12 @@ import lombok.RequiredArgsConstructor;
 public class ServiceCompra {
 
     private final CompraRepository compraRepository;
-    private final UsuarioRepository usuarioRepository;
     private final EventoRepository eventoRepository;
+    private final AuthenticatedUserHelper authHelper;
 
-    public List<Compra> listarMisCompras() {
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
-        if (usuario == null) throw new BusinessException("Usuario no encontrado");
-        return compraRepository.findByClienteIdOrderByFechaCompraDesc(usuario.getId());
-    }
-
+    @PreAuthorize("isAuthenticated()")
     public Page<Compra> listarMisCompras(Pageable pageable) {
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
-        if (usuario == null) throw new BusinessException("Usuario no encontrado");
+        Usuario usuario = authHelper.usuarioAutenticado();
         return compraRepository.findByClienteIdOrderByFechaCompraDesc(usuario.getId(), pageable);
     }
 
@@ -53,10 +45,9 @@ public class ServiceCompra {
         return obtenerPorId(id);
     }
 
+    @PreAuthorize("isAuthenticated()")
     public Compra realizarCompra(List<ItemCompra> items) {
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
-        if (usuario == null) throw new BusinessException("Usuario no encontrado");
+        Usuario usuario = authHelper.usuarioAutenticado();
 
         BigDecimal total = BigDecimal.ZERO;
         List<ItemCompra> itemsValidados = new ArrayList<>();
@@ -97,10 +88,10 @@ public class ServiceCompra {
         return compraRepository.save(compra);
     }
 
+    @PreAuthorize("isAuthenticated()")
     public void cancelarCompra(String id) {
         Compra compra = obtenerPorId(id);
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
+        Usuario usuario = authHelper.usuarioAutenticado();
 
         if (!compra.getCliente().getId().equals(usuario.getId())) {
             throw new BusinessException("No autorizado");

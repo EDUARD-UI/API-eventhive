@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dto.EventoBusquedaDTO;
 import com.example.demo.dto.EventoDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.Evento;
@@ -17,6 +19,7 @@ import com.example.demo.repository.CategoriasRepository;
 import com.example.demo.repository.EstadoRepository;
 import com.example.demo.repository.EventoRepository;
 import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.utils.AuthenticatedUserHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,44 +27,60 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ServiceEvento {
 
-    private final EventoRepository     eventoRepository;
-    private final UsuarioRepository    usuarioRepository;
+    private final EventoRepository eventoRepository;
+    private final UsuarioRepository usuarioRepository;
     private final CategoriasRepository categoriasRepository;
-    private final EstadoRepository     estadoRepository;
+    private final EstadoRepository estadoRepository;
+    private final AuthenticatedUserHelper authHelper;
 
-    //obtener datos relacionados de otras colecciones para evitar null
-
+    // resolver referencias de otras colecciones para evitar null
     private void resolverCategoria(Evento evento) {
-        if (evento.getCategoria() == null) return;
+        if (evento.getCategoria() == null) {
+            return;
+        }
         if (evento.getCategoria().getNombre() != null
-                && !evento.getCategoria().getNombre().isBlank()) return;
+                && !evento.getCategoria().getNombre().isBlank()) {
+            return;
+        }
         String catId = evento.getCategoria().getId();
-        if (catId == null) return;
-        categoriasRepository.findById(catId).ifPresent(cat ->
-            evento.getCategoria().setNombre(cat.getNombre())
+        if (catId == null) {
+            return;
+        }
+        categoriasRepository.findById(catId).ifPresent(cat
+                -> evento.getCategoria().setNombre(cat.getNombre())
         );
     }
 
     private void resolverEstado(Evento evento) {
-        if (evento.getEstado() == null) return;
+        if (evento.getEstado() == null) {
+            return;
+        }
         if (evento.getEstado().getNombre() != null
-                && !evento.getEstado().getNombre().isBlank()) return;
+                && !evento.getEstado().getNombre().isBlank()) {
+            return;
+        }
         String estId = evento.getEstado().getId();
-        if (estId == null) return;
-        estadoRepository.findById(estId).ifPresent(est ->
-            evento.getEstado().setNombre(est.getNombre())
+        if (estId == null) {
+            return;
+        }
+        estadoRepository.findById(estId).ifPresent(est
+                -> evento.getEstado().setNombre(est.getNombre())
         );
     }
 
     private void resolverOrganizador(Evento evento) {
-        if (evento.getOrganizador() == null) return;
+        if (evento.getOrganizador() == null) {
+            return;
+        }
         if (evento.getOrganizador().getNombre() != null
-                && !evento.getOrganizador().getNombre().isBlank()) return;
+                && !evento.getOrganizador().getNombre().isBlank()) {
+            return;
+        }
         String orgId = evento.getOrganizador().getId();
-        if (orgId == null) return;
-        usuarioRepository.findById(orgId).ifPresent(u ->
-            evento.setOrganizador(u)
-        );
+        if (orgId == null) {
+            return;
+        }
+        usuarioRepository.findById(orgId).ifPresent(evento::setOrganizador);
     }
 
     public void resolverReferencias(Evento evento) {
@@ -70,13 +89,7 @@ public class ServiceEvento {
         resolverOrganizador(evento);
     }
 
-    //consultas
-    public List<Evento> listarTodos() {
-        List<Evento> eventos = eventoRepository.findAll();
-        eventos.forEach(this::resolverReferencias);
-        return eventos;
-    }
-
+    // consultas
     public Page<Evento> listarTodos(Pageable pageable) {
         Page<Evento> page = eventoRepository.findAll(pageable);
         page.getContent().forEach(this::resolverReferencias);
@@ -85,7 +98,7 @@ public class ServiceEvento {
 
     public Evento obtenerPorId(String id) {
         Evento evento = eventoRepository.findById(id)
-            .orElseThrow(() -> new BusinessException("Evento no encontrado"));
+                .orElseThrow(() -> new BusinessException("Evento no encontrado"));
         resolverReferencias(evento);
         return evento;
     }
@@ -95,16 +108,15 @@ public class ServiceEvento {
     }
 
     // crud
+    @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public Evento crearEvento(Evento evento) {
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario organizador = usuarioRepository.findByCorreo(correo);
-        if (organizador == null) throw new BusinessException("Usuario no encontrado");
-
+        Usuario organizador = authHelper.usuarioAutenticado();
         evento.setOrganizador(organizador);
-        if (evento.getLocalidades() == null) evento.setLocalidades(new ArrayList<>());
-        if (evento.getPromocion() == null)   evento.setPromocion(null);
+        if (evento.getLocalidades() == null) {
+            evento.setLocalidades(new ArrayList<>());
+        }
+        evento.setPromocion(null);
 
-        //en caso de no añadir una imagen dejar en null
         if (evento.getFoto() != null && evento.getFoto().isBlank()) {
             evento.setFoto(null);
         }
@@ -115,6 +127,7 @@ public class ServiceEvento {
         return eventoRepository.save(evento);
     }
 
+    @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public Evento actualizarEvento(String id, Evento eventoActualizado) {
         Evento evento = obtenerPorId(id);
         verificarPermiso(evento);
@@ -129,10 +142,7 @@ public class ServiceEvento {
 
         if (eventoActualizado.getFoto() != null && !eventoActualizado.getFoto().isBlank()) {
             evento.setFoto(eventoActualizado.getFoto());
-        }
-
-        //en caso de no añadir una imagen dejar en null
-        if (eventoActualizado.getFoto() != null && eventoActualizado.getFoto().isBlank()) {
+        } else if (eventoActualizado.getFoto() != null && eventoActualizado.getFoto().isBlank()) {
             evento.setFoto(null);
         }
 
@@ -142,26 +152,32 @@ public class ServiceEvento {
         return eventoRepository.save(evento);
     }
 
+    @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public void eliminarEvento(String id) {
         Evento evento = obtenerPorId(id);
         verificarPermiso(evento);
         eventoRepository.deleteById(id);
     }
 
-    //Localidades
+    // localidades
+    @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public Evento agregarLocalidad(String eventoId, Localidad localidad) {
         Evento evento = obtenerPorId(eventoId);
         verificarPermiso(evento);
-        if (evento.getLocalidades() == null) evento.setLocalidades(new ArrayList<>());
+        if (evento.getLocalidades() == null) {
+            evento.setLocalidades(new ArrayList<>());
+        }
         evento.getLocalidades().add(localidad);
         return eventoRepository.save(evento);
     }
 
+    @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public Evento actualizarLocalidad(String eventoId, int index, Localidad actualizada) {
         Evento evento = obtenerPorId(eventoId);
         verificarPermiso(evento);
-        if (index < 0 || index >= evento.getLocalidades().size())
+        if (index < 0 || index >= evento.getLocalidades().size()) {
             throw new BusinessException("Índice inválido");
+        }
         Localidad loc = evento.getLocalidades().get(index);
         loc.setNombre(actualizada.getNombre());
         loc.setPrecio(actualizada.getPrecio());
@@ -170,45 +186,61 @@ public class ServiceEvento {
         return eventoRepository.save(evento);
     }
 
+    @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public Evento eliminarLocalidad(String eventoId, int index) {
         Evento evento = obtenerPorId(eventoId);
         verificarPermiso(evento);
-        if (index < 0 || index >= evento.getLocalidades().size())
+        if (index < 0 || index >= evento.getLocalidades().size()) {
             throw new BusinessException("Índice inválido");
+        }
         evento.getLocalidades().remove(index);
         return eventoRepository.save(evento);
     }
 
-    //Deseados
+    // deseados
+    @PreAuthorize("isAuthenticated()")
     public void agregarEventoDeseado(String eventoId) {
-        Usuario usuario = getUsuarioAutenticado();
+        Usuario usuario = authHelper.usuarioAutenticado();
         Evento evento = eventoRepository.findById(eventoId)
-            .orElseThrow(() -> new BusinessException("Evento no encontrado"));
-        if (usuario.getEventosDeseados() == null) usuario.setEventosDeseados(new ArrayList<>());
+                .orElseThrow(() -> new BusinessException("Evento no encontrado"));
+        if (usuario.getEventosDeseados() == null) {
+            usuario.setEventosDeseados(new ArrayList<>());
+        }
         if (!usuario.getEventosDeseados().contains(evento)) {
             usuario.getEventosDeseados().add(evento);
             usuarioRepository.save(usuario);
         }
     }
 
+    @PreAuthorize("isAuthenticated()")
     public void eliminarEventoDeseado(String eventoId) {
-        Usuario usuario = getUsuarioAutenticado();
+        Usuario usuario = authHelper.usuarioAutenticado();
         if (usuario.getEventosDeseados() != null) {
             usuario.getEventosDeseados().removeIf(e -> e.getId().equals(eventoId));
             usuarioRepository.save(usuario);
         }
     }
 
-    //Búsquedas auxiliares
+    // búsquedas
     public List<Evento> buscarPorCategoria(String categoriaId) {
         return eventoRepository.findByCategoriaId(categoriaId);
+    }
+
+    public Page<EventoBusquedaDTO> buscarPorTitulo(String titulo, Pageable pageable) {
+        Page<Evento> page = eventoRepository.findByTituloContainingIgnoreCase(titulo, pageable);
+        List<EventoBusquedaDTO> dtoList = page.getContent().stream().map(evento -> {
+            resolverReferencias(evento);
+            String nombreCategoria = evento.getCategoria() != null ? evento.getCategoria().getNombre() : null;
+            return new EventoBusquedaDTO(evento.getId(), evento.getTitulo(), nombreCategoria);
+        }).toList();
+        return new PageImpl<>(dtoList, pageable, page.getTotalElements());
     }
 
     public long contarEventosPorCategoria(String categoriaId) {
         return eventoRepository.countByCategoriaId(categoriaId);
     }
 
-    //DTO helper
+    // DTO helper
     public EventoDTO convertirADTO(Evento evento) {
         resolverReferencias(evento);
 
@@ -221,66 +253,74 @@ public class ServiceEvento {
         dto.setFecha(evento.getFecha());
         dto.setHora(evento.getHora());
 
-        if (evento.getCategoria() != null)
+        if (evento.getCategoria() != null) {
             dto.setCategoria(new EventoDTO.Categoria(
-                evento.getCategoria().getId(),
-                evento.getCategoria().getNombre()
+                    evento.getCategoria().getId(),
+                    evento.getCategoria().getNombre()
             ));
+        }
 
-        if (evento.getEstado() != null)
+        if (evento.getEstado() != null) {
             dto.setEstado(new EventoDTO.Estado(
-                evento.getEstado().getId(),
-                evento.getEstado().getNombre()
+                    evento.getEstado().getId(),
+                    evento.getEstado().getNombre()
             ));
+        }
 
-        if (evento.getOrganizador() != null)
+        if (evento.getOrganizador() != null) {
             dto.setOrganizador(new EventoDTO.Organizador(
-                evento.getOrganizador().getId(),
-                evento.getOrganizador().getNombre(),
-                evento.getOrganizador().getEsVerificado()
+                    evento.getOrganizador().getId(),
+                    evento.getOrganizador().getNombre(),
+                    evento.getOrganizador().getEsVerificado()
             ));
+        }
 
         return dto;
     }
 
-    //Helpers
+    // helpers privados
     private void denormalizarCategoria(Evento evento) {
-        if (evento.getCategoria() == null) return;
+        if (evento.getCategoria() == null) {
+            return;
+        }
         String id = evento.getCategoria().getId();
-        if (id == null) return;
+        if (id == null) {
+            return;
+        }
         if (evento.getCategoria().getNombre() != null
-                && !evento.getCategoria().getNombre().isBlank()) return;
-        categoriasRepository.findById(id).ifPresent(cat ->
-            evento.getCategoria().setNombre(cat.getNombre())
+                && !evento.getCategoria().getNombre().isBlank()) {
+            return;
+        }
+        categoriasRepository.findById(id).ifPresent(cat
+                -> evento.getCategoria().setNombre(cat.getNombre())
         );
     }
 
     private void denormalizarEstado(Evento evento) {
-        if (evento.getEstado() == null) return;
+        if (evento.getEstado() == null) {
+            return;
+        }
         String id = evento.getEstado().getId();
-        if (id == null) return;
+        if (id == null) {
+            return;
+        }
         if (evento.getEstado().getNombre() != null
-                && !evento.getEstado().getNombre().isBlank()) return;
-        estadoRepository.findById(id).ifPresent(est ->
-            evento.getEstado().setNombre(est.getNombre())
+                && !evento.getEstado().getNombre().isBlank()) {
+            return;
+        }
+        estadoRepository.findById(id).ifPresent(est
+                -> evento.getEstado().setNombre(est.getNombre())
         );
     }
 
-    private Usuario getUsuarioAutenticado() {
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
-        if (usuario == null) throw new BusinessException("Usuario no encontrado");
-        return usuario;
-    }
-
     private void verificarPermiso(Evento evento) {
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
-        if (usuario == null) throw new BusinessException("Usuario no encontrado");
-        boolean esAdmin = usuario.getRol().getNombre().equals("ADMINISTRADOR");
+        Usuario usuario = authHelper.usuarioAutenticado();
+        boolean esAdmin = usuario.getRol() != null && "ADMINISTRADOR".equals(usuario.getRol().getNombre());
         boolean esOrganizador = evento.getOrganizador() != null
-            && evento.getOrganizador().getCorreo().equals(correo);
-        if (!esAdmin && !esOrganizador)
+                && evento.getOrganizador().getCorreo() != null
+                && evento.getOrganizador().getCorreo().equals(usuario.getCorreo());
+        if (!esAdmin && !esOrganizador) {
             throw new BusinessException("No autorizado");
+        }
     }
 }

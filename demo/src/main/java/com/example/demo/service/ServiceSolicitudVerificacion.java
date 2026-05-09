@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,6 +16,7 @@ import com.example.demo.model.SolicitudVerificacion;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.SolicitudVerificacionRepository;
 import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.utils.AuthenticatedUserHelper;
 import com.example.demo.utils.Utilidades;
 
 import lombok.RequiredArgsConstructor;
@@ -26,37 +27,26 @@ public class ServiceSolicitudVerificacion {
 
     private final SolicitudVerificacionRepository solicitudRepository;
     private final UsuarioRepository usuarioRepository;
+    private final AuthenticatedUserHelper authHelper;
 
     @Value("${upload.path.verificacion:uploads/verificacion}")
     private String uploadPath;
 
-    // crear la solicitud
+    @PreAuthorize("hasRole('ORGANIZADOR')")
     public void crearSolicitud(String mensaje, MultipartFile archivo) {
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario organizador = usuarioRepository.findByCorreo(correo);
+        Usuario organizador = authHelper.usuarioAutenticado();
 
-        if (organizador == null) {
-            throw new BusinessException("Usuario no encontrado");
-        }
-
-        // Validar que sea organizador
-        if (!"ORGANIZADOR".equalsIgnoreCase(organizador.getRol().getNombre())) {
-            throw new BusinessException("Solo organizadores pueden solicitar verificación");
-        }
-
-        // Validar que no tenga una solicitud pendiente
         SolicitudVerificacion pendiente = solicitudRepository.findByOrganizadorId(organizador.getId());
         if (pendiente != null && "PENDIENTE".equals(pendiente.getEstado())) {
             throw new BusinessException("Ya tiene una solicitud de verificación pendiente");
         }
 
-        // Validar archivo
         if (archivo == null || archivo.isEmpty()) {
             throw new BusinessException("Debe adjuntar un archivo de confirmación");
         }
 
         Utilidades.validarFoto(archivo);
-        
+
         String nombreArchivo;
         try {
             nombreArchivo = Utilidades.guardarFoto(archivo, uploadPath);
@@ -74,17 +64,11 @@ public class ServiceSolicitudVerificacion {
         solicitudRepository.save(solicitud);
     }
 
-    // ver estado de solicitud
+    @PreAuthorize("hasRole('ORGANIZADOR')")
     public SolicitudVerificacionDTO miSolicitud() {
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario organizador = usuarioRepository.findByCorreo(correo);
-
-        if (organizador == null) {
-            throw new BusinessException("Usuario no encontrado");
-        }
+        Usuario organizador = authHelper.usuarioAutenticado();
 
         SolicitudVerificacion solicitud = solicitudRepository.findByOrganizadorId(organizador.getId());
-
         if (solicitud == null) {
             throw new BusinessException("No tiene solicitudes de verificación");
         }
@@ -92,20 +76,20 @@ public class ServiceSolicitudVerificacion {
         return convertirADTO(solicitud);
     }
 
-    // listar todas la solicitudes pendientes
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public Page<SolicitudVerificacionDTO> obtenerSolicitudesPendientes(Pageable pageable) {
         return solicitudRepository.findByEstado("PENDIENTE", pageable)
                 .map(this::convertirADTO);
     }
 
-    // obtener solicitud por id
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public SolicitudVerificacionDTO obtenerSolicitud(String solicitudId) {
         SolicitudVerificacion solicitud = solicitudRepository.findById(solicitudId)
                 .orElseThrow(() -> new BusinessException("Solicitud no encontrada"));
         return convertirADTO(solicitud);
     }
 
-    // aprobar solicitud
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public void aprobarSolicitud(String solicitudId) {
         SolicitudVerificacion solicitud = solicitudRepository.findById(solicitudId)
                 .orElseThrow(() -> new BusinessException("Solicitud no encontrada"));
@@ -114,15 +98,11 @@ public class ServiceSolicitudVerificacion {
             throw new BusinessException("Solo se pueden aprobar solicitudes pendientes");
         }
 
-        // Marcar al organizador como verificado
         Usuario organizador = solicitud.getOrganizador();
         organizador.setEsVerificado(true);
         usuarioRepository.save(organizador);
 
-        // Actualizar solicitud
-        String correoAdmin = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario admin = usuarioRepository.findByCorreo(correoAdmin);
-
+        Usuario admin = authHelper.usuarioAutenticado();
         solicitud.setEstado("APROBADA");
         solicitud.setFechaResolucion(LocalDateTime.now());
         solicitud.setAdministradorQueResolvi(admin);
@@ -130,7 +110,7 @@ public class ServiceSolicitudVerificacion {
         solicitudRepository.save(solicitud);
     }
 
-    // rechazar solicitud
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public void rechazarSolicitud(String solicitudId, String motivo) {
         SolicitudVerificacion solicitud = solicitudRepository.findById(solicitudId)
                 .orElseThrow(() -> new BusinessException("Solicitud no encontrada"));
@@ -139,9 +119,7 @@ public class ServiceSolicitudVerificacion {
             throw new BusinessException("Solo se pueden rechazar solicitudes pendientes");
         }
 
-        String correoAdmin = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario admin = usuarioRepository.findByCorreo(correoAdmin);
-
+        Usuario admin = authHelper.usuarioAutenticado();
         solicitud.setEstado("RECHAZADA");
         solicitud.setFechaResolucion(LocalDateTime.now());
         solicitud.setAdministradorQueResolvi(admin);

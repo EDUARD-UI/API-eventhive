@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.ValoracionDTO;
@@ -64,6 +65,7 @@ public class ServiceValoracion {
                 .collect(Collectors.toList());
     }
 
+    @PreAuthorize("hasRole('CLIENTE')")
     public void crearValoracion(Usuario cliente, String eventoId, String comentario, long calificacion) {
         validarCalificacion(calificacion);
 
@@ -78,15 +80,16 @@ public class ServiceValoracion {
         valoracionRepository.save(v);
     }
 
+    @PreAuthorize("hasRole('CLIENTE')")
     public void actualizarValoracion(String id, Usuario cliente, String comentario, long calificacion) {
         validarCalificacion(calificacion);
-
         Valoracion v = obtenerValoracionVerificada(id, cliente);
         v.setComentario(comentario);
         v.setCalificacion((int) calificacion);
         valoracionRepository.save(v);
     }
 
+    @PreAuthorize("hasRole('CLIENTE')")
     public void eliminarValoracion(String id, Usuario cliente) {
         obtenerValoracionVerificada(id, cliente);
         valoracionRepository.deleteById(id);
@@ -100,16 +103,12 @@ public class ServiceValoracion {
 
     private Valoracion obtenerValoracionVerificada(String id, Usuario cliente) {
         Valoracion v = obtenerValoracionPorId(id);
-        if (v == null) {
-            throw new ResourceNotFoundException("Valoración no encontrada");
-        }
         if (v.getCliente() == null || !v.getCliente().getId().equals(cliente.getId())) {
             throw new BusinessException("No autorizado para modificar esta valoración");
         }
         return v;
     }
 
-    //conversion a DTO
     private ValoracionDTO toDTO(Valoracion v) {
         ValoracionDTO dto = new ValoracionDTO();
         dto.setId(v.getId());

@@ -9,6 +9,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.PromocionDTO;
@@ -35,8 +36,7 @@ public class ServicePromocion {
     }
 
     public Page<PromocionDTO> obtenerTodasPromociones(Pageable pageable) {
-        Page<Promocion> page = promocionRepository.findAll(pageable);
-        return page.map(this::toDTO);
+        return promocionRepository.findAll(pageable).map(this::toDTO);
     }
 
     public List<Promocion> obtenerPorEvento(String eventoId) {
@@ -48,6 +48,7 @@ public class ServicePromocion {
             .orElseThrow(() -> new ResourceNotFoundException("Promoción no encontrada"));
     }
 
+    @PreAuthorize("hasRole('ORGANIZADOR')")
     public void crearPromocion(String eventoId, String descripcion, BigDecimal descuento,
             String fechaInicio, String fechaFin, Usuario organizador) {
 
@@ -69,9 +70,7 @@ public class ServicePromocion {
             throw new BusinessException("No autorizado");
         }
 
-        // Buscar si ya existe una promoción para este evento
-        Promocion promocionExistente = promocionRepository.findFirstByEventosId(eventoId);
-        if (promocionExistente != null) {
+        if (promocionRepository.findFirstByEventosId(eventoId) != null) {
             throw new BusinessException("Este evento ya tiene una promoción asignada");
         }
 
@@ -80,48 +79,45 @@ public class ServicePromocion {
         p.setDescuento(descuento.doubleValue());
         p.setFechaInicio(fechaInicioLD);
         p.setFechaFin(fechaFinLD);
-        
-        // Inicializar lista de eventos
+
         List<Evento> eventos = new ArrayList<>();
         eventos.add(evento);
         p.setEventos(eventos);
-        
+
         Promocion saved = promocionRepository.save(p);
-        
-        // Actualizar el evento con la promoción
+
         evento.setPromocion(saved);
         eventoRepository.save(evento);
     }
 
+    @PreAuthorize("hasRole('ORGANIZADOR')")
     public void eliminarPromocion(String id, Usuario organizador) {
         Promocion p = obtenerPromocionPorId(id);
-        
-        // Verificar autorización (el organizador debe ser dueño de al menos un evento)
+
         boolean autorizado = p.getEventos().stream()
             .anyMatch(e -> e.getOrganizador().getId().equals(organizador.getId()));
-        
+
         if (!autorizado) {
             throw new BusinessException("No autorizado");
         }
-        
-        // Remover referencia de los eventos
+
         for (Evento evento : p.getEventos()) {
             evento.setPromocion(null);
             eventoRepository.save(evento);
         }
-        
+
         promocionRepository.deleteById(id);
     }
 
+    @PreAuthorize("hasRole('ORGANIZADOR')")
     public void actualizarPromocion(String id, String eventoId, String descripcion, BigDecimal descuento,
             String fechaInicio, String fechaFin, Usuario organizador) {
 
         Promocion p = obtenerPromocionPorId(id);
-        
-        // Verificar autorización
+
         boolean autorizado = p.getEventos().stream()
             .anyMatch(e -> e.getOrganizador().getId().equals(organizador.getId()));
-        
+
         if (!autorizado) {
             throw new BusinessException("No autorizado");
         }
@@ -137,22 +133,17 @@ public class ServicePromocion {
             throw new BusinessException("Descuento entre 1 y 75");
         }
 
-        // Si cambia el evento, actualizar referencias
         if (eventoId != null && !eventoId.isEmpty()) {
             Evento nuevoEvento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado"));
-            
+
             if (!nuevoEvento.getOrganizador().getId().equals(organizador.getId())) {
                 throw new BusinessException("No autorizado");
             }
-            
-            // Remover evento antiguo de la lista
+
             p.getEventos().removeIf(e -> e.getId().equals(eventoId));
-            
-            // Agregar nuevo evento
             p.getEventos().add(nuevoEvento);
-            
-            // Actualizar referencia en el evento
+
             nuevoEvento.setPromocion(p);
             eventoRepository.save(nuevoEvento);
         }
@@ -161,7 +152,7 @@ public class ServicePromocion {
         p.setDescuento(descuento.doubleValue());
         p.setFechaInicio(fechaInicioLD);
         p.setFechaFin(fechaFinLD);
-        
+
         promocionRepository.save(p);
     }
 
@@ -174,8 +165,7 @@ public class ServicePromocion {
             return new PageImpl<>(List.of(), pageable, 0);
         }
 
-        Page<Promocion> promociones = promocionRepository.findByEventosIdIn(eventoIds, pageable);
-        return promociones.map(this::toDTO);
+        return promocionRepository.findByEventosIdIn(eventoIds, pageable).map(this::toDTO);
     }
 
     private PromocionDTO toDTO(Promocion p) {

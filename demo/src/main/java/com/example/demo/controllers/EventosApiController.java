@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.EventoBusquedaDTO;
 import com.example.demo.dto.EventoDTO;
 import com.example.demo.dto.PagedResponse;
 import com.example.demo.exception.BusinessException;
@@ -101,7 +103,7 @@ public class EventosApiController {
     @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<EventoDTO>> crear(@RequestBody Evento evento) {
         try {
-            // La foto puede ser null, no requiere validación en el controller
+            // La foto puede ser null
             Evento eventoCreado = eventoService.crearEvento(evento);
             MongoSerializationHelper.forzarCargaReferencias(eventoCreado);
             EventoDTO dto = MongoSerializationHelper.eventoADTO(eventoCreado);
@@ -223,6 +225,32 @@ public class EventosApiController {
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/buscar")
+        public ResponseEntity<ApiResponse<PagedResponse<EventoBusquedaDTO>>> buscar(
+            @RequestParam(required = false, name = "titulo") String titulo,
+            Pageable pageable) {
+        try {
+            if (titulo == null || titulo.trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ApiResponse.error("Parámetro 'titulo' requerido"));
+            }
+            Page<EventoBusquedaDTO> page = eventoService.buscarPorTitulo(titulo, pageable);
+
+            PagedResponse<EventoBusquedaDTO> response = new PagedResponse<>(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages()
+            );
+
+            return ResponseEntity.ok(ApiResponse.ok("Resultados de búsqueda", response));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error en búsqueda: " + e.getMessage()));
         }
     }
 }

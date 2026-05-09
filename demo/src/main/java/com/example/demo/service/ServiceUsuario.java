@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +16,7 @@ import com.example.demo.model.Rol;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.RolesRepository;
 import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.utils.AuthenticatedUserHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +27,7 @@ public class ServiceUsuario {
     private final UsuarioRepository usuarioRepository;
     private final RolesRepository rolesRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticatedUserHelper authHelper;
 
     public Usuario obtenerUsuarioPorCorreo(String correo) {
         return usuarioRepository.findByCorreo(correo);
@@ -40,14 +42,13 @@ public class ServiceUsuario {
         return usuarioRepository.findAll();
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public Page<Usuario> obtenerTodos(Pageable pageable) {
         return usuarioRepository.findAll(pageable);
     }
 
     public UsuarioSesionDTO obtenerSesionDTO(String correoOId) {
-        Usuario usuario;
-
-        usuario = usuarioRepository.findByCorreo(correoOId);
+        Usuario usuario = usuarioRepository.findByCorreo(correoOId);
 
         if (usuario == null) {
             usuario = usuarioRepository.findById(correoOId)
@@ -60,56 +61,37 @@ public class ServiceUsuario {
         dto.setApellido(usuario.getApellido());
         dto.setCorreo(usuario.getCorreo());
         dto.setTelefono(usuario.getTelefono());
-
-        if (usuario.getRol() != null) {
-            dto.setRolNombre(usuario.getRol().getNombre());
-        } else {
-            dto.setRolNombre("cliente");
-        }
-
+        dto.setRolNombre(usuario.getRol() != null ? usuario.getRol().getNombre() : "cliente");
         dto.setEsVerificado(usuario.getEsVerificado() != null ? usuario.getEsVerificado() : false);
 
         return dto;
     }
 
+    @PreAuthorize("isAuthenticated()")
     public UsuarioDTO obtenerPerfil() {
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
-        if (usuario == null) {
-            throw new BusinessException("Usuario no encontrado");
-        }
-        return usuarioADTO(usuario);
+        return usuarioADTO(authHelper.usuarioAutenticado());
     }
 
+    @PreAuthorize("isAuthenticated()")
     public UsuarioDTO actualizarPerfil(UsuarioDTO dto) {
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
-        if (usuario == null) {
-            throw new BusinessException("Usuario no encontrado");
-        }
-
+        Usuario usuario = authHelper.usuarioAutenticado();
         usuario.setNombre(dto.getNombre());
         usuario.setApellido(dto.getApellido());
         usuario.setTelefono(dto.getTelefono());
-
         usuarioRepository.save(usuario);
         return usuarioADTO(usuario);
     }
 
+    @PreAuthorize("isAuthenticated()")
     public Object listarEventosDeseados() {
-        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
-        if (usuario == null) {
-            throw new BusinessException("Usuario no encontrado");
-        }
-
+        Usuario usuario = authHelper.usuarioAutenticado();
         if (usuario.getEventosDeseados() == null || usuario.getEventosDeseados().isEmpty()) {
             return List.of();
         }
-
         return usuario.getEventosDeseados();
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public void crearUsuario(String nombre, String apellido, String correo, String telefono, String clave, String rolId) {
         if (usuarioRepository.existsByCorreo(correo)) {
             throw new BusinessException("Correo ya registrado");
@@ -130,6 +112,7 @@ public class ServiceUsuario {
         usuarioRepository.save(usuario);
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public void actualizarUsuario(String id, String nombre, String apellido, String telefono) {
         Usuario usuario = obtenerUsuarioPorId(id);
         usuario.setNombre(nombre);
@@ -147,6 +130,7 @@ public class ServiceUsuario {
         usuarioRepository.save(usuario);
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public void asignarRol(String usuarioId, String rolId) {
         Usuario usuario = obtenerUsuarioPorId(usuarioId);
         Rol rol = rolesRepository.findById(rolId)
@@ -155,6 +139,7 @@ public class ServiceUsuario {
         usuarioRepository.save(usuario);
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public void eliminarUsuario(String id) {
         usuarioRepository.deleteById(id);
     }

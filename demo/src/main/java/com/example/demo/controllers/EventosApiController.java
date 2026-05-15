@@ -41,11 +41,11 @@ public class EventosApiController {
     public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> listar(Pageable pageable) {
         try {
             Page<Evento> page = eventoService.listarTodos(pageable);
- 
+
             List<EventoDTO> contenidoDTO = page.getContent().stream()
                     .map(evento -> {
                         MongoSerializationHelper.forzarCargaReferencias(evento);
- 
+
                         EventoDTO dto = MongoSerializationHelper.eventoADTO(evento);
                         if (evento.getFoto() != null && evento.getFoto().trim().isEmpty()) {
                             dto.setFoto(null);
@@ -53,7 +53,7 @@ public class EventosApiController {
                         return dto;
                     })
                     .collect(Collectors.toList());
- 
+
             PagedResponse<EventoDTO> response = new PagedResponse<>(
                     contenidoDTO,
                     page.getNumber(),
@@ -61,7 +61,7 @@ public class EventosApiController {
                     page.getTotalElements(),
                     page.getTotalPages()
             );
- 
+
             return ResponseEntity.ok(ApiResponse.ok("Eventos obtenidos", response));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -231,7 +231,7 @@ public class EventosApiController {
     }
 
     @GetMapping("/buscar")
-        public ResponseEntity<ApiResponse<PagedResponse<EventoBusquedaDTO>>> buscar(
+    public ResponseEntity<ApiResponse<PagedResponse<EventoBusquedaDTO>>> buscar(
             @RequestParam(required = false, name = "titulo") String titulo,
             Pageable pageable) {
         try {
@@ -242,11 +242,46 @@ public class EventosApiController {
             Page<EventoBusquedaDTO> page = eventoService.buscarPorTitulo(titulo, pageable);
 
             PagedResponse<EventoBusquedaDTO> response = new PagedResponse<>(
-                page.getContent(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages()
+                    page.getContent(),
+                    page.getNumber(),
+                    page.getSize(),
+                    page.getTotalElements(),
+                    page.getTotalPages()
+            );
+
+            return ResponseEntity.ok(ApiResponse.ok("Resultados de búsqueda", response));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error en búsqueda: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/admin/buscar")
+    public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> buscarAdmin(
+            @RequestParam(required = false, name = "titulo") String titulo,
+            @RequestParam(required = false, name = "categoriaId") String categoriaId,
+            @RequestParam(required = false, name = "estadoId") String estadoId,
+            Pageable pageable) {
+        try {
+            Page<Evento> page = eventoService.buscarAdmin(titulo, categoriaId, estadoId, pageable);
+
+            List<EventoDTO> contenidoDTO = page.getContent().stream()
+                    .map(evento -> {
+                        MongoSerializationHelper.forzarCargaReferencias(evento);
+                        EventoDTO dto = MongoSerializationHelper.eventoADTO(evento);
+                        if (evento.getFoto() != null && evento.getFoto().trim().isEmpty()) {
+                            dto.setFoto(null);
+                        }
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+
+            PagedResponse<EventoDTO> response = new PagedResponse<>(
+                    contenidoDTO,
+                    page.getNumber(),
+                    page.getSize(),
+                    page.getTotalElements(),
+                    page.getTotalPages()
             );
 
             return ResponseEntity.ok(ApiResponse.ok("Resultados de búsqueda", response));

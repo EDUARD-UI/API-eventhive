@@ -2,6 +2,9 @@ package com.example.demo.dto;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
+
+import com.example.demo.model.Localidad;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +18,8 @@ public class EventoDTO {
     LocalTime hora;
     Categoria categoria;
     Estado estado;
-    Organizador organizador;  // ← Agrega este campo
+    Organizador organizador;
+    List<Localidad> localidades;
 
     @Getter
     @Setter

@@ -18,6 +18,7 @@ public class MongoSerializationHelper {
         dto.setFoto(evento.getFoto());
         dto.setFecha(evento.getFecha());
         dto.setHora(evento.getHora());
+        dto.setLocalidades(evento.getLocalidades());
 
         // Manejar categoría con validación
         if (evento.getCategoria() != null) {

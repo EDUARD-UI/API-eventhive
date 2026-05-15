@@ -48,6 +48,9 @@ public interface EventoRepository extends MongoRepository<Evento, String> {
 
     Page<Evento> findByOrganizadorId(String organizadorId, Pageable pageable);
 
+    // Agregar este método
+    Page<Evento> findByEstadoId(String estadoId, Pageable pageable);
+
     @Aggregation(pipeline = {
         "{ $addFields: { categoriaObjectId: { $toObjectId: '$categoria._id' } } }",
         "{ $lookup: { from: 'categorias', localField: 'categoriaObjectId', foreignField: '_id', as: 'categoriaData' } }",

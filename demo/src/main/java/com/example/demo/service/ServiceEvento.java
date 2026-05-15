@@ -96,6 +96,29 @@ public class ServiceEvento {
         return page;
     }
 
+    // Agregar este método en ServiceEvento.java
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public Page<Evento> buscarAdmin(String titulo, String categoriaId, String estadoId, Pageable pageable) {
+        // Construir query dinámica
+        if (titulo != null && !titulo.trim().isEmpty()) {
+            // Búsqueda por título con paginación
+            Page<Evento> page = eventoRepository.findByTituloContainingIgnoreCase(titulo, pageable);
+            page.getContent().forEach(this::resolverReferencias);
+            return page;
+        } else if (categoriaId != null && !categoriaId.isEmpty()) {
+            Page<Evento> page = eventoRepository.findByCategoriaId(categoriaId, pageable);
+            page.getContent().forEach(this::resolverReferencias);
+            return page;
+        } else if (estadoId != null && !estadoId.isEmpty()) {
+            // Necesitas agregar este método en EventoRepository
+            Page<Evento> page = eventoRepository.findByEstadoId(estadoId, pageable);
+            page.getContent().forEach(this::resolverReferencias);
+            return page;
+        } else {
+            return listarTodos(pageable);
+        }
+    }
+
     public Evento obtenerPorId(String id) {
         Evento evento = eventoRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("Evento no encontrado"));

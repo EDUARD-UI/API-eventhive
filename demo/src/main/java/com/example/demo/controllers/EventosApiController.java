@@ -41,9 +41,11 @@ public class EventosApiController {
     public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> listar(Pageable pageable) {
         try {
             Page<Evento> page = eventoService.listarTodos(pageable);
-
+ 
             List<EventoDTO> contenidoDTO = page.getContent().stream()
                     .map(evento -> {
+                        MongoSerializationHelper.forzarCargaReferencias(evento);
+ 
                         EventoDTO dto = MongoSerializationHelper.eventoADTO(evento);
                         if (evento.getFoto() != null && evento.getFoto().trim().isEmpty()) {
                             dto.setFoto(null);
@@ -51,7 +53,7 @@ public class EventosApiController {
                         return dto;
                     })
                     .collect(Collectors.toList());
-
+ 
             PagedResponse<EventoDTO> response = new PagedResponse<>(
                     contenidoDTO,
                     page.getNumber(),
@@ -59,7 +61,7 @@ public class EventosApiController {
                     page.getTotalElements(),
                     page.getTotalPages()
             );
-
+ 
             return ResponseEntity.ok(ApiResponse.ok("Eventos obtenidos", response));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

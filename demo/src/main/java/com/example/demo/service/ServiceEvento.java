@@ -96,6 +96,7 @@ public class ServiceEvento {
         return page;
     }
 
+<<<<<<< HEAD
     // Agregar este método en ServiceEvento.java
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public Page<Evento> buscarAdmin(String titulo, String categoriaId, String estadoId, Pageable pageable) {
@@ -117,6 +118,12 @@ public class ServiceEvento {
         } else {
             return listarTodos(pageable);
         }
+=======
+    public Page<Evento> listarPorOrganizador(String organizadorId, Pageable pageable) {
+        Page<Evento> page = eventoRepository.findByOrganizadorId(organizadorId, pageable);
+        page.getContent().forEach(this::resolverReferencias);
+        return page;
+>>>>>>> 6ec2f88 (dashboard organizador)
     }
 
     public Evento obtenerPorId(String id) {

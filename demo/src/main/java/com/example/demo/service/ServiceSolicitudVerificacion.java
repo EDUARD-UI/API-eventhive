@@ -41,17 +41,14 @@ public class ServiceSolicitudVerificacion {
             throw new BusinessException("Ya tiene una solicitud de verificación pendiente");
         }
 
-        if (archivo == null || archivo.isEmpty()) {
-            throw new BusinessException("Debe adjuntar un archivo de confirmación");
-        }
-
-        Utilidades.validarFoto(archivo);
-
-        String nombreArchivo;
-        try {
-            nombreArchivo = Utilidades.guardarFoto(archivo, uploadPath);
-        } catch (IOException e) {
-            throw new BusinessException("Error al guardar el archivo: " + e.getMessage());
+        String nombreArchivo = null;
+        if (archivo != null && !archivo.isEmpty()) {
+            Utilidades.validarFoto(archivo);
+            try {
+                nombreArchivo = Utilidades.guardarFoto(archivo, uploadPath);
+            } catch (IOException e) {
+                throw new BusinessException("Error al guardar el archivo: " + e.getMessage());
+            }
         }
 
         SolicitudVerificacion solicitud = new SolicitudVerificacion();
@@ -70,7 +67,7 @@ public class ServiceSolicitudVerificacion {
 
         SolicitudVerificacion solicitud = solicitudRepository.findByOrganizadorId(organizador.getId());
         if (solicitud == null) {
-            throw new BusinessException("No tiene solicitudes de verificación");
+            return null;
         }
 
         return convertirADTO(solicitud);

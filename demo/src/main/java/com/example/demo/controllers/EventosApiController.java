@@ -25,7 +25,9 @@ import com.example.demo.dto.PagedResponse;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.Evento;
 import com.example.demo.model.Localidad;
+import com.example.demo.model.Usuario;
 import com.example.demo.service.ServiceEvento;
+import com.example.demo.utils.AuthenticatedUserHelper;
 import com.example.demo.utils.MongoSerializationHelper;
 
 import lombok.RequiredArgsConstructor;
@@ -36,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 public class EventosApiController {
 
     private final ServiceEvento eventoService;
+    private final AuthenticatedUserHelper authHelper;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> listar(Pageable pageable) {
@@ -63,6 +66,42 @@ public class EventosApiController {
             );
 
             return ResponseEntity.ok(ApiResponse.ok("Eventos obtenidos", response));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error al listar eventos: " + e.getMessage()));
+        }
+    }
+
+    // ─── Eventos del organizador autenticado ──────────────────────────────────
+    @GetMapping("/organizador")
+    @PreAuthorize("hasRole('ORGANIZADOR')")
+    public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> listarMisEventos(Pageable pageable) {
+        try {
+            Usuario organizador = authHelper.usuarioAutenticado();
+            Page<Evento> page = eventoService.listarPorOrganizador(organizador.getId(), pageable);
+
+            List<EventoDTO> contenidoDTO = page.getContent().stream()
+                    .map(evento -> {
+                        EventoDTO dto = MongoSerializationHelper.eventoADTO(evento);
+                        if (evento.getFoto() != null && evento.getFoto().trim().isEmpty()) {
+                            dto.setFoto(null);
+                        }
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+
+            PagedResponse<EventoDTO> response = new PagedResponse<>(
+                    contenidoDTO,
+                    page.getNumber(),
+                    page.getSize(),
+                    page.getTotalElements(),
+                    page.getTotalPages()
+            );
+
+            return ResponseEntity.ok(ApiResponse.ok("Eventos obtenidos", response));
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Error al listar eventos: " + e.getMessage()));

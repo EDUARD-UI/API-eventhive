@@ -32,13 +32,13 @@ public class VerificacionApiController {
     @PreAuthorize("hasRole('ORGANIZADOR')")
     public ResponseEntity<ApiResponse<Void>> crearSolicitud(
             @RequestParam String mensaje,
-            @RequestParam MultipartFile archivo) {
+            @RequestParam(required = false) MultipartFile archivo) {
         serviceSolicitud.crearSolicitud(mensaje, archivo);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Solicitud de verificación enviada. Await admin response"));
     }
 
-    @GetMapping("/mi-solicitud")
+    @GetMapping("/mis-solicitudes")
     @PreAuthorize("hasRole('ORGANIZADOR')")
     public ResponseEntity<ApiResponse<SolicitudVerificacionDTO>> miSolicitud() {
         SolicitudVerificacionDTO dto = serviceSolicitud.miSolicitud();

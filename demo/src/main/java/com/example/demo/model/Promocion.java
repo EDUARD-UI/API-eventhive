@@ -26,7 +26,8 @@ public class Promocion {
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
 
-    @DBRef(lazy = true)
+    // Sin lazy=true para que las queries @Query funcionen correctamente con MongoDB
+    @DBRef
     @JsonManagedReference
-    private List<Evento> eventos;  // Una promoción puede tener MUCHOS eventos
+    private List<Evento> eventos;
 }

@@ -103,7 +103,7 @@ public class UsuariosApiController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasRole('ADMINISTRADOR') or isAuthenticated()")
     public ResponseEntity<ApiResponse<Void>> eliminar(@PathVariable String id) {
         usuarioService.eliminarUsuario(id);
         return ResponseEntity.ok(ApiResponse.ok("Usuario eliminado exitosamente"));

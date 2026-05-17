@@ -16,7 +16,6 @@ import com.example.demo.model.Evento;
 @Repository
 public interface EventoRepository extends MongoRepository<Evento, String> {
 
-    // Métodos sin paginación
     List<Evento> findTop3ByOrderByFechaAsc();
 
     List<Evento> findByCategoriaId(String categoriaId);
@@ -34,11 +33,6 @@ public interface EventoRepository extends MongoRepository<Evento, String> {
     @Query("{ 'organizador._id': ?0 }")
     List<NombreEventoDTO> findNombresByOrganizadorId(String organizadorId);
 
-    // Búsqueda por título
-    @Query("{ 'titulo': { \\$regex: ?0, \\$options: 'i' } }")
-    List<Evento> findByTituloLimitado(String titulo, Pageable pageable);
-
-    // Métodos paginados
     @Override
     Page<Evento> findAll(Pageable pageable);
 
@@ -48,8 +42,9 @@ public interface EventoRepository extends MongoRepository<Evento, String> {
 
     Page<Evento> findByOrganizadorId(String organizadorId, Pageable pageable);
 
-    // Agregar este método
     Page<Evento> findByEstadoId(String estadoId, Pageable pageable);
+
+    Page<Evento> findByOrganizadorIdAndTituloContainingIgnoreCase(String organizadorId, String titulo, Pageable pageable);
 
     @Aggregation(pipeline = {
         "{ $addFields: { categoriaObjectId: { $toObjectId: '$categoria._id' } } }",

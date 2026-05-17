@@ -33,53 +33,27 @@ public class ServiceEvento {
     private final EstadoRepository estadoRepository;
     private final AuthenticatedUserHelper authHelper;
 
-    // resolver referencias de otras colecciones para evitar null
     private void resolverCategoria(Evento evento) {
-        if (evento.getCategoria() == null) {
-            return;
-        }
-        if (evento.getCategoria().getNombre() != null
-                && !evento.getCategoria().getNombre().isBlank()) {
-            return;
-        }
+        if (evento.getCategoria() == null) return;
+        if (evento.getCategoria().getNombre() != null && !evento.getCategoria().getNombre().isBlank()) return;
         String catId = evento.getCategoria().getId();
-        if (catId == null) {
-            return;
-        }
-        categoriasRepository.findById(catId).ifPresent(cat
-                -> evento.getCategoria().setNombre(cat.getNombre())
-        );
+        if (catId == null) return;
+        categoriasRepository.findById(catId).ifPresent(cat -> evento.getCategoria().setNombre(cat.getNombre()));
     }
 
     private void resolverEstado(Evento evento) {
-        if (evento.getEstado() == null) {
-            return;
-        }
-        if (evento.getEstado().getNombre() != null
-                && !evento.getEstado().getNombre().isBlank()) {
-            return;
-        }
+        if (evento.getEstado() == null) return;
+        if (evento.getEstado().getNombre() != null && !evento.getEstado().getNombre().isBlank()) return;
         String estId = evento.getEstado().getId();
-        if (estId == null) {
-            return;
-        }
-        estadoRepository.findById(estId).ifPresent(est
-                -> evento.getEstado().setNombre(est.getNombre())
-        );
+        if (estId == null) return;
+        estadoRepository.findById(estId).ifPresent(est -> evento.getEstado().setNombre(est.getNombre()));
     }
 
     private void resolverOrganizador(Evento evento) {
-        if (evento.getOrganizador() == null) {
-            return;
-        }
-        if (evento.getOrganizador().getNombre() != null
-                && !evento.getOrganizador().getNombre().isBlank()) {
-            return;
-        }
+        if (evento.getOrganizador() == null) return;
+        if (evento.getOrganizador().getNombre() != null && !evento.getOrganizador().getNombre().isBlank()) return;
         String orgId = evento.getOrganizador().getId();
-        if (orgId == null) {
-            return;
-        }
+        if (orgId == null) return;
         usuarioRepository.findById(orgId).ifPresent(evento::setOrganizador);
     }
 
@@ -89,41 +63,44 @@ public class ServiceEvento {
         resolverOrganizador(evento);
     }
 
-    // consultas
+    //Consultas
     public Page<Evento> listarTodos(Pageable pageable) {
         Page<Evento> page = eventoRepository.findAll(pageable);
         page.getContent().forEach(this::resolverReferencias);
         return page;
     }
 
-<<<<<<< HEAD
-    // Agregar este método en ServiceEvento.java
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public Page<Evento> buscarAdmin(String titulo, String categoriaId, String estadoId, Pageable pageable) {
-        // Construir query dinámica
-        if (titulo != null && !titulo.trim().isEmpty()) {
-            // Búsqueda por título con paginación
-            Page<Evento> page = eventoRepository.findByTituloContainingIgnoreCase(titulo, pageable);
-            page.getContent().forEach(this::resolverReferencias);
-            return page;
-        } else if (categoriaId != null && !categoriaId.isEmpty()) {
-            Page<Evento> page = eventoRepository.findByCategoriaId(categoriaId, pageable);
-            page.getContent().forEach(this::resolverReferencias);
-            return page;
-        } else if (estadoId != null && !estadoId.isEmpty()) {
-            // Necesitas agregar este método en EventoRepository
-            Page<Evento> page = eventoRepository.findByEstadoId(estadoId, pageable);
-            page.getContent().forEach(this::resolverReferencias);
-            return page;
-        } else {
-            return listarTodos(pageable);
-        }
-=======
     public Page<Evento> listarPorOrganizador(String organizadorId, Pageable pageable) {
         Page<Evento> page = eventoRepository.findByOrganizadorId(organizadorId, pageable);
         page.getContent().forEach(this::resolverReferencias);
         return page;
->>>>>>> 6ec2f88 (dashboard organizador)
+    }
+
+    public Page<Evento> buscarPorOrganizadorYTitulo(String organizadorId, String titulo, Pageable pageable) {
+        Page<Evento> page = eventoRepository
+                .findByOrganizadorIdAndTituloContainingIgnoreCase(organizadorId, titulo, pageable);
+        page.getContent().forEach(this::resolverReferencias);
+        return page;
+    }
+
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public Page<Evento> buscarAdmin(String titulo, String categoriaId, String estadoId, Pageable pageable) {
+        if (titulo != null && !titulo.trim().isEmpty()) {
+            Page<Evento> page = eventoRepository.findByTituloContainingIgnoreCase(titulo.trim(), pageable);
+            page.getContent().forEach(this::resolverReferencias);
+            return page;
+        }
+        if (categoriaId != null && !categoriaId.isEmpty()) {
+            Page<Evento> page = eventoRepository.findByCategoriaId(categoriaId, pageable);
+            page.getContent().forEach(this::resolverReferencias);
+            return page;
+        }
+        if (estadoId != null && !estadoId.isEmpty()) {
+            Page<Evento> page = eventoRepository.findByEstadoId(estadoId, pageable);
+            page.getContent().forEach(this::resolverReferencias);
+            return page;
+        }
+        return listarTodos(pageable);
     }
 
     public Evento obtenerPorId(String id) {
@@ -137,23 +114,16 @@ public class ServiceEvento {
         return obtenerPorId(eventoId).getLocalidades();
     }
 
-    // crud
+    //CRUD
     @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public Evento crearEvento(Evento evento) {
         Usuario organizador = authHelper.usuarioAutenticado();
         evento.setOrganizador(organizador);
-        if (evento.getLocalidades() == null) {
-            evento.setLocalidades(new ArrayList<>());
-        }
+        if (evento.getLocalidades() == null) evento.setLocalidades(new ArrayList<>());
         evento.setPromocion(null);
-
-        if (evento.getFoto() != null && evento.getFoto().isBlank()) {
-            evento.setFoto(null);
-        }
-
+        if (evento.getFoto() != null && evento.getFoto().isBlank()) evento.setFoto(null);
         denormalizarCategoria(evento);
         denormalizarEstado(evento);
-
         return eventoRepository.save(evento);
     }
 
@@ -161,7 +131,6 @@ public class ServiceEvento {
     public Evento actualizarEvento(String id, Evento eventoActualizado) {
         Evento evento = obtenerPorId(id);
         verificarPermiso(evento);
-
         evento.setTitulo(eventoActualizado.getTitulo());
         evento.setDescripcion(eventoActualizado.getDescripcion());
         evento.setFecha(eventoActualizado.getFecha());
@@ -169,16 +138,13 @@ public class ServiceEvento {
         evento.setLugar(eventoActualizado.getLugar());
         evento.setEstado(eventoActualizado.getEstado());
         evento.setCategoria(eventoActualizado.getCategoria());
-
         if (eventoActualizado.getFoto() != null && !eventoActualizado.getFoto().isBlank()) {
             evento.setFoto(eventoActualizado.getFoto());
         } else if (eventoActualizado.getFoto() != null && eventoActualizado.getFoto().isBlank()) {
             evento.setFoto(null);
         }
-
         denormalizarCategoria(evento);
         denormalizarEstado(evento);
-
         return eventoRepository.save(evento);
     }
 
@@ -189,14 +155,12 @@ public class ServiceEvento {
         eventoRepository.deleteById(id);
     }
 
-    // localidades
+    //Localidades
     @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public Evento agregarLocalidad(String eventoId, Localidad localidad) {
         Evento evento = obtenerPorId(eventoId);
         verificarPermiso(evento);
-        if (evento.getLocalidades() == null) {
-            evento.setLocalidades(new ArrayList<>());
-        }
+        if (evento.getLocalidades() == null) evento.setLocalidades(new ArrayList<>());
         evento.getLocalidades().add(localidad);
         return eventoRepository.save(evento);
     }
@@ -205,9 +169,7 @@ public class ServiceEvento {
     public Evento actualizarLocalidad(String eventoId, int index, Localidad actualizada) {
         Evento evento = obtenerPorId(eventoId);
         verificarPermiso(evento);
-        if (index < 0 || index >= evento.getLocalidades().size()) {
-            throw new BusinessException("Índice inválido");
-        }
+        if (index < 0 || index >= evento.getLocalidades().size()) throw new BusinessException("Índice inválido");
         Localidad loc = evento.getLocalidades().get(index);
         loc.setNombre(actualizada.getNombre());
         loc.setPrecio(actualizada.getPrecio());
@@ -220,22 +182,18 @@ public class ServiceEvento {
     public Evento eliminarLocalidad(String eventoId, int index) {
         Evento evento = obtenerPorId(eventoId);
         verificarPermiso(evento);
-        if (index < 0 || index >= evento.getLocalidades().size()) {
-            throw new BusinessException("Índice inválido");
-        }
+        if (index < 0 || index >= evento.getLocalidades().size()) throw new BusinessException("Índice inválido");
         evento.getLocalidades().remove(index);
         return eventoRepository.save(evento);
     }
 
-    // deseados
+    //Deseados
     @PreAuthorize("isAuthenticated()")
     public void agregarEventoDeseado(String eventoId) {
         Usuario usuario = authHelper.usuarioAutenticado();
         Evento evento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new BusinessException("Evento no encontrado"));
-        if (usuario.getEventosDeseados() == null) {
-            usuario.setEventosDeseados(new ArrayList<>());
-        }
+        if (usuario.getEventosDeseados() == null) usuario.setEventosDeseados(new ArrayList<>());
         if (!usuario.getEventosDeseados().contains(evento)) {
             usuario.getEventosDeseados().add(evento);
             usuarioRepository.save(usuario);
@@ -251,7 +209,7 @@ public class ServiceEvento {
         }
     }
 
-    // búsquedas
+    //Búsquedas
     public List<Evento> buscarPorCategoria(String categoriaId) {
         return eventoRepository.findByCategoriaId(categoriaId);
     }
@@ -270,10 +228,9 @@ public class ServiceEvento {
         return eventoRepository.countByCategoriaId(categoriaId);
     }
 
-    // DTO helper
+    //DTO helper
     public EventoDTO convertirADTO(Evento evento) {
         resolverReferencias(evento);
-
         EventoDTO dto = new EventoDTO();
         dto.setId(evento.getId());
         dto.setTitulo(evento.getTitulo());
@@ -282,65 +239,36 @@ public class ServiceEvento {
         dto.setFoto(evento.getFoto());
         dto.setFecha(evento.getFecha());
         dto.setHora(evento.getHora());
-
         if (evento.getCategoria() != null) {
-            dto.setCategoria(new EventoDTO.Categoria(
-                    evento.getCategoria().getId(),
-                    evento.getCategoria().getNombre()
-            ));
+            dto.setCategoria(new EventoDTO.Categoria(evento.getCategoria().getId(), evento.getCategoria().getNombre()));
         }
-
         if (evento.getEstado() != null) {
-            dto.setEstado(new EventoDTO.Estado(
-                    evento.getEstado().getId(),
-                    evento.getEstado().getNombre()
-            ));
+            dto.setEstado(new EventoDTO.Estado(evento.getEstado().getId(), evento.getEstado().getNombre()));
         }
-
         if (evento.getOrganizador() != null) {
             dto.setOrganizador(new EventoDTO.Organizador(
                     evento.getOrganizador().getId(),
                     evento.getOrganizador().getNombre(),
-                    evento.getOrganizador().getEsVerificado()
-            ));
+                    evento.getOrganizador().getEsVerificado()));
         }
-
         return dto;
     }
 
-    // helpers privados
+    //Helpers
     private void denormalizarCategoria(Evento evento) {
-        if (evento.getCategoria() == null) {
-            return;
-        }
+        if (evento.getCategoria() == null) return;
         String id = evento.getCategoria().getId();
-        if (id == null) {
-            return;
-        }
-        if (evento.getCategoria().getNombre() != null
-                && !evento.getCategoria().getNombre().isBlank()) {
-            return;
-        }
-        categoriasRepository.findById(id).ifPresent(cat
-                -> evento.getCategoria().setNombre(cat.getNombre())
-        );
+        if (id == null) return;
+        if (evento.getCategoria().getNombre() != null && !evento.getCategoria().getNombre().isBlank()) return;
+        categoriasRepository.findById(id).ifPresent(cat -> evento.getCategoria().setNombre(cat.getNombre()));
     }
 
     private void denormalizarEstado(Evento evento) {
-        if (evento.getEstado() == null) {
-            return;
-        }
+        if (evento.getEstado() == null) return;
         String id = evento.getEstado().getId();
-        if (id == null) {
-            return;
-        }
-        if (evento.getEstado().getNombre() != null
-                && !evento.getEstado().getNombre().isBlank()) {
-            return;
-        }
-        estadoRepository.findById(id).ifPresent(est
-                -> evento.getEstado().setNombre(est.getNombre())
-        );
+        if (id == null) return;
+        if (evento.getEstado().getNombre() != null && !evento.getEstado().getNombre().isBlank()) return;
+        estadoRepository.findById(id).ifPresent(est -> evento.getEstado().setNombre(est.getNombre()));
     }
 
     private void verificarPermiso(Evento evento) {
@@ -349,8 +277,6 @@ public class ServiceEvento {
         boolean esOrganizador = evento.getOrganizador() != null
                 && evento.getOrganizador().getCorreo() != null
                 && evento.getOrganizador().getCorreo().equals(usuario.getCorreo());
-        if (!esAdmin && !esOrganizador) {
-            throw new BusinessException("No autorizado");
-        }
+        if (!esAdmin && !esOrganizador) throw new BusinessException("No autorizado");
     }
 }

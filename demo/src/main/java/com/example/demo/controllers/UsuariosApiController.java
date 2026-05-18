@@ -5,11 +5,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.PagedResponse;
 import com.example.demo.dto.UsuarioDTO;
+import com.example.demo.model.Usuario;
 import com.example.demo.service.ServiceUsuario;
 
 import lombok.RequiredArgsConstructor;
@@ -47,6 +56,45 @@ public class UsuariosApiController {
         );
         
         return ResponseEntity.ok(ApiResponse.ok("Usuarios obtenidos", response));
+    }
+
+    @GetMapping("/buscar")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<ApiResponse<PagedResponse<UsuarioDTO>>> buscar(
+            @RequestParam(required = false, name = "nombre") String nombre,
+            Pageable pageable) {
+        try {
+            if (nombre == null || nombre.trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ApiResponse.error("Parámetro 'nombre' requerido"));
+            }
+            Page<Usuario> page = usuarioService.buscarPorNombre(nombre.trim(), pageable);
+            Page<UsuarioDTO> pageDto = page.map(usuario -> {
+                UsuarioDTO dto = new UsuarioDTO();
+                dto.setId(usuario.getId());
+                dto.setNombre(usuario.getNombre());
+                dto.setApellido(usuario.getApellido());
+                dto.setCorreo(usuario.getCorreo());
+                dto.setTelefono(usuario.getTelefono());
+                if (usuario.getRol() != null) {
+                    dto.setRolNombre(usuario.getRol().getNombre());
+                }
+                return dto;
+            });
+
+            PagedResponse<UsuarioDTO> response = new PagedResponse<>(
+                    pageDto.getContent(),
+                    pageDto.getNumber(),
+                    pageDto.getSize(),
+                    pageDto.getTotalElements(),
+                    pageDto.getTotalPages()
+            );
+
+            return ResponseEntity.ok(ApiResponse.ok("Resultados de búsqueda", response));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error en búsqueda: " + e.getMessage()));
+        }
     }
 
     @GetMapping("/{id}")

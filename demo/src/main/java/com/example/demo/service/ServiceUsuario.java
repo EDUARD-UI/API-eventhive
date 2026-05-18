@@ -47,6 +47,11 @@ public class ServiceUsuario {
         return usuarioRepository.findAll(pageable);
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public Page<Usuario> buscarPorNombre(String nombre, Pageable pageable) {
+        return usuarioRepository.findByNombreContainingIgnoreCase(nombre, pageable);
+    }
+
     public UsuarioSesionDTO obtenerSesionDTO(String correoOId) {
         Usuario usuario = usuarioRepository.findByCorreo(correoOId);
 

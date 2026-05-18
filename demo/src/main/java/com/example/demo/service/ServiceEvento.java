@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -34,26 +35,44 @@ public class ServiceEvento {
     private final AuthenticatedUserHelper authHelper;
 
     private void resolverCategoria(Evento evento) {
-        if (evento.getCategoria() == null) return;
-        if (evento.getCategoria().getNombre() != null && !evento.getCategoria().getNombre().isBlank()) return;
+        if (evento.getCategoria() == null) {
+            return;
+        }
+        if (evento.getCategoria().getNombre() != null && !evento.getCategoria().getNombre().isBlank()) {
+            return;
+        }
         String catId = evento.getCategoria().getId();
-        if (catId == null) return;
+        if (catId == null) {
+            return;
+        }
         categoriasRepository.findById(catId).ifPresent(cat -> evento.getCategoria().setNombre(cat.getNombre()));
     }
 
     private void resolverEstado(Evento evento) {
-        if (evento.getEstado() == null) return;
-        if (evento.getEstado().getNombre() != null && !evento.getEstado().getNombre().isBlank()) return;
+        if (evento.getEstado() == null) {
+            return;
+        }
+        if (evento.getEstado().getNombre() != null && !evento.getEstado().getNombre().isBlank()) {
+            return;
+        }
         String estId = evento.getEstado().getId();
-        if (estId == null) return;
+        if (estId == null) {
+            return;
+        }
         estadoRepository.findById(estId).ifPresent(est -> evento.getEstado().setNombre(est.getNombre()));
     }
 
     private void resolverOrganizador(Evento evento) {
-        if (evento.getOrganizador() == null) return;
-        if (evento.getOrganizador().getNombre() != null && !evento.getOrganizador().getNombre().isBlank()) return;
+        if (evento.getOrganizador() == null) {
+            return;
+        }
+        if (evento.getOrganizador().getNombre() != null && !evento.getOrganizador().getNombre().isBlank()) {
+            return;
+        }
         String orgId = evento.getOrganizador().getId();
-        if (orgId == null) return;
+        if (orgId == null) {
+            return;
+        }
         usuarioRepository.findById(orgId).ifPresent(evento::setOrganizador);
     }
 
@@ -119,9 +138,19 @@ public class ServiceEvento {
     public Evento crearEvento(Evento evento) {
         Usuario organizador = authHelper.usuarioAutenticado();
         evento.setOrganizador(organizador);
-        if (evento.getLocalidades() == null) evento.setLocalidades(new ArrayList<>());
+
+        if (evento.getLocalidades() != null) {
+            evento.getLocalidades().forEach(l -> {
+                if (l.getId() == null || l.getId().isBlank()) {
+                    l.setId(UUID.randomUUID().toString());
+                }
+            });
+        }
+
         evento.setPromocion(null);
-        if (evento.getFoto() != null && evento.getFoto().isBlank()) evento.setFoto(null);
+        if (evento.getFoto() != null && evento.getFoto().isBlank()) {
+            evento.setFoto(null);
+        }
         denormalizarCategoria(evento);
         denormalizarEstado(evento);
         return eventoRepository.save(evento);
@@ -143,6 +172,14 @@ public class ServiceEvento {
         } else if (eventoActualizado.getFoto() != null && eventoActualizado.getFoto().isBlank()) {
             evento.setFoto(null);
         }
+
+        if (eventoActualizado.getLocalidades() != null) {
+            eventoActualizado.getLocalidades().forEach(l -> {
+                if (l.getId() == null || l.getId().isBlank()) {
+                    l.setId(UUID.randomUUID().toString());
+                }
+        });
+    }
         denormalizarCategoria(evento);
         denormalizarEstado(evento);
         return eventoRepository.save(evento);
@@ -160,7 +197,9 @@ public class ServiceEvento {
     public Evento agregarLocalidad(String eventoId, Localidad localidad) {
         Evento evento = obtenerPorId(eventoId);
         verificarPermiso(evento);
-        if (evento.getLocalidades() == null) evento.setLocalidades(new ArrayList<>());
+        if (localidad.getId() == null || localidad.getId().isBlank()) {
+            localidad.setId(UUID.randomUUID().toString());
+        }
         evento.getLocalidades().add(localidad);
         return eventoRepository.save(evento);
     }
@@ -169,7 +208,9 @@ public class ServiceEvento {
     public Evento actualizarLocalidad(String eventoId, int index, Localidad actualizada) {
         Evento evento = obtenerPorId(eventoId);
         verificarPermiso(evento);
-        if (index < 0 || index >= evento.getLocalidades().size()) throw new BusinessException("Índice inválido");
+        if (index < 0 || index >= evento.getLocalidades().size()) {
+            throw new BusinessException("Índice inválido");
+        }
         Localidad loc = evento.getLocalidades().get(index);
         loc.setNombre(actualizada.getNombre());
         loc.setPrecio(actualizada.getPrecio());
@@ -182,7 +223,9 @@ public class ServiceEvento {
     public Evento eliminarLocalidad(String eventoId, int index) {
         Evento evento = obtenerPorId(eventoId);
         verificarPermiso(evento);
-        if (index < 0 || index >= evento.getLocalidades().size()) throw new BusinessException("Índice inválido");
+        if (index < 0 || index >= evento.getLocalidades().size()) {
+            throw new BusinessException("Índice inválido");
+        }
         evento.getLocalidades().remove(index);
         return eventoRepository.save(evento);
     }
@@ -193,7 +236,9 @@ public class ServiceEvento {
         Usuario usuario = authHelper.usuarioAutenticado();
         Evento evento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new BusinessException("Evento no encontrado"));
-        if (usuario.getEventosDeseados() == null) usuario.setEventosDeseados(new ArrayList<>());
+        if (usuario.getEventosDeseados() == null) {
+            usuario.setEventosDeseados(new ArrayList<>());
+        }
         if (!usuario.getEventosDeseados().contains(evento)) {
             usuario.getEventosDeseados().add(evento);
             usuarioRepository.save(usuario);
@@ -256,18 +301,30 @@ public class ServiceEvento {
 
     //Helpers
     private void denormalizarCategoria(Evento evento) {
-        if (evento.getCategoria() == null) return;
+        if (evento.getCategoria() == null) {
+            return;
+        }
         String id = evento.getCategoria().getId();
-        if (id == null) return;
-        if (evento.getCategoria().getNombre() != null && !evento.getCategoria().getNombre().isBlank()) return;
+        if (id == null) {
+            return;
+        }
+        if (evento.getCategoria().getNombre() != null && !evento.getCategoria().getNombre().isBlank()) {
+            return;
+        }
         categoriasRepository.findById(id).ifPresent(cat -> evento.getCategoria().setNombre(cat.getNombre()));
     }
 
     private void denormalizarEstado(Evento evento) {
-        if (evento.getEstado() == null) return;
+        if (evento.getEstado() == null) {
+            return;
+        }
         String id = evento.getEstado().getId();
-        if (id == null) return;
-        if (evento.getEstado().getNombre() != null && !evento.getEstado().getNombre().isBlank()) return;
+        if (id == null) {
+            return;
+        }
+        if (evento.getEstado().getNombre() != null && !evento.getEstado().getNombre().isBlank()) {
+            return;
+        }
         estadoRepository.findById(id).ifPresent(est -> evento.getEstado().setNombre(est.getNombre()));
     }
 
@@ -277,6 +334,8 @@ public class ServiceEvento {
         boolean esOrganizador = evento.getOrganizador() != null
                 && evento.getOrganizador().getCorreo() != null
                 && evento.getOrganizador().getCorreo().equals(usuario.getCorreo());
-        if (!esAdmin && !esOrganizador) throw new BusinessException("No autorizado");
+        if (!esAdmin && !esOrganizador) {
+            throw new BusinessException("No autorizado");
+        }
     }
 }

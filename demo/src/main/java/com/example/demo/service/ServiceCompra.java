@@ -54,15 +54,35 @@ public class ServiceCompra {
 
         for (ItemCompra item : items) {
             Evento evento = eventoRepository.findById(item.getEventoId())
-                .orElseThrow(() -> new BusinessException("Evento no encontrado"));
+                .orElseThrow(() -> new BusinessException("Evento no encontrado: " + item.getEventoId()));
+
+            // ── FIX: comparación defensiva ante localidades con id null ────────
+            // Antes: l.getId().equals(item.getLocalidadId())
+            //   → NullPointerException si l.getId() es null (subdocumento sin _id).
+            //
+            // Ahora: item.getLocalidadId().equals(l.getId())
+            //   → Si l.getId() es null, equals devuelve false en vez de lanzar NPE.
+            //   item.getLocalidadId() se valida antes para dar un error claro.
+            if (item.getLocalidadId() == null) {
+                throw new BusinessException("El item no tiene localidadId");
+            }
 
             Localidad localidad = evento.getLocalidades().stream()
-                .filter(l -> l.getId().equals(item.getLocalidadId()))
+                .filter(l -> item.getLocalidadId().equals(l.getId()))
                 .findFirst()
-                .orElseThrow(() -> new BusinessException("Localidad no encontrada"));
+                .orElseThrow(() -> new BusinessException(
+                    "Localidad '" + item.getLocalidadId() + "' no encontrada en el evento '" + evento.getTitulo() + "'. " +
+                    "Las localidades disponibles son: " + evento.getLocalidades().stream()
+                        .map(l -> l.getId() + "=" + l.getNombre())
+                        .toList()
+                ));
 
             if (localidad.getDisponibles() < item.getCantidad()) {
-                throw new BusinessException("No hay suficientes tiquetes");
+                throw new BusinessException(
+                    "No hay suficientes tiquetes en '" + localidad.getNombre() +
+                    "'. Disponibles: " + localidad.getDisponibles() +
+                    ", solicitados: " + item.getCantidad()
+                );
             }
 
             localidad.setDisponibles(localidad.getDisponibles() - item.getCantidad());
@@ -71,6 +91,7 @@ public class ServiceCompra {
             itemsValidados.add(item);
         }
 
+        // Guardar los eventos modificados (disponibles actualizados)
         List<String> eventosActualizados = items.stream()
             .map(ItemCompra::getEventoId)
             .distinct()
@@ -94,15 +115,16 @@ public class ServiceCompra {
         Usuario usuario = authHelper.usuarioAutenticado();
 
         if (!compra.getCliente().getId().equals(usuario.getId())) {
-            throw new BusinessException("No autorizado");
+            throw new BusinessException("No autorizado para cancelar esta compra");
         }
 
         for (ItemCompra item : compra.getItems()) {
             Evento evento = eventoRepository.findById(item.getEventoId())
-                .orElseThrow(() -> new BusinessException("Evento no encontrado"));
+                .orElseThrow(() -> new BusinessException("Evento no encontrado: " + item.getEventoId()));
 
+            // Misma comparación defensiva para la cancelación
             evento.getLocalidades().stream()
-                .filter(l -> l.getId().equals(item.getLocalidadId()))
+                .filter(l -> item.getLocalidadId() != null && item.getLocalidadId().equals(l.getId()))
                 .findFirst()
                 .ifPresent(l -> l.setDisponibles(l.getDisponibles() + item.getCantidad()));
 

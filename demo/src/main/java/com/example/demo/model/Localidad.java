@@ -2,19 +2,18 @@ package com.example.demo.model;
 
 import java.math.BigDecimal;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.springframework.data.annotation.Id;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+import lombok.Data;
+
+@Data
 public class Localidad {
+
+    @Id
     private String id;
+
     private String nombre;
     private BigDecimal precio;
-    private Integer capacidad;
-    private Integer disponibles;
+    private int capacidad;
+    private int disponibles;
 }

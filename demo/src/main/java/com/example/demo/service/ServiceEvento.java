@@ -139,13 +139,18 @@ public class ServiceEvento {
         Usuario organizador = authHelper.usuarioAutenticado();
         evento.setOrganizador(organizador);
 
-        if (evento.getLocalidades() != null) {
-            evento.getLocalidades().forEach(l -> {
-                if (l.getId() == null || l.getId().isBlank()) {
-                    l.setId(UUID.randomUUID().toString());
-                }
-            });
+        if (evento.getLocalidades() == null) {
+            evento.setLocalidades(new ArrayList<>());
         }
+        evento.getLocalidades().forEach(l -> {
+            if (l.getId() == null || l.getId().isBlank()) {
+                l.setId(UUID.randomUUID().toString());
+            }
+            // Si no se definió disponibles, inicializar con la capacidad
+            if (l.getDisponibles() <= 0 && l.getCapacidad() > 0) {
+                l.setDisponibles(l.getCapacidad());
+            }
+        });
 
         evento.setPromocion(null);
         if (evento.getFoto() != null && evento.getFoto().isBlank()) {
@@ -178,8 +183,12 @@ public class ServiceEvento {
                 if (l.getId() == null || l.getId().isBlank()) {
                     l.setId(UUID.randomUUID().toString());
                 }
-        });
-    }
+                if (l.getDisponibles() <= 0 && l.getCapacidad() > 0) {
+                    l.setDisponibles(l.getCapacidad());
+                }
+            });
+            evento.setLocalidades(eventoActualizado.getLocalidades());
+        }
         denormalizarCategoria(evento);
         denormalizarEstado(evento);
         return eventoRepository.save(evento);
@@ -199,6 +208,12 @@ public class ServiceEvento {
         verificarPermiso(evento);
         if (localidad.getId() == null || localidad.getId().isBlank()) {
             localidad.setId(UUID.randomUUID().toString());
+        }
+        if (evento.getLocalidades() == null) {
+            evento.setLocalidades(new ArrayList<>());
+        }
+        if (localidad.getDisponibles() <= 0 && localidad.getCapacidad() > 0) {
+            localidad.setDisponibles(localidad.getCapacidad());
         }
         evento.getLocalidades().add(localidad);
         return eventoRepository.save(evento);

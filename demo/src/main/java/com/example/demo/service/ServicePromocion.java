@@ -228,8 +228,17 @@ public class ServicePromocion {
         dto.setFechaFinal(p.getFechaFin());
         if (p.getEventos() != null && !p.getEventos().isEmpty()) {
             Evento ev = p.getEventos().get(0);
-            dto.setEventoId(ev.getId());
-            dto.setEventoTitulo(ev.getTitulo());
+            if (ev != null) {
+                dto.setEventoId(ev.getId());
+                dto.setEventoTitulo(ev.getTitulo());
+            } else {
+                // Referencia huérfana: evento eliminado o no encontrado
+                dto.setEventoId(null);
+                dto.setEventoTitulo("Evento no asignado");
+            }
+        } else {
+            dto.setEventoId(null);
+            dto.setEventoTitulo("Evento no asignado");
         }
         return dto;
     }

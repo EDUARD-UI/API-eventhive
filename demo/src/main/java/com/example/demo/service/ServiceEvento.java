@@ -84,48 +84,37 @@ public class ServiceEvento {
 
     //Consultas
     public Page<Evento> listarTodos(Pageable pageable) {
-        Page<Evento> page = eventoRepository.findAll(pageable);
-        page.getContent().forEach(this::resolverReferencias);
-        return page;
+        return eventoRepository.findAllWithReferences(pageable);
     }
 
     public Page<Evento> listarPorOrganizador(String organizadorId, Pageable pageable) {
-        Page<Evento> page = eventoRepository.findByOrganizadorId(organizadorId, pageable);
-        page.getContent().forEach(this::resolverReferencias);
-        return page;
+        return eventoRepository.findByOrganizadorIdWithReferences(organizadorId, pageable);
     }
 
     public Page<Evento> buscarPorOrganizadorYTitulo(String organizadorId, String titulo, Pageable pageable) {
-        Page<Evento> page = eventoRepository
-                .findByOrganizadorIdAndTituloContainingIgnoreCase(organizadorId, titulo, pageable);
-        page.getContent().forEach(this::resolverReferencias);
-        return page;
+        return eventoRepository.findByOrganizadorIdAndTituloContainingIgnoreCaseWithReferences(organizadorId, titulo,
+                pageable);
     }
 
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public Page<Evento> buscarAdmin(String titulo, String categoriaId, String estadoId, Pageable pageable) {
         if (titulo != null && !titulo.trim().isEmpty()) {
-            Page<Evento> page = eventoRepository.findByTituloContainingIgnoreCase(titulo.trim(), pageable);
-            page.getContent().forEach(this::resolverReferencias);
-            return page;
+            return eventoRepository.findByTituloContainingIgnoreCaseWithReferences(titulo.trim(), pageable);
         }
         if (categoriaId != null && !categoriaId.isEmpty()) {
-            Page<Evento> page = eventoRepository.findByCategoriaId(categoriaId, pageable);
-            page.getContent().forEach(this::resolverReferencias);
-            return page;
+            return eventoRepository.findByCategoriaIdWithReferences(categoriaId, pageable);
         }
         if (estadoId != null && !estadoId.isEmpty()) {
-            Page<Evento> page = eventoRepository.findByEstadoId(estadoId, pageable);
-            page.getContent().forEach(this::resolverReferencias);
-            return page;
+            return eventoRepository.findByEstadoIdWithReferences(estadoId, pageable);
         }
         return listarTodos(pageable);
     }
 
     public Evento obtenerPorId(String id) {
-        Evento evento = eventoRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Evento no encontrado"));
-        resolverReferencias(evento);
+        Evento evento = eventoRepository.findByIdWithReferences(id);
+        if (evento == null) {
+            throw new BusinessException("Evento no encontrado");
+        }
         return evento;
     }
 
@@ -275,9 +264,8 @@ public class ServiceEvento {
     }
 
     public Page<EventoBusquedaDTO> buscarPorTitulo(String titulo, Pageable pageable) {
-        Page<Evento> page = eventoRepository.findByTituloContainingIgnoreCase(titulo, pageable);
+        Page<Evento> page = eventoRepository.findByTituloContainingIgnoreCaseWithReferences(titulo, pageable);
         List<EventoBusquedaDTO> dtoList = page.getContent().stream().map(evento -> {
-            resolverReferencias(evento);
             String nombreCategoria = evento.getCategoria() != null ? evento.getCategoria().getNombre() : null;
             return new EventoBusquedaDTO(evento.getId(), evento.getTitulo(), nombreCategoria);
         }).toList();

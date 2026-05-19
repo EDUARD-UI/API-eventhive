@@ -63,7 +63,7 @@ public class PromocionApiController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ORGANIZADOR')")
+    @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> crear(
             @RequestParam String eventoId,
             @RequestParam String descripcion,
@@ -76,7 +76,7 @@ public class PromocionApiController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ORGANIZADOR')")
+    @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> actualizar(
             @PathVariable String id,
             @RequestParam String eventoId,
@@ -90,7 +90,7 @@ public class PromocionApiController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ORGANIZADOR')")
+    @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<Void>> eliminar(@PathVariable String id) {
         Usuario usuario = authHelper.usuarioAutenticado();
         servicePromocion.eliminarPromocion(id, usuario);

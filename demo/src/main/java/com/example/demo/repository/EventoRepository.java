@@ -14,7 +14,7 @@ import com.example.demo.dto.reportes.EventosCategoriaDto;
 import com.example.demo.model.Evento;
 
 @Repository
-public interface EventoRepository extends MongoRepository<Evento, String> {
+public interface EventoRepository extends MongoRepository<Evento, String>, EventoRepositoryCustom {
 
     List<Evento> findTop3ByOrderByFechaAsc();
 

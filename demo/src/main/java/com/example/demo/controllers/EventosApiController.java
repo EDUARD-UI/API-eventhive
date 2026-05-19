@@ -40,10 +40,20 @@ public class EventosApiController {
     private final ServiceEvento eventoService;
     private final AuthenticatedUserHelper authHelper;
 
+    // ── LISTAR CON FILTRO OPCIONAL POR CATEGORÍA ──────────────────────────────
+    // Se añade el parámetro `categoriaId` para que el frontend pueda filtrar
+    // sin necesidad de una ruta separada.
     @GetMapping
-    public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> listar(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> listar(
+            @RequestParam(required = false) String categoriaId,
+            Pageable pageable) {
         try {
-            Page<Evento> page = eventoService.listarTodos(pageable);
+            Page<Evento> page;
+            if (categoriaId != null && !categoriaId.isBlank()) {
+                page = eventoService.listarPorCategoria(categoriaId, pageable);
+            } else {
+                page = eventoService.listarTodos(pageable);
+            }
             List<EventoDTO> contenidoDTO = toDTO(page);
             return ResponseEntity.ok(ApiResponse.ok("Eventos obtenidos", buildPaged(page, contenidoDTO)));
         } catch (Exception e) {
@@ -121,7 +131,6 @@ public class EventosApiController {
         }
     }
 
-    //CRUD
     @PostMapping
     @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<EventoDTO>> crear(@RequestBody Evento evento) {
@@ -171,7 +180,6 @@ public class EventosApiController {
         }
     }
 
-    //Localidades
     @PostMapping("/{eventoId}/localidades")
     @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public ResponseEntity<ApiResponse<EventoDTO>> agregarLocalidad(
@@ -180,7 +188,8 @@ public class EventosApiController {
         try {
             Evento eventoActualizado = eventoService.agregarLocalidad(eventoId, localidad);
             MongoSerializationHelper.forzarCargaReferencias(eventoActualizado);
-            return ResponseEntity.ok(ApiResponse.ok("Localidad agregada", MongoSerializationHelper.eventoADTO(eventoActualizado)));
+            return ResponseEntity.ok(ApiResponse.ok("Localidad agregada",
+                    MongoSerializationHelper.eventoADTO(eventoActualizado)));
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
@@ -195,7 +204,8 @@ public class EventosApiController {
         try {
             Evento eventoActualizado = eventoService.actualizarLocalidad(eventoId, localidadIndex, localidad);
             MongoSerializationHelper.forzarCargaReferencias(eventoActualizado);
-            return ResponseEntity.ok(ApiResponse.ok("Localidad actualizada", MongoSerializationHelper.eventoADTO(eventoActualizado)));
+            return ResponseEntity.ok(ApiResponse.ok("Localidad actualizada",
+                    MongoSerializationHelper.eventoADTO(eventoActualizado)));
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
@@ -209,13 +219,13 @@ public class EventosApiController {
         try {
             Evento eventoActualizado = eventoService.eliminarLocalidad(eventoId, localidadIndex);
             MongoSerializationHelper.forzarCargaReferencias(eventoActualizado);
-            return ResponseEntity.ok(ApiResponse.ok("Localidad eliminada", MongoSerializationHelper.eventoADTO(eventoActualizado)));
+            return ResponseEntity.ok(ApiResponse.ok("Localidad eliminada",
+                    MongoSerializationHelper.eventoADTO(eventoActualizado)));
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }
 
-    //Deseados
     @PostMapping("/{eventoId}/deseados")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Void>> agregarDeseado(@PathVariable String eventoId) {
@@ -238,7 +248,6 @@ public class EventosApiController {
         }
     }
 
-    //Búsquedas
     @GetMapping("/buscar")
     public ResponseEntity<ApiResponse<PagedResponse<EventoBusquedaDTO>>> buscar(
             @RequestParam(required = false, name = "titulo") String titulo,
@@ -275,7 +284,8 @@ public class EventosApiController {
         }
     }
 
-    //helper
+    // ── helpers ───────────────────────────────────────────────────────────────
+
     private List<EventoDTO> toDTO(Page<Evento> page) {
         return page.getContent().stream()
                 .map(evento -> {

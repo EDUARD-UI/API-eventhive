@@ -54,7 +54,10 @@ public class ServicePromocion {
             .orElseThrow(() -> new ResourceNotFoundException("Promoción no encontrada"));
     }
 
-    @PreAuthorize("hasRole('ORGANIZADOR')")
+    // ── CREAR ─────────────────────────────────────────────────────────────────
+    // El ADMINISTRADOR puede crear promociones para cualquier evento.
+    // El ORGANIZADOR solo puede para sus propios eventos.
+    @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public void crearPromocion(String eventoId, String descripcion, BigDecimal descuento,
             String fechaInicio, String fechaFin, Usuario organizador) {
 
@@ -71,11 +74,13 @@ public class ServicePromocion {
         Evento evento = eventoRepository.findById(eventoId)
             .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado"));
 
-        if (!evento.getOrganizador().getId().equals(organizador.getId())) {
+        // Solo validar pertenencia si es ORGANIZADOR (no ADMINISTRADOR)
+        boolean esAdmin = organizador.getRol() != null
+                && "ADMINISTRADOR".equals(organizador.getRol().getNombre());
+        if (!esAdmin && !evento.getOrganizador().getId().equals(organizador.getId())) {
             throw new BusinessException("No autorizado: el evento no te pertenece");
         }
 
-        // Verificar si el evento ya tiene promoción usando MongoTemplate
         if (existePromocionParaEvento(eventoId)) {
             throw new BusinessException("Este evento ya tiene una promoción asignada");
         }
@@ -92,23 +97,27 @@ public class ServicePromocion {
 
         Promocion saved = promocionRepository.save(p);
 
-        // Guardar referencia inversa en el evento
         evento.setPromocion(saved);
         eventoRepository.save(evento);
     }
 
-    @PreAuthorize("hasRole('ORGANIZADOR')")
+    // ── ACTUALIZAR ────────────────────────────────────────────────────────────
+    @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public void actualizarPromocion(String id, String eventoId, String descripcion, BigDecimal descuento,
             String fechaInicio, String fechaFin, Usuario organizador) {
 
         Promocion p = obtenerPromocionPorId(id);
 
-        // Verificar que el organizador es dueño de alguno de los eventos de la promo
-        boolean autorizado = p.getEventos() != null && p.getEventos().stream()
-            .anyMatch(e -> e.getOrganizador() != null &&
-                          e.getOrganizador().getId().equals(organizador.getId()));
-        if (!autorizado) {
-            throw new BusinessException("No autorizado");
+        boolean esAdmin = organizador.getRol() != null
+                && "ADMINISTRADOR".equals(organizador.getRol().getNombre());
+
+        if (!esAdmin) {
+            boolean autorizado = p.getEventos() != null && p.getEventos().stream()
+                .anyMatch(e -> e.getOrganizador() != null &&
+                              e.getOrganizador().getId().equals(organizador.getId()));
+            if (!autorizado) {
+                throw new BusinessException("No autorizado");
+            }
         }
 
         LocalDate fechaInicioLD = LocalDate.parse(fechaInicio, DATE_FORMATTER);
@@ -125,11 +134,10 @@ public class ServicePromocion {
             Evento nuevoEvento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado"));
 
-            if (!nuevoEvento.getOrganizador().getId().equals(organizador.getId())) {
+            if (!esAdmin && !nuevoEvento.getOrganizador().getId().equals(organizador.getId())) {
                 throw new BusinessException("No autorizado: el evento no te pertenece");
             }
 
-            // Limpiar la referencia inversa del evento anterior
             if (p.getEventos() != null) {
                 for (Evento evAnterior : p.getEventos()) {
                     evAnterior.setPromocion(null);
@@ -153,18 +161,23 @@ public class ServicePromocion {
         promocionRepository.save(p);
     }
 
-    @PreAuthorize("hasRole('ORGANIZADOR')")
+    // ── ELIMINAR ──────────────────────────────────────────────────────────────
+    @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public void eliminarPromocion(String id, Usuario organizador) {
         Promocion p = obtenerPromocionPorId(id);
 
-        boolean autorizado = p.getEventos() != null && p.getEventos().stream()
-            .anyMatch(e -> e.getOrganizador() != null &&
-                          e.getOrganizador().getId().equals(organizador.getId()));
-        if (!autorizado) {
-            throw new BusinessException("No autorizado");
+        boolean esAdmin = organizador.getRol() != null
+                && "ADMINISTRADOR".equals(organizador.getRol().getNombre());
+
+        if (!esAdmin) {
+            boolean autorizado = p.getEventos() != null && p.getEventos().stream()
+                .anyMatch(e -> e.getOrganizador() != null &&
+                              e.getOrganizador().getId().equals(organizador.getId()));
+            if (!autorizado) {
+                throw new BusinessException("No autorizado");
+            }
         }
 
-        // Limpiar referencia inversa en todos los eventos
         if (p.getEventos() != null) {
             for (Evento evento : p.getEventos()) {
                 evento.setPromocion(null);
@@ -175,10 +188,7 @@ public class ServicePromocion {
         promocionRepository.deleteById(id);
     }
 
-    // Busca promociones del organizador usando MongoTemplate
-    // (evita problemas con DBRef en las queries de Spring Data)
     public Page<PromocionDTO> obtenerDTOPorOrganizador(String organizadorId, Pageable pageable) {
-        // Obtener IDs de eventos del organizador
         List<String> eventoIds = eventoRepository.findByOrganizadorId(organizadorId)
             .stream()
             .map(Evento::getId)
@@ -188,8 +198,6 @@ public class ServicePromocion {
             return new PageImpl<>(List.of(), pageable, 0);
         }
 
-        // Buscar promociones que contengan alguno de esos eventos usando MongoTemplate
-        // con ObjectId para que la comparación con DBRef funcione
         List<ObjectId> objectIds = eventoIds.stream()
             .map(ObjectId::new)
             .collect(Collectors.toList());
@@ -207,14 +215,12 @@ public class ServicePromocion {
         return new PageImpl<>(dtos, pageable, total);
     }
 
-    // Verifica si un evento ya tiene promoción usando MongoTemplate
     private boolean existePromocionParaEvento(String eventoId) {
         try {
             ObjectId oid = new ObjectId(eventoId);
             Query query = new Query(Criteria.where("eventos.$id").is(oid));
             return mongoTemplate.exists(query, Promocion.class);
         } catch (Exception e) {
-            // Si el ID no es un ObjectId válido, buscar como string
             return promocionRepository.findFirstByEventosId(eventoId) != null;
         }
     }
@@ -232,7 +238,6 @@ public class ServicePromocion {
                 dto.setEventoId(ev.getId());
                 dto.setEventoTitulo(ev.getTitulo());
             } else {
-                // Referencia huérfana: evento eliminado o no encontrado
                 dto.setEventoId(null);
                 dto.setEventoTitulo("Evento no asignado");
             }

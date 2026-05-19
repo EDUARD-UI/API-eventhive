@@ -1,5 +1,8 @@
 package com.example.demo.controllers;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,7 +14,11 @@ import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.BoletosCompraDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.Compra;
+import com.example.demo.model.Evento;
+import com.example.demo.model.Localidad;
+import com.example.demo.model.Tiquete;
 import com.example.demo.model.Usuario;
+import com.example.demo.repository.TiqueteRepository;
 import com.example.demo.service.ServiceCompra;
 import com.example.demo.utils.AuthenticatedUserHelper;
 
@@ -24,21 +31,70 @@ public class BoletosApiController {
 
     private final ServiceCompra serviceCompra;
     private final AuthenticatedUserHelper authHelper;
+    private final TiqueteRepository tiqueteRepository;
 
     @GetMapping("/{compraId}")
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<ApiResponse<BoletosCompraDTO>> obtener(@PathVariable String compraId) {
         Usuario usuario = authHelper.usuarioAutenticado();
-        Compra compra = serviceCompra.obtenerCompraPorId(compraId);
+        Compra compra   = serviceCompra.obtenerCompraPorId(compraId);
 
         if (!compra.getCliente().getId().equals(usuario.getId())) {
             throw new BusinessException("No autorizado");
         }
 
+        // ── Buscar tiquetes asociados a esta compra ──────────────────────────
+        List<Tiquete> tiquetes = tiqueteRepository.findByCompraId(compraId);
+
         BoletosCompraDTO dto = new BoletosCompraDTO();
         dto.setId(compra.getId());
         dto.setFechaCompra(compra.getFechaCompra());
         dto.setTotal(compra.getTotal());
+        dto.setMetodoPago(compra.getMetodoPago());
+
+        // Mapear cada tiquete a BoletoDTO con su información de localidad y evento
+        List<BoletosCompraDTO.BoletoDTO> boletos = tiquetes.stream().map(tiquete -> {
+            BoletosCompraDTO.BoletoDTO boleto = new BoletosCompraDTO.BoletoDTO();
+            boleto.setId(tiquete.getId());
+
+            BoletosCompraDTO.TiqueteDTO tiqueteDTO = new BoletosCompraDTO.TiqueteDTO();
+            tiqueteDTO.setId(tiquete.getId());
+            tiqueteDTO.setCodigoQR(tiquete.getCodigoQR());
+
+            // Poblar datos de localidad y evento desde el tiquete
+            Evento evento = tiquete.getEvento();
+            if (evento != null) {
+                BoletosCompraDTO.LocalidadDTO localidadDTO = new BoletosCompraDTO.LocalidadDTO();
+                localidadDTO.setId(tiquete.getLocalidadId());
+
+                // Buscar la localidad dentro del evento por su id almacenado en el tiquete
+                if (evento.getLocalidades() != null) {
+                    evento.getLocalidades().stream()
+                        .filter(l -> tiquete.getLocalidadId() != null
+                                && tiquete.getLocalidadId().equals(l.getId()))
+                        .findFirst()
+                        .ifPresent(l -> {
+                            localidadDTO.setNombre(l.getNombre());
+                            localidadDTO.setPrecio(l.getPrecio());
+                        });
+                }
+
+                BoletosCompraDTO.EventoDTO eventoDTO = new BoletosCompraDTO.EventoDTO();
+                eventoDTO.setId(evento.getId());
+                eventoDTO.setTitulo(evento.getTitulo());
+                eventoDTO.setFecha(evento.getFecha());
+                eventoDTO.setHora(evento.getHora());
+                eventoDTO.setLugar(evento.getLugar());
+
+                localidadDTO.setEvento(eventoDTO);
+                tiqueteDTO.setLocalidad(localidadDTO);
+            }
+
+            boleto.setTiquete(tiqueteDTO);
+            return boleto;
+        }).collect(Collectors.toList());
+
+        dto.setTiqueteCompras(boletos);
 
         return ResponseEntity.ok(ApiResponse.ok("Compra obtenida", dto));
     }

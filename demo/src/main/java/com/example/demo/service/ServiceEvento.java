@@ -91,6 +91,10 @@ public class ServiceEvento {
         return eventoRepository.findByOrganizadorIdWithReferences(organizadorId, pageable);
     }
 
+    public Page<Evento> listarPorCategoria(String categoriaId, Pageable pageable) {
+        return eventoRepository.findByCategoriaIdWithReferences(categoriaId, pageable);
+    }
+
     public Page<Evento> buscarPorOrganizadorYTitulo(String organizadorId, String titulo, Pageable pageable) {
         return eventoRepository.findByOrganizadorIdAndTituloContainingIgnoreCaseWithReferences(organizadorId, titulo,
                 pageable);

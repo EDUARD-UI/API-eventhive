@@ -1,10 +1,15 @@
 package com.example.demo.controllers;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,10 +44,9 @@ public class EventosApiController {
 
     private final ServiceEvento eventoService;
     private final AuthenticatedUserHelper authHelper;
+    // ── FIX: inyectar MongoTemplate para reparar localidades sin id en caliente ──
+    private final MongoTemplate mongoTemplate;
 
-    // ── LISTAR CON FILTRO OPCIONAL POR CATEGORÍA ──────────────────────────────
-    // Se añade el parámetro `categoriaId` para que el frontend pueda filtrar
-    // sin necesidad de una ruta separada.
     @GetMapping
     public ResponseEntity<ApiResponse<PagedResponse<EventoDTO>>> listar(
             @RequestParam(required = false) String categoriaId,
@@ -109,6 +113,8 @@ public class EventosApiController {
             Evento evento = eventoService.obtenerPorId(id);
             MongoSerializationHelper.forzarCargaReferencias(evento);
             if (evento.getFoto() != null && evento.getFoto().trim().isEmpty()) evento.setFoto(null);
+            // ── FIX: garantizar ids en localidades antes de serializar ──
+            garantizarIdsLocalidades(evento);
             EventoDTO dto = MongoSerializationHelper.eventoADTO(evento);
             return ResponseEntity.ok(ApiResponse.ok("Evento obtenido", dto));
         } catch (BusinessException e) {
@@ -120,11 +126,39 @@ public class EventosApiController {
         }
     }
 
+    /**
+     * ── FIX PRINCIPAL ────────────────────────────────────────────────────────
+     *
+     * Problema raíz: Localidad tiene @Id en el campo 'id'. Cuando Spring Data
+     * lee un subdocumento embebido, mapea '_id' de MongoDB -> campo Java 'id'.
+     * Si el documento fue importado con campo 'id' (sin _) en lugar de '_id',
+     * Spring no lo encuentra y devuelve id = null. Jackson serializa null -> el
+     * frontend recibe id: null y lanza "localidad sin identificador válido".
+     *
+     * Solución: antes de devolver las localidades, si alguna tiene id nulo se
+     * le asigna un UUID nuevo Y se persiste el fix en MongoDB con $set parcial
+     * sobre localidades (igual que en ServiceCompra, sin tocar DBRef).
+     */
     @GetMapping("/{id}/localidades")
     public ResponseEntity<ApiResponse<List<Localidad>>> localidades(@PathVariable String id) {
         try {
-            List<Localidad> localidades = eventoService.obtenerLocalidades(id);
-            return ResponseEntity.ok(ApiResponse.ok("Localidades obtenidas", localidades));
+            Evento evento = eventoService.obtenerPorId(id);
+            List<Localidad> localidades = evento.getLocalidades();
+
+            if (localidades == null || localidades.isEmpty()) {
+                return ResponseEntity.ok(ApiResponse.ok("Localidades obtenidas", List.of()));
+            }
+
+            boolean reparado = garantizarIdsLocalidades(evento);
+
+            // Si hubo localidades sin id, persistir el fix en MongoDB con $set parcial
+            if (reparado) {
+                Query query  = new Query(Criteria.where("_id").is(evento.getId()));
+                Update update = new Update().set("localidades", evento.getLocalidades());
+                mongoTemplate.updateFirst(query, update, Evento.class);
+            }
+
+            return ResponseEntity.ok(ApiResponse.ok("Localidades obtenidas", evento.getLocalidades()));
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.error(e.getMessage()));
@@ -286,10 +320,32 @@ public class EventosApiController {
 
     // ── helpers ───────────────────────────────────────────────────────────────
 
+    /**
+     * Garantiza que todas las localidades del evento tienen un id válido.
+     * Devuelve true si se modificó alguna localidad (para que el caller
+     * decida si persistir el cambio).
+     *
+     * Razón de existir: documentos importados vía mongoimport con el campo
+     * 'id' (sin _) en lugar de '_id' hacen que Spring @Id no lo resuelva
+     * y devuelva null. Este método asigna un UUID nuevo en ese caso.
+     */
+    private boolean garantizarIdsLocalidades(Evento evento) {
+        if (evento.getLocalidades() == null) return false;
+        boolean reparado = false;
+        for (Localidad loc : evento.getLocalidades()) {
+            if (loc.getId() == null || loc.getId().isBlank()) {
+                loc.setId(UUID.randomUUID().toString());
+                reparado = true;
+            }
+        }
+        return reparado;
+    }
+
     private List<EventoDTO> toDTO(Page<Evento> page) {
         return page.getContent().stream()
                 .map(evento -> {
                     MongoSerializationHelper.forzarCargaReferencias(evento);
+                    garantizarIdsLocalidades(evento);
                     EventoDTO dto = MongoSerializationHelper.eventoADTO(evento);
                     if (evento.getFoto() != null && evento.getFoto().trim().isEmpty()) dto.setFoto(null);
                     return dto;
@@ -300,6 +356,7 @@ public class EventosApiController {
     private List<EventoDTO> toDTOSimple(Page<Evento> page) {
         return page.getContent().stream()
                 .map(evento -> {
+                    garantizarIdsLocalidades(evento);
                     EventoDTO dto = MongoSerializationHelper.eventoADTO(evento);
                     if (evento.getFoto() != null && evento.getFoto().trim().isEmpty()) dto.setFoto(null);
                     return dto;

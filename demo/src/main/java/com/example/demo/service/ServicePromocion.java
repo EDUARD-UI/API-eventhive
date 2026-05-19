@@ -55,8 +55,6 @@ public class ServicePromocion {
     }
 
     // ── CREAR ─────────────────────────────────────────────────────────────────
-    // El ADMINISTRADOR puede crear promociones para cualquier evento.
-    // El ORGANIZADOR solo puede para sus propios eventos.
     @PreAuthorize("hasRole('ORGANIZADOR') or hasRole('ADMINISTRADOR')")
     public void crearPromocion(String eventoId, String descripcion, BigDecimal descuento,
             String fechaInicio, String fechaFin, Usuario organizador) {
@@ -74,9 +72,9 @@ public class ServicePromocion {
         Evento evento = eventoRepository.findById(eventoId)
             .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado"));
 
-        // Solo validar pertenencia si es ORGANIZADOR (no ADMINISTRADOR)
         boolean esAdmin = organizador.getRol() != null
                 && "ADMINISTRADOR".equals(organizador.getRol().getNombre());
+
         if (!esAdmin && !evento.getOrganizador().getId().equals(organizador.getId())) {
             throw new BusinessException("No autorizado: el evento no te pertenece");
         }
@@ -95,10 +93,8 @@ public class ServicePromocion {
         eventos.add(evento);
         p.setEventos(eventos);
 
-        Promocion saved = promocionRepository.save(p);
-
-        evento.setPromocion(saved);
-        eventoRepository.save(evento);
+        promocionRepository.save(p);
+        // No se toca el evento para no corromper sus @DBRef (categoria, estado)
     }
 
     // ── ACTUALIZAR ────────────────────────────────────────────────────────────
@@ -113,8 +109,9 @@ public class ServicePromocion {
 
         if (!esAdmin) {
             boolean autorizado = p.getEventos() != null && p.getEventos().stream()
+                .filter(e -> e != null)
                 .anyMatch(e -> e.getOrganizador() != null &&
-                              e.getOrganizador().getId().equals(organizador.getId()));
+                               e.getOrganizador().getId().equals(organizador.getId()));
             if (!autorizado) {
                 throw new BusinessException("No autorizado");
             }
@@ -138,19 +135,10 @@ public class ServicePromocion {
                 throw new BusinessException("No autorizado: el evento no te pertenece");
             }
 
-            if (p.getEventos() != null) {
-                for (Evento evAnterior : p.getEventos()) {
-                    evAnterior.setPromocion(null);
-                    eventoRepository.save(evAnterior);
-                }
-            }
-
             List<Evento> nuevosEventos = new ArrayList<>();
             nuevosEventos.add(nuevoEvento);
             p.setEventos(nuevosEventos);
-
-            nuevoEvento.setPromocion(p);
-            eventoRepository.save(nuevoEvento);
+            // No se toca el evento para no corromper sus @DBRef (categoria, estado)
         }
 
         p.setDescripcion(descripcion);
@@ -171,20 +159,15 @@ public class ServicePromocion {
 
         if (!esAdmin) {
             boolean autorizado = p.getEventos() != null && p.getEventos().stream()
+                .filter(e -> e != null)
                 .anyMatch(e -> e.getOrganizador() != null &&
-                              e.getOrganizador().getId().equals(organizador.getId()));
+                               e.getOrganizador().getId().equals(organizador.getId()));
             if (!autorizado) {
                 throw new BusinessException("No autorizado");
             }
         }
 
-        if (p.getEventos() != null) {
-            for (Evento evento : p.getEventos()) {
-                evento.setPromocion(null);
-                eventoRepository.save(evento);
-            }
-        }
-
+        // No se toca el evento para no corromper sus @DBRef (categoria, estado)
         promocionRepository.deleteById(id);
     }
 
@@ -233,7 +216,10 @@ public class ServicePromocion {
         dto.setFechaInicio(p.getFechaInicio());
         dto.setFechaFinal(p.getFechaFin());
         if (p.getEventos() != null && !p.getEventos().isEmpty()) {
-            Evento ev = p.getEventos().get(0);
+            Evento ev = p.getEventos().stream()
+                .filter(e -> e != null)
+                .findFirst()
+                .orElse(null);
             if (ev != null) {
                 dto.setEventoId(ev.getId());
                 dto.setEventoTitulo(ev.getTitulo());

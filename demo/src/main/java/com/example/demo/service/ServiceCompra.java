@@ -14,6 +14,10 @@ import java.util.stream.Collectors;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +45,8 @@ public class ServiceCompra {
     private final EventoRepository eventoRepository;
     private final TiqueteRepository tiqueteRepository;
     private final AuthenticatedUserHelper authHelper;
+    // ── FIX BUG 2: inyectar MongoTemplate para actualizaciones parciales ──────
+    private final MongoTemplate mongoTemplate;
 
     @PreAuthorize("isAuthenticated()")
     public Page<Compra> listarMisCompras(Pageable pageable) {
@@ -64,6 +70,7 @@ public class ServiceCompra {
 
         BigDecimal total = BigDecimal.ZERO;
         List<ItemCompra> itemsValidados = new ArrayList<>();
+        Map<String, List<Localidad>> localidadesActualizadasPorEvento = new HashMap<>();
         Map<String, Evento> eventosModificados = new HashMap<>();
 
         for (ItemCompra item : items) {
@@ -82,7 +89,7 @@ public class ServiceCompra {
                     }
                 }
                 if (localidadesActualizadas) {
-                    eventoRepository.save(evento);
+                    actualizarSoloLocalidades(evento.getId(), evento.getLocalidades());
                 }
             }
 
@@ -96,7 +103,7 @@ public class ServiceCompra {
                     Localidad unica = evento.getLocalidades().get(0);
                     if (unica.getId() == null || unica.getId().isBlank() || "null".equals(unica.getId())) {
                         unica.setId(new ObjectId().toHexString());
-                        eventoRepository.save(evento);
+                        actualizarSoloLocalidades(evento.getId(), evento.getLocalidades());
                     }
                     item.setLocalidadId(unica.getId());
                 } else {
@@ -104,7 +111,8 @@ public class ServiceCompra {
                         .map(l -> l.getNombre() + " (" + l.getId() + ")")
                         .collect(Collectors.joining(", "));
                     throw new BusinessException(
-                        "El item no tiene localidadId válido para el evento '" + evento.getTitulo() + "'. Localidades disponibles: " + disponibles
+                        "El item no tiene localidadId válido para el evento '" + evento.getTitulo()
+                        + "'. Localidades disponibles: " + disponibles
                     );
                 }
             }
@@ -140,16 +148,19 @@ public class ServiceCompra {
                 }
             }
 
+            // Descontar disponibles en memoria
             localidad.setDisponibles(localidad.getDisponibles() - item.getCantidad());
             item.setPrecioUnitario(precioUnitario);
             total = total.add(precioUnitario.multiply(BigDecimal.valueOf(item.getCantidad())));
             itemsValidados.add(item);
+
+            // Acumular localidades modificadas y evento para generar tiquetes después
+            localidadesActualizadasPorEvento.put(evento.getId(), evento.getLocalidades());
             eventosModificados.put(evento.getId(), evento);
         }
 
-        // Persistir eventos con disponibles actualizados
-        for (Evento ev : eventosModificados.values()) {
-            eventoRepository.save(ev);
+        for (Map.Entry<String, List<Localidad>> entry : localidadesActualizadasPorEvento.entrySet()) {
+            actualizarSoloLocalidades(entry.getKey(), entry.getValue());
         }
 
         // Guardar la compra
@@ -162,8 +173,6 @@ public class ServiceCompra {
         Compra compraGuardada = compraRepository.save(compra);
 
         // ── GENERAR TIQUETES ─────────────────────────────────────────────────
-        // Por cada ítem se genera `cantidad` tiquetes individuales.
-        // Cada tiquete tiene un código QR único (UUID) para validación en puerta.
         for (ItemCompra item : itemsValidados) {
             Evento evento = eventosModificados.get(item.getEventoId());
             for (int i = 0; i < item.getCantidad(); i++) {
@@ -177,6 +186,12 @@ public class ServiceCompra {
         }
 
         return compraGuardada;
+    }
+
+    private void actualizarSoloLocalidades(String eventoId, List<Localidad> localidades) {
+        Query query = new Query(Criteria.where("_id").is(new ObjectId(eventoId)));
+        Update update = new Update().set("localidades", localidades);
+        mongoTemplate.updateFirst(query, update, Evento.class);
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -198,7 +213,8 @@ public class ServiceCompra {
                 .findFirst()
                 .ifPresent(l -> l.setDisponibles(l.getDisponibles() + item.getCantidad()));
 
-            eventoRepository.save(evento);
+            // ── FIX BUG 2: también usar actualización parcial al cancelar ────
+            actualizarSoloLocalidades(evento.getId(), evento.getLocalidades());
         }
 
         compraRepository.deleteById(id);
